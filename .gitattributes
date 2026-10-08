@@ -1,0 +1,3 @@
+* text=auto eol=lf
+*.{png,jpg,jpeg,ico,woff,woff2,ttf,otf,pdf} binary
+*.sln text eol=crlf

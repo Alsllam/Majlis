@@ -1,0 +1,57 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Secrets (never commit)
+.env
+.env.*
+!.env.example
+appsettings.*.local.json
+*.pfx
+*.pem
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# .NET (backend/)
+bin/
+obj/
+TestResults/
+*.user
+coverage*.xml
+Logs/
+
+# Node / Nx (frontend/)
+node_modules/
+dist/
+tmp/
+.nx/cache/
+.nx/workspace-data/
+.angular/
+coverage/
+test-results/
+playwright-report/
+
+# Flutter (mobile/)
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.fvm/flutter_sdk
+mobile/build/
+mobile/android/.gradle/
+mobile/ios/Pods/
+*.g.dart.tmp
+
+# Python (ai-service/)
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
