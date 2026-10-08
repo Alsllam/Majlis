@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Majlis Brand Kit</title>
+<link rel="icon" href="favicon/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="tokens/css/index.css">
+<style>
+  * { box-sizing: border-box; }
+  code { direction: ltr; unicode-bidi: isolate; font-family: var(--font-mono); font-size: .9em; }
+  body { margin: 0; }
+  header.bar { position: sticky; top: 0; z-index: 2; display: flex; gap: var(--space-4); align-items: center;
+    padding: var(--space-3) var(--space-5); background: var(--surface); border-block-end: 1px solid var(--border-subtle); }
+  header.bar img { height: 32px; }
+  header.bar .spacer { flex: 1; }
+  button.chip { font: inherit; font-size: var(--fs-sm); padding: 6px 12px; border-radius: var(--radius-full);
+    border: 1px solid var(--border-subtle); background: var(--surface); color: var(--text-secondary); cursor: pointer;
+    transition: background var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out); }
+  button.chip[aria-pressed="true"] { background: var(--brand-subtle); color: var(--brand-subtle-text); border-color: transparent; }
+  button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+  main { max-width: 1200px; margin: 0 auto; padding: var(--space-6) var(--space-5); display: grid; gap: var(--space-6); }
+  section.card { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: var(--space-5);
+    animation: majlis-enter var(--motion-slow) var(--ease-out) both; }
+  h2 { margin: 0 0 var(--space-4); font-size: var(--fs-xl); }
+  h3 { margin: var(--space-4) 0 var(--space-3); font-size: var(--fs-md); color: var(--text-secondary); }
+  .row { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; }
+  .logo-tile { border-radius: var(--radius-md); padding: var(--space-5); display: grid; place-items: center; min-height: 140px; }
+  .on-light { background: #ffffff; } .on-dark { background: #191714; } .on-brand { background: var(--brand-600); color: #fff; }
+  .on-sand { background: var(--neutral-50); color: var(--neutral-900); }
+  .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-4); }
+  .swatches { display: grid; grid-template-columns: repeat(10, 1fr); border-radius: var(--radius-md); overflow: hidden; }
+  .swatches div { aspect-ratio: 1.4; display: flex; align-items: end; padding: 4px; font-size: 10px; font-family: var(--font-mono); }
+  .label { font-size: var(--fs-xs); color: var(--text-muted); }
+  .themes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-4); }
+  .theme-demo { border-radius: var(--radius-lg); padding: var(--space-4); background: var(--surface-sunken); color: var(--text-primary);
+    border: 1px solid var(--border-subtle); display: grid; gap: var(--space-3); }
+  .theme-demo .panel { background: var(--surface); border-radius: var(--radius-md); padding: var(--space-3); box-shadow: var(--shadow-sm); display: grid; gap: var(--space-2); }
+  .btn { font: inherit; font-weight: var(--fw-medium); border: 0; border-radius: var(--radius-md); padding: 8px 16px; cursor: pointer;
+    transition: transform var(--motion-fast) var(--ease-out), box-shadow var(--motion-fast) var(--ease-out), background var(--motion-fast) var(--ease-out); }
+  .btn:hover { transform: translateY(calc(-1 * var(--motion-distance-lift))); box-shadow: var(--shadow-md); }
+  .btn:active { transform: scale(var(--motion-scale-press)); }
+  .btn-primary { background: var(--brand-solid); color: var(--text-on-brand); }
+  .btn-primary:hover { background: var(--brand-solid-hover); }
+  .btn-accent { background: var(--accent-solid); color: var(--text-on-accent); }
+  .btn-ghost { background: transparent; color: var(--brand-text); box-shadow: inset 0 0 0 1px var(--border-strong); }
+  .tag { display: inline-block; font-size: var(--fs-xs); font-weight: var(--fw-medium); padding: 2px 10px; border-radius: var(--radius-full); }
+  .tag.success { background: var(--success-bg); color: var(--success-text); }
+  .tag.warning { background: var(--warning-bg); color: var(--warning-text); }
+  .tag.danger { background: var(--danger-bg); color: var(--danger-text); }
+  .tag.info { background: var(--info-bg); color: var(--info-text); }
+  .muted { color: var(--text-muted); } .secondary { color: var(--text-secondary); }
+  .agent-turn { border-inline-start: 3px solid var(--agent); background: var(--agent-subtle); border-radius: var(--radius-md); padding: var(--space-3); }
+  .agent-turn .who { font-size: var(--fs-xs); font-weight: var(--fw-semibold); color: var(--accent-text); }
+  .cite { color: var(--brand-text); font-weight: var(--fw-medium); font-size: var(--fs-xs); vertical-align: super; }
+  .presence { display: flex; align-items: center; gap: var(--space-2); }
+  .avatars { display: flex; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: #fff;
+    border: 2px solid var(--surface); margin-inline-start: -6px; }
+  .avatar.driver { box-shadow: 0 0 0 2px var(--driver); }
+  .live { width: 8px; height: 8px; border-radius: 50%; background: var(--success-solid); animation: majlis-pulse var(--motion-pulse) ease-in-out infinite; }
+  .thinking { height: 10px; border-radius: 5px; background: linear-gradient(90deg, var(--agent-subtle) 25%, var(--agent) 50%, var(--agent-subtle) 75%);
+    background-size: 200% 100%; animation: majlis-shimmer var(--motion-pulse) linear infinite; }
+  .approval { border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: var(--space-3); display: grid; gap: var(--space-2); background: var(--surface-raised); }
+  .type-specimen { display: grid; gap: var(--space-3); }
+  .series { display: flex; gap: 6px; } .series span { flex: 1; height: 24px; border-radius: 4px; }
+  table.motion { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
+  table.motion td, table.motion th { text-align: start; padding: 6px 8px; border-block-end: 1px solid var(--border-subtle); }
+  .demo-box { width: 36px; height: 36px; border-radius: var(--radius-md); background: var(--brand-solid); }
+  .logo-anim .room { stroke-dasharray: 160; animation: majlis-draw var(--motion-logo) var(--ease-out) both; }
+  .logo-anim .dot { transform-origin: 32px 32px; animation: majlis-pop var(--motion-slow) var(--ease-emphasized) calc(var(--motion-logo) * .7) both; }
+  @media (prefers-reduced-motion: reduce) { .logo-anim .room { animation: majlis-fade var(--motion-slow) both; stroke-dasharray: none; } }
+</style>
+</head>
+<body>
+<header class="bar">
+  <img id="hdr-logo" src="logo/logo-ar.svg" alt="مجلس">
+  <span class="spacer"></span>
+  <button class="chip" data-theme-btn="light" aria-pressed="true">Light · فاتح</button>
+  <button class="chip" data-theme-btn="dark" aria-pressed="false">Dark · داكن</button>
+  <button class="chip" data-theme-btn="dim" aria-pressed="false">Dim · خافت</button>
+  <button class="chip" id="lang">English</button>
+</header>
+<main>
+  <section class="card">
+    <h2>الشعار · Logo</h2>
+    <p class="secondary">مجلس من الأعلى: مقاعد على امتداد الجدران، ومدخل مفتوح، والجميع حول مركز واحد مشترك — الوكيل.<br>
+      A majlis seen from above: seating along the walls, an open entrance, everyone around one shared center — the agent.</p>
+    <div class="grid3">
+      <div class="logo-tile on-light"><img src="logo/logo-ar.svg" height="64" alt=""></div>
+      <div class="logo-tile on-light"><img src="logo/logo-en.svg" height="64" alt=""></div>
+      <div class="logo-tile on-light"><img src="logo/logo.svg" height="64" alt=""></div>
+      <div class="logo-tile on-dark"><img src="logo/logo-ar-dark.svg" height="64" alt=""></div>
+      <div class="logo-tile on-dark"><img src="logo/logo-en-dark.svg" height="64" alt=""></div>
+      <div class="logo-tile on-dark"><img src="logo/logo-dark.svg" height="64" alt=""></div>
+      <div class="logo-tile on-brand" id="mono-1"></div>
+      <div class="logo-tile on-sand" id="mono-2"></div>
+      <div class="logo-tile on-light">
+        <svg class="logo-anim" viewBox="0 0 64 64" width="96" height="96" aria-label="Logo entrance">
+          <path class="room" d="M24 52H22a12 12 0 0 1-12-12V24a12 12 0 0 1 12-12h20a12 12 0 0 1 12 12v16a12 12 0 0 1-12 12h-2" fill="none" stroke="var(--brand-600)" stroke-width="8" stroke-linecap="round"/>
+          <circle class="dot" cx="32" cy="32" r="7" fill="var(--accent-400)"/>
+        </svg>
+      </div>
+    </div>
+    <h3>Mark sizes · 16 / 24 / 32 / 48 / 128 px — app icon — favicon</h3>
+    <div class="row">
+      <img src="logo/logo-mark.svg" width="16" alt=""><img src="logo/logo-mark.svg" width="24" alt="">
+      <img src="logo/logo-mark.svg" width="32" alt=""><img src="logo/logo-mark.svg" width="48" alt="">
+      <img src="logo/logo-mark.svg" width="128" alt="">
+      <span class="logo-tile on-dark" style="min-height:0;padding:12px"><img src="logo/logo-mark-dark.svg" width="48" alt=""></span>
+      <img src="favicon/apple-touch-icon.png" width="96" style="border-radius:22px" alt="">
+      <img src="favicon/favicon.ico" width="32" alt="">
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>الألوان · Color</h2>
+    <div id="scales"></div>
+    <h3>Themes</h3>
+    <div class="themes" id="themes"></div>
+    <h3>Series (charts, participants)</h3>
+    <div class="series" id="series"></div>
+  </section>
+
+  <section class="card">
+    <h2>الخطوط · Typography</h2>
+    <div class="type-specimen">
+      <div style="font-size:var(--fs-4xl);font-weight:700" lang="ar">اجتمع الفريق في المجلس</div>
+      <div style="font-size:var(--fs-4xl);font-weight:600" lang="en" dir="ltr">The team met in the majlis</div>
+      <p lang="ar" style="max-width:62ch">يجيب الوكيل من مستندات الفريق مع الإشارة إلى المصدر والصفحة، ولا ينفّذ أي إجراء يغيّر البيانات إلا بعد اعتماد أحد أعضاء الفريق. المادة ١٢ من اللائحة <span class="cite">[S3]</span></p>
+      <p lang="en" dir="ltr" style="max-width:62ch">The agent answers from the team's documents with the source and page, and never changes data until a team member approves. Article 12 of the regulation <span class="cite">[S3]</span></p>
+      <div class="row" style="gap:var(--space-5)">
+        <span style="font-weight:400">Regular ٤٠٠ 400</span><span style="font-weight:500">Medium ٥٠٠ 500</span>
+        <span style="font-weight:600">SemiBold ٦٠٠ 600</span><span style="font-weight:700">Bold ٧٠٠ 700</span>
+        <span class="tabular">١٢٬٣٤٥٫٦٧ · 12,345.67</span>
+      </div>
+      <p class="muted" style="font-size:var(--fs-sm)">IBM Plex Sans Arabic + IBM Plex Sans, served as one family “Majlis Sans” split by unicode-range. 12 / 14 / 16 / 18 / 20 / 24 / 30 / 36.</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>الحركة · Motion</h2>
+    <table class="motion" id="motion"></table>
+  </section>
+</main>
+<script>
+  const T = {};
+  fetch('tokens/tokens.json').then(r => r.json()).then(tokens => {
+    Object.assign(T, tokens);
+    const scales = document.getElementById('scales');
+    for (const [name, sc] of Object.entries(tokens.palette)) {
+      const entries = Object.entries(sc).filter(([k]) => name !== 'neutral' || ['0','50','100','200','300','500','700','800','900','950'].includes(k));
+      scales.insertAdjacentHTML('beforeend', `<div class="label" style="margin-top:8px">${name}</div><div class="swatches">${entries.map(([k, v]) => {
+        const dark = parseInt(k) >= 500; return `<div style="background:${v};color:${dark ? '#fff' : '#000'}">${k}<br>${v}</div>`; }).join('')}</div>`);
+    }
+    const themes = document.getElementById('themes');
+    for (const theme of ['light', 'dark', 'dim']) {
+      themes.insertAdjacentHTML('beforeend', `
+      <div class="theme-demo" data-theme="${theme}">
+        <div class="presence"><span class="live"></span><span class="secondary" style="font-size:var(--fs-sm)">${theme} — غرفة العقود · ٣ الآن</span>
+          <span style="flex:1"></span><div class="avatars">${['س','خ','ن'].map((c, i) => `<span class="avatar ${i === 0 ? 'driver' : ''}" style="background:var(--series-${i + 1})">${c}</span>`).join('')}</div></div>
+        <div class="panel"><div class="agent-turn"><div class="who">الوكيل · يكتب</div><div>وفقاً للمادة ١٢، مدة الإشعار ٦٠ يوماً <span class="cite">[S1]</span></div><div class="thinking" style="margin-top:8px"></div></div>
+          <div class="approval"><strong>إنشاء مهمة: مراجعة البند ٤</strong><span class="muted" style="font-size:var(--fs-sm)">يتطلب اعتماداً · مخاطر منخفضة</span>
+            <div class="row"><button class="btn btn-primary">اعتماد</button><button class="btn btn-ghost">تعديل</button><button class="btn btn-accent">اسأل الوكيل</button></div></div>
+          <div class="row"><span class="tag success">مكتملة</span><span class="tag warning">بانتظار الاعتماد</span><span class="tag danger">مرفوضة</span><span class="tag info">قيد المعالجة</span></div>
+        </div>
+      </div>`);
+    }
+    document.getElementById('series').innerHTML = tokens.series.light.map((c, i) => `<span style="background:var(--series-${i + 1})" title="${c}"></span>`).join('');
+    const uses = { instant: 'tooltips, checkbox ticks', fast: 'hover, focus, press', base: 'dropdowns, tabs, toasts, presence join/leave',
+      slow: 'modals, panels, page enter, control hand-off', deliberate: 'approval resolving, summary reveal', logo: 'logo entrance (once)',
+      pulse: 'live dot, agent thinking (one cycle)', stagger: 'list item stagger (max 10 items)' };
+    document.getElementById('motion').innerHTML = '<tr><th>token</th><th>ms</th><th>use</th><th></th></tr>' +
+      Object.entries(tokens.motion.duration).map(([k, v]) => `<tr><td><code>--motion-${k}</code></td><td class="tabular">${v}</td><td>${uses[k]}</td>
+      <td><div class="demo-box" style="transition:transform ${v}ms var(--ease-out)" onmouseenter="this.style.transform='translateX(-40px)'" onmouseleave="this.style.transform=''"></div></td></tr>`).join('') +
+      Object.entries(tokens.motion.easing).map(([k, v]) => `<tr><td><code>--ease-${k}</code></td><td colspan="3"><code dir="ltr">${v}</code></td></tr>`).join('');
+  });
+  fetch('logo/logo-mark-mono.svg').then(r => r.text()).then(s => {
+    document.getElementById('mono-1').innerHTML = s.replace('width="64" height="64"', 'width="72" height="72"');
+  });
+  fetch('logo/logo-ar-mono.svg').then(r => r.text()).then(s => {
+    document.getElementById('mono-2').innerHTML = s.replace(/width="[\d.]+" height="[\d.]+"/, 'height="56"');
+  });
+  document.querySelectorAll('[data-theme-btn]').forEach(b => b.addEventListener('click', () => {
+    document.documentElement.dataset.theme = b.dataset.themeBtn;
+    document.querySelectorAll('[data-theme-btn]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    document.getElementById('hdr-logo').src = `logo/logo-${document.documentElement.lang}${b.dataset.themeBtn === 'light' ? '' : '-dark'}.svg`;
+  }));
+  document.getElementById('lang').addEventListener('click', e => {
+    const ar = document.documentElement.lang === 'ar';
+    document.documentElement.lang = ar ? 'en' : 'ar'; document.documentElement.dir = ar ? 'ltr' : 'rtl';
+    e.target.textContent = ar ? 'العربية' : 'English';
+    const dark = document.documentElement.dataset.theme !== 'light';
+    document.getElementById('hdr-logo').src = `logo/logo-${ar ? 'en' : 'ar'}${dark ? '-dark' : ''}.svg`;
+  });
+</script>
+</body>
+</html>
