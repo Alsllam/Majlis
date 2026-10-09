@@ -14,7 +14,7 @@ Mobile comes **after** the web app (see the roadmap in `docs/SRS.md`). `mobile/`
 | Flavors | `dev`, `staging`, `uat`, `prod` |
 | API base URL (dev) | BFF `http://10.0.2.2:7000` (Android emulator) / `http://localhost:7000` (iOS simulator) |
 | OAuth client id | `majlis-mobile` (authorization code + PKCE) |
-| Brand assets | from `docs/brand/` (logo mark → app icon and splash, color and motion tokens → `AppTokens`) |
+| Brand assets | from `docs/brand/`: `logo/app-icon-*.svg` → launcher icon and splash, `tokens/dart/majlis_tokens.dart` → `AppTokens`, `fonts/*.ttf` → `assets/fonts` |
 
 ## Planned features (provisional)
 

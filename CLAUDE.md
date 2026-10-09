@@ -26,7 +26,7 @@ Target users: teams in Saudi Arabia and the GCC (government entities, consulting
 | Tenancy | One tenant = one customer organization. A tenant has many workspaces. A workspace has many rooms |
 | Public entry point | YARP BFF only: `/api/{module}/**` → .NET module hosts, `/ai-api/**` → ai-service, `/hubs/**` → real-time hub |
 | Auth | OpenIddict (authorization code + PKCE). Audiences: `majlis-api`, `ai-api` |
-| Brand kit (source of truth) | `docs/brand/` (built in step 3). Web and mobile copy from it; never invent a second identity |
+| Brand kit (source of truth) | `docs/brand/` (see its README). Web and mobile copy from it; never invent a second identity |
 
 ### Local ports (dev)
 
