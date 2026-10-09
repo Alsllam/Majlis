@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Majlis.Rooms.Application</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Majlis.Rooms.Domain\Majlis.Rooms.Domain.csproj" />
+    <ProjectReference Include="..\Majlis.Rooms.EntityFrameworkCore\Majlis.Rooms.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Majlis.Framework.Application\Majlis.Framework.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="StackExchange.Redis" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\*.json" />
+  </ItemGroup>
+</Project>

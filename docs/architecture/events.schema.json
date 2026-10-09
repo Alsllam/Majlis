@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://majlis.local/schemas/events.schema.json",
+  "title": "Majlis real-time and AI contracts",
+  "description": "Shared by the .NET backend, the Angular and Flutter clients and ai-service. Source of truth for the shapes in docs/architecture/realtime-collaboration.md §4. JSON property names are camelCase.",
+  "$defs": {
+    "uuid": { "type": "string", "format": "uuid" },
+    "actor": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": { "enum": ["user", "agent", "system"] },
+        "id": { "anyOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }] },
+        "displayName": { "type": ["string", "null"] }
+      }
+    },
+    "sessionEvent": {
+      "description": "Durable timeline event. Hub method 'sessionEvent' and POST /api/rooms/sessions/events|getbyid. Apply strictly by seq.",
+      "type": "object",
+      "required": ["v", "type", "scope", "seq", "at", "actor", "data"],
+      "properties": {
+        "v": { "const": 1 },
+        "type": {
+          "enum": [
+            "session.started", "session.ended", "control.changed", "control.requested", "control.request.resolved",
+            "handoff.offered", "handoff.resolved", "turn.started", "turn.completed", "turn.stopped", "turn.failed"
+          ]
+        },
+        "scope": {
+          "type": "object",
+          "required": ["tenantId", "workspaceId", "roomId", "sessionId"],
+          "properties": {
+            "tenantId": { "$ref": "#/$defs/uuid" },
+            "workspaceId": { "$ref": "#/$defs/uuid" },
+            "roomId": { "$ref": "#/$defs/uuid" },
+            "sessionId": { "$ref": "#/$defs/uuid" }
+          }
+        },
+        "seq": { "type": "integer", "minimum": 1 },
+        "turnId": { "anyOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }] },
+        "at": { "type": "string", "format": "date-time" },
+        "actor": { "$ref": "#/$defs/actor" },
+        "data": {
+          "type": "object",
+          "description": "Per type: control.changed {kind: start|claim|request-accepted|handoff|takeover|release|timeout, from, to, epoch, note}; turn.started {instruction, language, instructedBy}; turn.completed {text, citations[], usage}; turn.stopped {partialText}; turn.failed {reasonKey, partialText?}; control.requested {requestId, userId, displayName}; control.request.resolved {requestId, userId, accepted}; handoff.offered {to, note}; handoff.resolved {userId, accepted}."
+        }
+      }
+    },
+    "streamMessage": {
+      "description": "Stream lane. ai-service PUBLISHes it (JSON) to Redis channel majlis:session:{sessionId}:stream; clients receive it as hub method 'streamEvent'. Not stored; ordered by (turnId, chunk).",
+      "type": "object",
+      "required": ["type", "turnId", "chunk", "data"],
+      "properties": {
+        "type": { "enum": ["turn.delta", "turn.progress"] },
+        "turnId": { "$ref": "#/$defs/uuid" },
+        "chunk": { "type": "integer", "minimum": 1 },
+        "data": {
+          "type": "object",
+          "description": "turn.delta {text: appended text}; turn.progress {key: localization key, params: {}} e.g. Ai:Progress:Searching {count: 3}."
+        }
+      }
+    },
+    "presenceSnapshot": {
+      "description": "Hub method 'presence' and the JoinSession result.",
+      "type": "object",
+      "required": ["sessionId", "participants"],
+      "properties": {
+        "sessionId": { "$ref": "#/$defs/uuid" },
+        "participants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["userId", "displayName", "state", "connections"],
+            "properties": {
+              "userId": { "$ref": "#/$defs/uuid" },
+              "displayName": { "type": "string" },
+              "state": { "enum": ["active", "idle", "typing:comment", "typing:suggestion"] },
+              "connections": { "type": "integer", "minimum": 1 }
+            }
+          }
+        }
+      }
+    },
+    "startAiTurnRequest": {
+      "description": "Rooms → ai-service: POST /internal/sessions/{sessionId}/turns (internal network only) with the driver's Authorization header. ai-service answers 202 and runs the turn in the background.",
+      "type": "object",
+      "required": ["turnId", "tenantId", "workspaceId", "roomId", "instruction", "language", "instructedBy", "history"],
+      "properties": {
+        "turnId": { "$ref": "#/$defs/uuid" },
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "workspaceId": { "$ref": "#/$defs/uuid" },
+        "roomId": { "$ref": "#/$defs/uuid" },
+        "instruction": { "type": "string" },
+        "language": { "enum": ["ar", "en"] },
+        "instructedBy": { "type": "object", "required": ["userId", "displayName"], "properties": { "userId": { "$ref": "#/$defs/uuid" }, "displayName": { "type": "string" } } },
+        "history": {
+          "type": "array",
+          "description": "Up to 6 previous completed turns, oldest first.",
+          "items": { "type": "object", "required": ["instruction", "answer", "instructedBy"], "properties": { "instruction": { "type": "string" }, "answer": { "type": "string" }, "instructedBy": { "type": "string" } } }
+        }
+      }
+    },
+    "turnCompleted": {
+      "description": "ai-service → Rooms over RabbitMQ (MassTransit message type urn:message:Majlis.Framework.Domain.Events:TurnCompleted). Consumers are idempotent on turnId.",
+      "type": "object",
+      "required": ["sessionId", "turnId", "text", "citations", "inputTokens", "outputTokens", "cachedTokens"],
+      "properties": {
+        "sessionId": { "$ref": "#/$defs/uuid" },
+        "turnId": { "$ref": "#/$defs/uuid" },
+        "text": { "type": "string" },
+        "citations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["label", "documentId", "versionId", "title", "passage"],
+            "properties": {
+              "label": { "type": "string", "pattern": "^S[0-9]+$" },
+              "documentId": { "$ref": "#/$defs/uuid" },
+              "versionId": { "$ref": "#/$defs/uuid" },
+              "title": { "type": "string" },
+              "page": { "type": ["integer", "null"] },
+              "passage": { "type": "string" }
+            }
+          }
+        },
+        "inputTokens": { "type": "integer" },
+        "outputTokens": { "type": "integer" },
+        "cachedTokens": { "type": "integer" }
+      }
+    },
+    "turnStopped": {
+      "description": "ai-service → Rooms (urn:message:Majlis.Framework.Domain.Events:TurnStopped) after it saw majlis:turn:{turnId}:cancel or a TurnStopRequested message.",
+      "type": "object",
+      "required": ["sessionId", "turnId", "partialText"],
+      "properties": { "sessionId": { "$ref": "#/$defs/uuid" }, "turnId": { "$ref": "#/$defs/uuid" }, "partialText": { "type": "string" } }
+    },
+    "turnFailed": {
+      "description": "ai-service → Rooms (urn:message:Majlis.Framework.Domain.Events:TurnFailed).",
+      "type": "object",
+      "required": ["sessionId", "turnId", "reasonKey"],
+      "properties": { "sessionId": { "$ref": "#/$defs/uuid" }, "turnId": { "$ref": "#/$defs/uuid" }, "reasonKey": { "type": "string" }, "partialText": { "type": ["string", "null"] } }
+    }
+  },
+  "x-redis-keys": {
+    "majlis:session:{sessionId}:stream": "pub/sub channel for streamMessage",
+    "majlis:turn:{turnId}:text": "hash {text, chunk}: the running text, for late joiners (TTL 10 min)",
+    "majlis:turn:{turnId}:cancel": "set by Rooms on stop; ai-service checks it between deltas",
+    "majlis:turn:{turnId}:hb": "ai-service refreshes it every 5 s while a turn runs (TTL 15 s); missing for 30 s → turn.failed"
+  }
+}

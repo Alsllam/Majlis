@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>Majlis.Auth.Host</RootNamespace>
+    <UserSecretsId>majlis-auth-host</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Identity\Majlis.Identity.Application\Majlis.Identity.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="OpenIddict.AspNetCore" />
+  </ItemGroup>
+</Project>

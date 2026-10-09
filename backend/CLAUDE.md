@@ -8,7 +8,7 @@
 |---|---|
 | `{Co}` | `Majlis` |
 | `{Product}` | dropped (same as `{Co}`): projects are `Majlis.{Module}.*`, not `Majlis.Majlis.{Module}.*` |
-| Solution | `backend/Majlis.sln` |
+| Solution | `backend/Majlis.sln` (central package versions in `Directory.Packages.props`, SDK + test runner in `global.json`) |
 | Framework projects | `Majlis.Framework.Domain`, `Majlis.Framework.Application`, `Majlis.Framework.EntityFrameworkCore` |
 | Migrator | `Majlis.DbMigrator` |
 | Hosts | `Majlis.{Module}.Host`, `Majlis.BFF.Host`, `Majlis.Auth.Host`, `Majlis.Jobs.Host` |
@@ -38,6 +38,29 @@ BFF routes: `/api/{module-kebab}/**` → module host (e.g. `/api/rooms/**` → 7
 
 Real-time rules: commands are always HTTP AppService calls; the hub only pushes events and receives presence signals (ADR-0002). Only Rooms writes session timelines (ADR-0003). Driver-only commands carry `epoch` (ADR-0004). Details: `docs/architecture/realtime-collaboration.md`.
 
+## What exists (walking skeleton)
+
+| Project | State |
+|---|---|
+| `Shared/Majlis.Framework.{Domain,EntityFrameworkCore,Application}` | base entities, repositories, unit of work, tenant + soft-delete filters, dynamic controllers, error middleware, ar/en JSON localization, permissions, OpenIddict validation, MassTransit + outbox, real-time tickets, service tokens |
+| `Modules/Identity` + `Hosts/Majlis.Auth.Host` | tenants, users, roles; OpenIddict server (code + PKCE, refresh, client credentials); ar/en login page; `/realtime/ticket` |
+| `Modules/Rooms` + `Hosts/Majlis.Rooms.Host` | rooms, sessions, control state machine with epoch, turns, timeline sequencer, AI result + presence consumers, absence/stuck-turn sweeper |
+| `Hosts/Majlis.Realtime.Host` | SignalR hub, Redis presence, fan-out, stream relay |
+| `Hosts/Majlis.BFF.Host` | YARP routes, security headers, compression |
+| `Shared/Majlis.DbMigrator` | migrations + idempotent seed (demo tenant, users, clients, room) |
+| `Modules/Rooms/Majlis.Rooms.Tests`, `tests/Majlis.Architecture.Tests` | domain, app service, validator, consumer and architecture tests |
+
+Not built yet: Workspaces, Approvals, Knowledge, Tasks, Meetings, Notifications, Audit, Jobs host.
+
+## Deviations from the skill (ADR-0008)
+
+- No AutoMapper: explicit `ToDto()` methods in `{Module}Mappings.cs`.
+- Validators are called explicitly once per command (`ValidateAsync` in `ApplicationService`); no auto-validation.
+- MassTransit pinned to 8.5.x (Apache-2.0); 9.x is commercial.
+- Refit clients are source-generated (`AddRefitGeneratedClient`).
+- Tests run on Microsoft.Testing.Platform (xUnit v3); coverage via `Microsoft.Testing.Extensions.CodeCoverage`.
+- `[NonAction]` instead of `[NonActionApi]` (ASP.NET's attribute is sealed).
+
 ## Majlis-specific rules
 
 - **Deployment profiles (ADR-0006).** Azure-only services are used only through adapters in `Majlis.Framework.Application`: `IBlobStorage` (Azure Blob / S3-compatible), `IEmailSender`, `IPushSender`, and secrets through the configuration provider (Key Vault / Kubernetes secrets / Vault). Build the `cloud` implementations now; `on-prem` ones (S3, SMTP, Vault) come when an on-prem customer is confirmed. The profile is configuration (`Deployment:Profile`, default `cloud`). An architecture test forbids Azure SDK references outside adapter projects.
@@ -50,6 +73,6 @@ Real-time rules: commands are always HTTP AppService calls; the hub only pushes 
 ## Checks before pushing
 
 ```
-dotnet build backend/Majlis.sln -warnaserror
-dotnet test backend/Majlis.sln
+cd backend && dotnet build Majlis.sln && dotnet test
 ```
+Warnings are errors (`Directory.Build.props`). Run locally: `docker compose up -d` at the repo root, then `backend/scripts/run-local.sh` (see `backend/README.md`).

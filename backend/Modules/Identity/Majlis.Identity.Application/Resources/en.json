@@ -1,0 +1,11 @@
+{
+  "Identity:Login:Title": "Sign in",
+  "Identity:Login:Email": "Email",
+  "Identity:Login:Password": "Password",
+  "Identity:Login:Submit": "Sign in",
+  "Identity:Login:Invalid": "The email or password is incorrect.",
+  "Identity:Login:LockedOut": "The account is locked after repeated attempts. Try again later.",
+  "Identity:Login:Inactive": "This account is not active. Contact your organization's admin.",
+  "Identity:Login:Tagline": "A shared AI workspace for teams",
+  "Identity:Login:SwitchLanguage": "العربية"
+}

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Majlis.DbMigrator</RootNamespace>
+    <UserSecretsId>majlis-dbmigrator</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Identity\Majlis.Identity.EntityFrameworkCore\Majlis.Identity.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\Modules\Rooms\Majlis.Rooms.EntityFrameworkCore\Majlis.Rooms.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\Majlis.Framework.Application\Majlis.Framework.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="OpenIddict.AspNetCore" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="appsettings*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

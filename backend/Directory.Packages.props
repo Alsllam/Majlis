@@ -1,0 +1,41 @@
+<Project>
+  <!--
+    Central package versions. Licensing notes:
+    - MassTransit is pinned to 8.5.x (Apache-2.0). 9.x requires a commercial licence.
+    - AutoMapper is not used: 14.0.0 (last MIT) has a known high-severity vulnerability and 15+ is commercial.
+      Mapping is explicit ToDto() extension methods per module (ADR-0008).
+  -->
+  <ItemGroup>
+    <PackageVersion Include="FluentValidation" Version="12.1.1" />
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageVersion Include="MassTransit" Version="8.5.11" />
+    <PackageVersion Include="MassTransit.RabbitMQ" Version="8.5.11" />
+    <PackageVersion Include="MassTransit.EntityFrameworkCore" Version="8.5.11" />
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Identity.Stores" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.12" />
+    <PackageVersion Include="OpenIddict.AspNetCore" Version="7.7.1" />
+    <PackageVersion Include="OpenIddict.EntityFrameworkCore" Version="7.7.1" />
+    <PackageVersion Include="OpenIddict.Validation.AspNetCore" Version="7.7.1" />
+    <PackageVersion Include="OpenIddict.Validation.SystemNetHttp" Version="7.7.1" />
+    <PackageVersion Include="Refit.HttpClientFactory" Version="16.3.0" />
+    <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Settings.Configuration" Version="10.0.1" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageVersion Include="StackExchange.Redis" Version="3.4.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.3.0" />
+    <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />
+    <!-- tests -->
+    <PackageVersion Include="FakeItEasy" Version="9.0.1" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.12.0" />
+    <PackageVersion Include="NetArchTest.Rules" Version="1.3.2" />
+    <PackageVersion Include="xunit.v3" Version="4.0.2" />
+  </ItemGroup>
+</Project>

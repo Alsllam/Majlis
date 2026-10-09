@@ -1,0 +1,16 @@
+{
+  "Rooms:Room:NotParticipant": "You are not a participant in this room.",
+  "Rooms:Room:ObserverCannotDrive": "Observers cannot instruct the agent in this room.",
+  "Rooms:Session:ActiveSessionExists": "This room already has an active session.",
+  "Rooms:Session:SessionEnded": "This session has ended.",
+  "Rooms:Session:NotDriver": "You are not in control of this session.",
+  "Rooms:Session:ControlChanged": "Control of the session changed. The state was refreshed; please try again.",
+  "Rooms:Session:ControlNotFree": "Another participant is in control. You can request control.",
+  "Rooms:Session:AlreadyDriver": "You are already in control of this session.",
+  "Rooms:Session:NoPendingHandOff": "There is no hand-off waiting for you.",
+  "Rooms:Session:RequestNotFound": "The control request does not exist or was already handled.",
+  "Rooms:Session:TurnInProgress": "The agent is still working on the previous instruction. Stop it first or wait.",
+  "Rooms:Session:TurnNotRunning": "The agent is not working on this instruction.",
+  "Rooms:Session:HandOffToSelf": "You cannot hand control to yourself.",
+  "Rooms:Turn:AiUnavailable": "The agent stopped responding. Please try again."
+}

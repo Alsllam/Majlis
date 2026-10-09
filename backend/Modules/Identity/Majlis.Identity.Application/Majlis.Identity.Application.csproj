@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Majlis.Identity.Application</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Majlis.Identity.EntityFrameworkCore\Majlis.Identity.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Majlis.Framework.Application\Majlis.Framework.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\*.json" />
+  </ItemGroup>
+</Project>

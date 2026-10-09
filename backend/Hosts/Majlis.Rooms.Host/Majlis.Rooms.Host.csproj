@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>Majlis.Rooms.Host</RootNamespace>
+    <UserSecretsId>majlis-rooms-host</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Rooms\Majlis.Rooms.Application\Majlis.Rooms.Application.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,8 @@
+# Backend rules on top of the repository .editorconfig.
+[*.cs]
+dotnet_sort_system_directives_first = true
+csharp_style_namespace_declarations = file_scoped:warning
+
+# EF Core migrations are generated: analyzers skip them, never edit them by hand.
+[**/Migrations/*.cs]
+generated_code = true

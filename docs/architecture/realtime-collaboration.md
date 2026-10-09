@@ -97,7 +97,7 @@ Every message pushed to clients has one shape:
 | Type | Lane | Producer | Notes |
 |---|---|---|---|
 | `session.started` / `session.ended` | durable | Rooms | |
-| `control.changed` | durable | Rooms | `{ from, to, kind: start\|claim\|handoff\|takeover\|release\|timeout, epoch, note? }` |
+| `control.changed` | durable | Rooms | `{ from, to, kind: start\|claim\|request-accepted\|handoff\|takeover\|release\|timeout, epoch, note? }` |
 | `control.requested` / `control.request.resolved` | durable | Rooms | request control, accept/decline/expired |
 | `handoff.offered` / `handoff.resolved` | durable | Rooms | hand-off waits for the receiver to accept |
 | `turn.started` | durable | Rooms | `{ instruction, instructedBy, language, fromSuggestionId? }` |
@@ -149,7 +149,7 @@ sequenceDiagram
   RT-->>D: turn.started
   RT-->>P: turn.started
   loop every ~60 ms while generating
-    AI->>RT: turn.delta via Redis pub/sub (turnId, chunk k)
+    AI->>RT: turn.delta via Redis pub/sub majlis:session:{id}:stream (turnId, chunk k)
     RT-->>D: turn.delta
     RT-->>P: turn.delta
   end
@@ -163,7 +163,7 @@ sequenceDiagram
 
 - `clientRequestId` makes the command idempotent (double-click, retry after timeout).
 - Only **one turn runs per session** at a time. A second instruct while a turn is running returns 409 `Rooms:Session:TurnInProgress` (the UI offers *Stop and redirect*).
-- ai-service writes the growing text to `turn:{turnId}:text` in Redis (TTL 10 min) so a participant who joins mid-stream sees the text so far and then continues with deltas (`chunk` tells it where it is).
+- ai-service writes the growing text to the Redis hash `majlis:turn:{turnId}:text` (fields `text`, `chunk`; TTL 10 min) so a participant who joins mid-stream sees the text so far and then continues with deltas (`chunk` tells it where it is).
 - ai-service sends a heartbeat (`turn:{turnId}:hb`, every 5 s). A Hangfire job in Rooms fails turns with no heartbeat for 30 s (`turn.failed`, reason `AiUnavailable`), so a crashed worker never leaves a session stuck.
 
 ### 5.2 Stop and redirect
@@ -193,7 +193,7 @@ stateDiagram-v2
 - **Fencing:** commands that only a driver may send (`instruct`, `stop`, `redirect`, `sendSuggestion`, `offerHandOff`, `release`) carry `epoch`. If `epoch != ControlEpoch` → 409 `Rooms:Session:ControlChanged`, and the client re-reads state. A user with two tabs open is the same user, so either tab can drive; the epoch still prevents a stale tab from acting on an old state.
 - **Hand-off** needs the receiver to accept (FR-SES-008); the offer expires after 5 minutes. **Asynchronous hand-off** (FR-SES-012) is the same offer, delivered to `user:{id}` plus a notification, with a `summary.ready` generated for the receiver; it does not expire until the session ends or the driver withdraws it.
 - **Take-over** needs `Permissions.Rooms.TakeOverSession`; the previous driver gets a `user:{id}` notice; audited.
-- **Timeout:** the Realtime host knows when the driver's last connection to `session:{id}` disappears and publishes `DriverPresenceLost {sessionId, userId, epoch}`. Rooms schedules a MassTransit delayed message for the **driver-absence timeout** — a tenant setting (default 2 min, 30 s – 30 min) that a workspace can override (FR-SES-010), read when the timer is scheduled; when it fires, if the epoch is unchanged and the driver has not come back (`DriverPresenceRestored` clears it), Rooms frees control. Using the epoch makes stale timers harmless.
+- **Timeout:** the Realtime host knows when the driver's last connection to `session:{id}` disappears and publishes `SessionPresenceLost {sessionId, userId, at}`. If that user is the driver, Rooms records `DriverAbsentSince`; `SessionPresenceRestored` clears it. A sweeper in Rooms (every 5 s; moves to the Jobs host later) frees control for sessions whose driver has been absent longer than the **driver-absence timeout** — a tenant setting (default 2 min, 30 s – 30 min) that a workspace can override (FR-SES-010). The transition is epoch- and row-version-checked, so a late or duplicate sweep is harmless. *(Implemented this way instead of a delayed message: no RabbitMQ delayed-exchange plugin or scheduler is needed, and the state lives on the session.)*
 - **Mid-turn change:** the running turn finishes under the old driver's identity (AI-SHR-002); the new driver can stop it. The next turn runs with the new driver's token, permissions and knowledge access (FR-SES-011).
 
 ### 5.4 Agent proposes a change → approval
@@ -206,10 +206,10 @@ stateDiagram-v2
 ### 5.5 Join, late join and reconnect
 
 1. Client opens the room: `POST /api/rooms/sessions/getbyid` → returns session state (driver, epoch, pending requests) and the **last 200 events** with `lastSeq`.
-2. Client connects to the hub and calls `JoinSession(sessionId, lastSeq)`.
-3. The hub authorizes (§8), adds the connection to `session:{id}`, and replies with any events after `lastSeq` that it receives while joining (to close the race between steps 1 and 2) plus the presence snapshot and, if a turn is streaming, `{turnId, textSoFar, chunk}` from the Redis snapshot.
+2. Client connects to the hub and calls `JoinSession(sessionId, activeTurnId)`.
+3. The hub authorizes (§8), adds the connection to `session:{id}`, and replies with the presence snapshot and, if a turn is streaming, `{turnId, text, chunk}` from the Redis snapshot. The client then calls `POST /api/rooms/sessions/events {afterSeq: lastSeq}` **once** to close the race between steps 1 and 2; anything that also arrives over the hub is dropped by `seq`.
 4. The client keeps a **reorder buffer**: it applies events strictly in `seq` order. If it sees `seq` jump (e.g. 105 after 102) it waits 500 ms, then fetches the gap with `POST /api/rooms/sessions/events {sessionId, afterSeq: 102}`.
-5. On disconnect, SignalR reconnects automatically (0, 2, 5, 10, 30 s, then every 30 s). After reconnecting, the client calls `JoinSession` again with its `lastSeq`; no reload.
+5. On disconnect, SignalR reconnects automatically (0, 2, 5, 10, 30 s, then every 30 s). After reconnecting, the client calls `JoinSession` again and fetches events after its `lastSeq`; no reload.
 6. Older history loads by paging the same `events` endpoint backwards.
 
 ### 5.6 Presence
@@ -235,13 +235,13 @@ stateDiagram-v2
 
 ## 7. Connection security and authentication
 
-- **No tokens in URLs.** Browsers cannot set headers on WebSocket upgrades, so the client first calls `POST /api/realtime/ticket` (bearer token, normal API) and gets a **single-use ticket** valid 30 s, bound to user, tenant and client IP, stored in Redis. It connects with `/hubs/session?ticket=…`; the hub consumes the ticket and builds the user principal from it. Tickets are redacted in all logs. Mobile can send the bearer header directly but uses the same ticket flow for one code path.
+- **No tokens in URLs.** Browsers cannot set headers on WebSocket upgrades, so the client first calls `POST /api/realtime/ticket` (bearer token, normal API) and gets a **short-lived ticket** (30 s), bound to user, tenant and client IP, stored in Redis. It connects with `/hubs/session?ticket=…`; the hub validates the ticket and builds the user principal from it. The ticket is not single-use because SignalR repeats the URL on the negotiate, connect and long-polling requests; the 30-second lifetime and IP binding limit its value if it leaks. Tickets are redacted in all logs. Mobile can send the bearer header directly but uses the same ticket flow for one code path.
 - The connection is **re-authorized every 10 minutes** (access tokens live ≤ 15 min): the client refreshes its token, gets a new ticket and calls `Reauthenticate(ticket)`; connections that miss it are closed with a `reauth_required` reason and reconnect.
 - Origin check on the hub against the configured allow-list; WebSocket only over TLS; rate limits per connection (heartbeats 1/5 s, typing 1/3 s, joins 10/min).
 
 ## 8. Authorization
 
-- `JoinRoom` / `JoinSession` / `JoinWorkspace`: the hub asks Rooms/Workspaces (Refit, cached 60 s in Redis per `user × room`) whether the user may read the room. Guests may join only rooms they were invited to.
+- `JoinRoom` / `JoinSession` / `JoinWorkspace`: the hub asks Rooms/Workspaces (Refit with a client-credentials token, cached 60 s per `user × session` on each instance) whether the user may read the room. Guests may join only rooms they were invited to.
 - **Revocation:** when a user is removed from a room or workspace, deactivated, or loses a role, the owning module publishes `AccessRevoked {userId, scope}`. The hub removes that user's connections from the affected groups immediately and sends `access.revoked` to `user:{id}`; the cache entry is deleted.
 - **What viewers can see:** room members see the session timeline, including citations. Because the agent retrieves with the **driver's** access, an answer can cite a document a *viewer* cannot open. Rule: citation metadata (title, page, short passage) is visible to all room members, opening the full document still checks the viewer's own access (FR-KNW-003). Room knowledge scope settings warn when a room includes members who cannot read part of the scope. *(Product decision to confirm — alternative: restrict retrieval to the intersection of all participants' access, which is safer but surprises drivers.)*
 - Hub methods never change business data; the only state they touch is presence.
@@ -269,7 +269,7 @@ stateDiagram-v2
 
 **Mobile — `core/realtime`:** the same protocol with `signalr_netcore`; connects only while a room screen is open in the foreground, and relies on push notifications otherwise. Never queues instructions or approvals offline (see `mobile/CLAUDE.md`).
 
-**ai-service:** publishes stream-lane messages to Redis (`session:{id}:stream` channel) and durable milestones to RabbitMQ; exposes `POST /internal/sessions/{sessionId}/turns` (internal network only, not routed by the BFF) and reads cancel keys.
+**ai-service:** publishes stream-lane messages to Redis (`majlis:session:{sessionId}:stream` channel; every Realtime instance subscribes and forwards only to its own connections in that session) and durable milestones to RabbitMQ; exposes `POST /internal/sessions/{sessionId}/turns` (internal network only, not routed by the BFF) and reads cancel keys.
 
 ## 11. Data residency and deployment profiles
 

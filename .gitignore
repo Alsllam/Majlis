@@ -55,3 +55,6 @@ __pycache__/
 .pytest_cache/
 htmlcov/
 .coverage
+
+# Local run artifacts
+backend/.local/

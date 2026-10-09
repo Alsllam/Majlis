@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Majlis.BFF.Host": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:7000",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    }
+  }
+}

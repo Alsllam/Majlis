@@ -1,0 +1,16 @@
+{
+  "Rooms:Room:NotParticipant": "لست مشاركاً في هذه الغرفة.",
+  "Rooms:Room:ObserverCannotDrive": "المراقب لا يستطيع توجيه الوكيل في هذه الغرفة.",
+  "Rooms:Session:ActiveSessionExists": "توجد جلسة نشطة في هذه الغرفة بالفعل.",
+  "Rooms:Session:SessionEnded": "انتهت هذه الجلسة.",
+  "Rooms:Session:NotDriver": "التحكم في الجلسة ليس معك الآن.",
+  "Rooms:Session:ControlChanged": "تغيّر المتحكم في الجلسة. تم تحديث الحالة، حاول مرة أخرى.",
+  "Rooms:Session:ControlNotFree": "التحكم في الجلسة مع مشارك آخر. يمكنك طلب التحكم.",
+  "Rooms:Session:AlreadyDriver": "التحكم في الجلسة معك بالفعل.",
+  "Rooms:Session:NoPendingHandOff": "لا يوجد عرض تسليم بانتظارك.",
+  "Rooms:Session:RequestNotFound": "طلب التحكم غير موجود أو تمت معالجته.",
+  "Rooms:Session:TurnInProgress": "الوكيل ما زال يعمل على التعليمة السابقة. أوقفه أولاً أو انتظر.",
+  "Rooms:Session:TurnNotRunning": "لا يعمل الوكيل على هذه التعليمة الآن.",
+  "Rooms:Session:HandOffToSelf": "لا يمكنك تسليم التحكم لنفسك.",
+  "Rooms:Turn:AiUnavailable": "توقف الوكيل عن الاستجابة. أعد المحاولة."
+}

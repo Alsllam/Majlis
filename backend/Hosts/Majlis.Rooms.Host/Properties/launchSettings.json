@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Majlis.Rooms.Host": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:7020",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    }
+  }
+}
