@@ -21,7 +21,7 @@ npx create-nx-workspace@21 frontend --preset=angular-monorepo --appName=web \
 | Brand assets | `docs/brand/logo` + `favicon` → `apps/web/src/assets/brand/`, `docs/brand/fonts/*.woff2` → `assets/fonts/`, theme from `docs/brand/tokens/scss/_majlis-tokens.scss`, ECharts themes from `docs/brand/tokens/echarts/` (never edited here first) |
 | Chart theme names | `majlis-light`, `majlis-dark`, `majlis-dim` |
 
-## Libraries (provisional — finalized after the step 4 architecture review)
+## Libraries
 
 | Library | Tag | Purpose |
 |---|---|---|
@@ -30,7 +30,7 @@ npx create-nx-workspace@21 frontend --preset=angular-monorepo --appName=web \
 | `libs/shared/ui-common` | `type:ui` | `mof-input-*`, wizard, upload, approve/reject modals |
 | `libs/shared/charts` | `type:ui` | ECharts setup, brand themes, option builders (usage and analytics dashboards) |
 | `libs/shared/graph` | `type:ui` | AntV X6 engine (agent plan / run graph, approval flow designer) |
-| `libs/shared/realtime` | `type:core` | real-time client (connection, presence, session events) — shape set in step 4 |
+| `libs/shared/realtime` | `type:core` | SignalR client: ticket auth, reconnect, `SessionChannel` (reorder buffer by `seq`, gap fetch, stream-lane merge), presence — `docs/architecture/realtime-collaboration.md` §10 |
 | `libs/shared/{service}-proxy` | `type:proxy` | one per backend host: `workspaces`, `rooms`, `knowledge`, `approvals`, `tasks`, `meetings`, `notifications`, `audit`, `ai` |
 | `libs/{feature}/config` + `ui-common` | `type:config` / `type:feature` | features: `workspaces`, `rooms`, `knowledge`, `approvals`, `tasks`, `meetings`, `admin` |
 

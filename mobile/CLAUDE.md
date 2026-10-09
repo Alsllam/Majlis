@@ -12,6 +12,7 @@ Mobile comes **after** the web app (see the roadmap in `docs/SRS.md`). `mobile/`
 | Application id / bundle id | `sa.majlis.app` (**to confirm** with the owner of the final domain) |
 | Display name | `مجلس` (ar) / `Majlis` (en) |
 | Flavors | `dev`, `staging`, `uat`, `prod` |
+| Deployment | cloud backend (base URL and auth URL from the flavor). Keep the server address configurable so on-prem customers can be supported later |
 | API base URL (dev) | BFF `http://10.0.2.2:7000` (Android emulator) / `http://localhost:7000` (iOS simulator) |
 | OAuth client id | `majlis-mobile` (authorization code + PKCE) |
 | Brand assets | from `docs/brand/`: `logo/app-icon-*.svg` → launcher icon and splash, `tokens/dart/majlis_tokens.dart` → `AppTokens`, `fonts/*.ttf` → `assets/fonts` |
@@ -23,7 +24,7 @@ Mobile comes **after** the web app (see the roadmap in `docs/SRS.md`). `mobile/`
 ## Majlis-specific rules
 
 - Approvals are a first-class mobile flow: a push notification deep-links to the approval card, and approve/reject works in two taps with the action diff visible.
-- Live sessions use the same real-time protocol as the web (defined in step 4). When offline, show the last known state read-only; never queue an agent instruction or an approval offline.
+- Live sessions use the same real-time protocol as the web (SignalR via `signalr_netcore`, ticket auth, `seq` replay — `docs/architecture/realtime-collaboration.md`), connected only while a room screen is in the foreground. When offline, show the last known state read-only; never queue an agent instruction or an approval offline.
 - Offline sync queue is for user-authored items only (comments drafts, tasks, uploads).
 - AI calls go through `/ai-api/**` on the BFF with the user's token. No model keys on device.
 

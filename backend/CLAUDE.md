@@ -17,25 +17,30 @@
 | RabbitMQ virtual host | `majlis` |
 | Redis key prefix | `majlis:` |
 
-## Modules (provisional — finalized in the step 4 architecture review)
+## Modules (accepted — `docs/architecture/backend-modules.md`)
 
 | Module | Owns | Schema | Host | Port |
 |---|---|---|---|---|
 | Identity | users, roles, permissions, tenant (organization) record | `identity` | `Majlis.Auth.Host` | 7001 |
-| Workspaces | workspaces, members, invitations, workspace roles | `workspaces` | `Majlis.Workspaces.Host` | 7010 |
-| Rooms | rooms, participants, agent sessions, turns, comments, session control (take over / hand off), presence | `rooms` | `Majlis.Rooms.Host` | 7020 |
-| Knowledge | folders, documents, versions, ACL, ingestion status, agent drafts | `knowledge` | `Majlis.Knowledge.Host` | 7030 |
-| Approvals | approval requests for agent actions, decisions, policies | `approvals` | `Majlis.Approvals.Host` | 7040 |
+| Workspaces | workspaces, members, invitations, workspace roles, agent instructions, glossary | `workspaces` | `Majlis.Workspaces.Host` | 7010 |
+| Rooms | rooms, participants, agent sessions, turns, comments, suggestions, session control (fencing epoch), the per-session event log (sequencer) | `rooms` | `Majlis.Rooms.Host` | 7020 |
+| Approvals | approval requests for agent actions, decisions, policies | `approvals` | `Majlis.Approvals.Host` | 7030 |
+| Knowledge | folders, documents, versions, ACL, ingestion status, agent drafts | `knowledge` | `Majlis.Knowledge.Host` | 7040 |
 | Tasks | tasks created by people or by the agent | `tasks` | `Majlis.Tasks.Host` | 7050 |
 | Meetings | meetings, transcripts, summaries, action items | `meetings` | `Majlis.Meetings.Host` | 7060 |
 | Notifications | in-app, email and push notifications, preferences | `notifications` | `Majlis.Notifications.Host` | 7070 |
 | Audit | append-only audit log | `audit` | `Majlis.Audit.Host` | 7080 |
 | — | BFF gateway (YARP), the only public host | — | `Majlis.BFF.Host` | 7000 |
+| — | SignalR hub, presence, fan-out (no database) | — | `Majlis.Realtime.Host` | 7002 |
 | — | Hangfire jobs | — | `Majlis.Jobs.Host` | 7090 |
 
-BFF routes: `/api/{module-kebab}/**` → module host (e.g. `/api/rooms/**` → 7020), `/ai-api/**` → ai-service (8000), `/hubs/**` → real-time hub (location decided in step 4).
+BFF routes: `/api/{module-kebab}/**` → module host (e.g. `/api/rooms/**` → 7020), `/api/realtime/ticket` → Auth.Host, `/ai-api/**` → ai-service (8000), `/hubs/**` → `Majlis.Realtime.Host` (7002, WebSocket upgrade).
+
+Real-time rules: commands are always HTTP AppService calls; the hub only pushes events and receives presence signals (ADR-0002). Only Rooms writes session timelines (ADR-0003). Driver-only commands carry `epoch` (ADR-0004). Details: `docs/architecture/realtime-collaboration.md`.
 
 ## Majlis-specific rules
+
+- **Deployment profiles (ADR-0006).** Azure-only services are used only through adapters in `Majlis.Framework.Application`: `IBlobStorage` (Azure Blob / S3-compatible), `IEmailSender`, `IPushSender`, and secrets through the configuration provider (Key Vault / Kubernetes secrets / Vault). Build the `cloud` implementations now; `on-prem` ones (S3, SMTP, Vault) come when an on-prem customer is confirmed. The profile is configuration (`Deployment:Profile`, default `cloud`). An architecture test forbids Azure SDK references outside adapter projects.
 
 - **Permissions** follow `Permissions.{Module}.{Action}{Entity}` (e.g. `Permissions.Rooms.CreateRoom`, `Permissions.Approvals.ApproveAction`). Workspace-level roles (owner, admin, member, viewer) map to permission sets per workspace; the `ISecuredEntity` scope is the **workspace**.
 - **User content is not bilingual.** Room names, messages, documents and tasks are stored as written, with a `Language` field. `NameAr`/`NameEn` pairs are for system lookups only.
