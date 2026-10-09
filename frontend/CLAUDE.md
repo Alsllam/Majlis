@@ -5,7 +5,7 @@
 `frontend/` **is** the Nx workspace root (always Nx, never a plain Angular CLI project). Create it from the repo root with:
 
 ```
-npx create-nx-workspace@21 frontend --preset=angular-monorepo --appName=web \
+npx create-nx-workspace@23 frontend --preset=angular-monorepo --appName=web \
   --bundler=esbuild --style=scss --e2eTestRunner=playwright --nxCloud=skip
 ```
 

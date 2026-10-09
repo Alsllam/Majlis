@@ -8,8 +8,8 @@ Target users: teams in Saudi Arabia and the GCC first (consulting firms, legal, 
 
 | Folder | What | Skill (rules) | Folder guide |
 |---|---|---|---|
-| `backend/` | .NET 9 modular backend, YARP BFF, OpenIddict, MassTransit | `.claude/skills/dotnet-modular-backend` | `backend/CLAUDE.md` |
-| `frontend/` | Angular 20 **Nx workspace**, ECharts, AntV X6 | `.claude/skills/angular-nx-frontend` | `frontend/CLAUDE.md` |
+| `backend/` | .NET 10 modular backend, YARP BFF, OpenIddict, MassTransit | `.claude/skills/dotnet-modular-backend` | `backend/CLAUDE.md` |
+| `frontend/` | Angular 22 **Nx workspace**, ECharts, AntV X6 | `.claude/skills/angular-nx-frontend` | `frontend/CLAUDE.md` |
 | `mobile/` | Flutter app, Clean Architecture + BLoC | `.claude/skills/flutter-clean-mobile` | `mobile/CLAUDE.md` |
 | `ai-service/` | Python FastAPI AI service: Azure OpenAI, Azure AI Search | `.claude/skills/python-azure-rag-service` | `ai-service/CLAUDE.md` |
 | `docs/` | SRS, architecture, ADRs, brand kit | none | `docs/CLAUDE.md` |

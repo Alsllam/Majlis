@@ -1,6 +1,6 @@
 ---
 name: dotnet-modular-backend
-description: Rules for building or extending a .NET 9 modular backend (DDD layers per module, dynamic controllers from AppServices, YARP BFF, OpenIddict, MassTransit). Use for any backend work in these projects.
+description: Rules for building or extending a .NET 10 modular backend (DDD layers per module, dynamic controllers from AppServices, YARP BFF, OpenIddict, MassTransit). Use for any backend work in these projects.
 ---
 
 # .NET Modular Backend Rules
@@ -15,9 +15,9 @@ Naming placeholders: `{Co}` = company/org prefix, `{Product}` = product name, `{
 
 | Concern | Choice |
 |---|---|
-| Runtime | .NET 9, C# with `Nullable` + `ImplicitUsings` enabled |
+| Runtime | .NET 10 (LTS), C# with `Nullable` + `ImplicitUsings` enabled |
 | Web | ASP.NET Core, controllers generated from AppServices |
-| ORM | EF Core 9 + SQL Server (`Microsoft.EntityFrameworkCore.SqlServer`) |
+| ORM | EF Core 10 + SQL Server (`Microsoft.EntityFrameworkCore.SqlServer`) |
 | Auth | OpenIddict server (separate host) + OpenIddict validation in every API |
 | Identity | ASP.NET Core Identity with `Guid` keys |
 | Validation | FluentValidation (`AbstractValidator<T>`) |
