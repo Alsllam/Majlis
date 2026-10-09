@@ -18,7 +18,7 @@ npx create-nx-workspace@21 frontend --preset=angular-monorepo --appName=web \
 | Apps (`{app}`) | `web` (workspaces, rooms, admin settings) — port 4200 |
 | Path aliases | `@majlis/Core`, `@majlis/theme-shared`, `@majlis/SharedUICommon`, `@majlis/{Service}Proxy`, `@majlis/{Feature}Config`, `@majlis/{Feature}UiCommon` |
 | OAuth client id | `majlis-web` (issuer = `Majlis.Auth.Host`, via the BFF) |
-| Brand assets | copied from `docs/brand/` into `apps/web/src/assets/brand/` (never edited here first) |
+| Brand assets | `docs/brand/logo` + `favicon` → `apps/web/src/assets/brand/`, `docs/brand/fonts/*.woff2` → `assets/fonts/`, theme from `docs/brand/tokens/scss/_majlis-tokens.scss`, ECharts themes from `docs/brand/tokens/echarts/` (never edited here first) |
 | Chart theme names | `majlis-light`, `majlis-dark`, `majlis-dim` |
 
 ## Libraries (provisional — finalized after the step 4 architecture review)

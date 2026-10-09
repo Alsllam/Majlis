@@ -1,0 +1,65 @@
+{
+  "color": [
+    "#47c1b1",
+    "#d69f58",
+    "#6cb2ec",
+    "#e88f87",
+    "#73bf88",
+    "#b59be6",
+    "#3fbfcc",
+    "#d98fc1"
+  ],
+  "backgroundColor": "transparent",
+  "textStyle": {
+    "fontFamily": "'Majlis Sans', 'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, sans-serif",
+    "color": "#c9c3bc"
+  },
+  "title": {
+    "textStyle": {
+      "color": "#f9f3ec"
+    },
+    "subtextStyle": {
+      "color": "#a39d96"
+    }
+  },
+  "legend": {
+    "textStyle": {
+      "color": "#c9c3bc"
+    }
+  },
+  "tooltip": {
+    "backgroundColor": "#2c2a26",
+    "borderColor": "#39352f",
+    "textStyle": {
+      "color": "#f9f3ec"
+    }
+  },
+  "categoryAxis": {
+    "axisLine": {
+      "lineStyle": {
+        "color": "#807b74"
+      }
+    },
+    "axisLabel": {
+      "color": "#a39d96"
+    },
+    "splitLine": {
+      "show": false
+    }
+  },
+  "valueAxis": {
+    "axisLine": {
+      "show": false
+    },
+    "axisLabel": {
+      "color": "#a39d96"
+    },
+    "splitLine": {
+      "lineStyle": {
+        "color": "#39352f"
+      }
+    }
+  },
+  "animationDuration": 600,
+  "animationEasing": "cubicOut"
+}
