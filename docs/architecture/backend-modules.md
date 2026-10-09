@@ -126,14 +126,14 @@ Nine modules stay: Identity, Workspaces, Rooms, Approvals, Knowledge, Tasks, Mee
 
 ## 4. Deployment shape
 
-Two profiles from the same code (ADR-0006).
+Cloud is the priority and the only profile built now; on-prem follows the same code when needed (ADR-0006).
 
 **`cloud` — one regional stamp per supported Azure region:**
 - Azure Container Apps, one app per host, internal ingress for everything except the BFF; zone redundant; minimum 2 replicas for BFF, Realtime, Rooms and Approvals, 1 for the rest in non-prod.
 - Azure SQL: one database `Majlis` with one schema per module (one login per module with rights on its schema only). The per-module DbContext lets a busy module (Rooms) move to its own database later without code changes.
 - Azure Cache for Redis with key prefixes `majlis:{purpose}:` (permissions, presence, stream, snapshots, tickets, backplane); RabbitMQ with one vhost `majlis` and MassTransit topology (one exchange per event type, one queue per consumer per module).
 
-**`on-prem` — one installation per customer:**
+**`on-prem` — one installation per customer (built later, when the first on-prem customer is confirmed):**
 - Helm chart for Kubernetes, or a Docker Compose bundle for a single server (small customers, pilots). Same images as the cloud.
 - The customer's SQL Server, or a bundled one; Redis, RabbitMQ, MinIO and OpenSearch bundled or the customer's own; model servers (chat, embeddings, transcription, guard) as separate GPU workloads.
 - Single tenant: the tenant is created at installation; the platform-admin APIs are disabled and a local admin console replaces them.

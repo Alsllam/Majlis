@@ -14,12 +14,12 @@
 | Search index | `majlis-knowledge` (tenant filter by default; one index per tenant for customers that require it) |
 | ACL field values | `ws:{workspaceId}`, `room:{roomId}`, `user:{userId}`, `group:{groupId}` |
 | Eval datasets | `evals/datasets/majlis_ar.jsonl`, `evals/datasets/majlis_en.jsonl` |
-| Deployment profile | `cloud` (Azure OpenAI, Azure AI Search, Document Intelligence) or `on-prem` (OpenAI-compatible model servers, OpenSearch, self-hosted extraction / speech / guard) — ADR-0006 |
+| Deployment profile | **`cloud`** (Azure OpenAI, Azure AI Search, Document Intelligence) — the only profile built now. `on-prem` (OpenAI-compatible model servers, OpenSearch, self-hosted extraction / speech / guard) later — ADR-0006 |
 | Region | the tenant's data region; model calls only to regions allowed by the tenant's inference consent (`docs/SRS.md` §6.2) |
 
 ## Majlis-specific rules
 
-- **Adapters (ADR-0006).** Business code depends only on these interfaces, each with a `cloud` and an `on-prem` implementation: `LlmProvider` (Azure OpenAI Responses API / OpenAI-compatible Chat Completions), `Embedder`, `SearchIndex` (Azure AI Search / OpenSearch + re-ranker), `DocumentExtractor`, `Transcriber`, `SafetyGuard`, `BlobStore`. The skill's Azure rules apply to the `cloud` implementations. Tests and the eval run on both.
+- **Adapters (ADR-0006).** Business code depends only on these interfaces; implement the `cloud` version now, the `on-prem` version only when an on-prem customer is confirmed: `LlmProvider` (Azure OpenAI Responses API / OpenAI-compatible Chat Completions), `Embedder`, `SearchIndex` (Azure AI Search / OpenSearch + re-ranker), `DocumentExtractor`, `Transcriber`, `SafetyGuard`, `BlobStore`. The skill's Azure rules apply to the `cloud` implementations. Azure SDK imports are allowed only inside adapter modules.
 - **Shared sessions** are started by Rooms through `POST /internal/sessions/{sessionId}/turns` (internal only, not routed by the BFF). Token deltas go to Redis pub/sub (`session:{id}:stream`) with a text snapshot `turn:{id}:text`; durable milestones go to RabbitMQ for Rooms to sequence; check the cancel key `turn:{id}:cancel` between deltas; heartbeat `turn:{id}:hb` every 5 s (`docs/architecture/realtime-collaboration.md`).
 
 - **The agent session is shared.** A session belongs to a room, not a user. Each turn records who sent it; the tool loop runs with the token of the person **currently in control** of the session, so their permissions apply.

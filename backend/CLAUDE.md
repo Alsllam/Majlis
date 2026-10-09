@@ -40,7 +40,7 @@ Real-time rules: commands are always HTTP AppService calls; the hub only pushes 
 
 ## Majlis-specific rules
 
-- **Deployment profiles (ADR-0006).** Azure-only services are used only through adapters in `Majlis.Framework.Application`: `IBlobStorage` (Azure Blob / S3-compatible), `IEmailSender`, `IPushSender`, and secrets through the configuration provider (Key Vault / Kubernetes secrets / Vault). The profile is chosen with `Deployment:Profile = cloud | on-prem`. On-prem is single tenant: tenant provisioning APIs are disabled and the tenant is created at install.
+- **Deployment profiles (ADR-0006).** Azure-only services are used only through adapters in `Majlis.Framework.Application`: `IBlobStorage` (Azure Blob / S3-compatible), `IEmailSender`, `IPushSender`, and secrets through the configuration provider (Key Vault / Kubernetes secrets / Vault). Build the `cloud` implementations now; `on-prem` ones (S3, SMTP, Vault) come when an on-prem customer is confirmed. The profile is configuration (`Deployment:Profile`, default `cloud`). An architecture test forbids Azure SDK references outside adapter projects.
 
 - **Permissions** follow `Permissions.{Module}.{Action}{Entity}` (e.g. `Permissions.Rooms.CreateRoom`, `Permissions.Approvals.ApproveAction`). Workspace-level roles (owner, admin, member, viewer) map to permission sets per workspace; the `ISecuredEntity` scope is the **workspace**.
 - **User content is not bilingual.** Room names, messages, documents and tasks are stored as written, with a `Language` field. `NameAr`/`NameEn` pairs are for system lookups only.

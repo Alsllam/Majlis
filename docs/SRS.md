@@ -30,7 +30,7 @@ Today, AI assistants are single-player: one person, one chat, one private histor
 | G-1 | Teams do real work together with the agent | ≥ 40% of active rooms have 2+ participants in a session per week |
 | G-2 | Answers can be trusted | groundedness ≥ 0.9 and refusal accuracy ≥ 0.9 on the Arabic and English eval sets |
 | G-3 | Agent actions are safe | 100% of mutating actions have an approval record; 0 unapproved writes |
-| G-4 | Enterprise-ready | pass the pilot customers' security reviews; one customer running on-premises within 12 months |
+| G-4 | Enterprise-ready | pass the pilot customers' security reviews on the cloud service |
 | G-5 | Adoption | 3 paying pilot organizations live by end of MVP + 3 months |
 
 ### 1.2 Non-goals
@@ -74,7 +74,7 @@ Teams in Saudi Arabia and the GCC:
 
 - **Stack is fixed** by the house skills: .NET 9 modular backend (`backend/`), Angular 20 + Nx (`frontend/`), Flutter (`mobile/`), Python FastAPI + Azure OpenAI + Azure AI Search (`ai-service/`).
 - **Only the AI service calls models.** Clients and .NET never hold model keys.
-- **Two deployment profiles from one codebase:** `cloud` (Azure, multi-tenant, regional) and `on-prem` (customer data center, single tenant, connected or air-gapped). Every Azure-specific service sits behind an adapter (§7.1, ADR-0006). Region rules are in §6.2.
+- **Cloud first.** The product is built, tested and shipped for the `cloud` profile (Azure, multi-tenant, regional). Every Azure-specific service sits behind an adapter so an `on-prem` profile (customer data center, single tenant) can be added later without rewriting business code (§7.1, ADR-0006). Region rules are in §6.2.
 
 ### 2.4 Assumptions and open decisions
 
@@ -82,7 +82,7 @@ These were the open questions asked before writing this SRS. **OD-1…OD-3 were 
 
 | Id | Question | Decision | Impact if changed |
 |---|---|---|---|
-| OD-1 | Deployment model | **Decided:** both **cloud SaaS** (multi-tenant, regional) and **on-premises** (single tenant in the customer's data center, connected or air-gapped) are supported from the same codebase. The MVP code runs on both profiles; the first on-prem installation is a v1.1 milestone | Every Azure service needs an on-prem equivalent behind an adapter (§7.1) and every release is tested on both profiles |
+| OD-1 | Deployment model | **Decided:** **cloud SaaS is always the priority** (multi-tenant, regional). **On-premises** (single tenant in the customer's data center) must stay possible: Azure services are used only through adapters from day one, and the on-prem implementations and installer are built once the first on-prem customer is confirmed | Every Azure service needs an on-prem equivalent behind an adapter (§7.1) and every release is tested on both profiles |
 | OD-2 | Where data and model inference run | **Decided:** start with **private-sector customers, in any country**. Each cloud tenant has a **data region** chosen at provisioning; all its data stays there. Inference runs in the same region when the model is available there, otherwise in an approved region with the customer's written consent. On-prem customers keep everything in their own data center (§6.2) | Saudi Arabia East becomes one region option, used for Saudi customers once its services are confirmed |
 | OD-3 | Compliance targets at launch | **Decided:** PDPL, NCA ECC-2:2024 and CCC-2:2024 for Saudi customers, local data-protection law for customers elsewhere, and data classification up to **Restricted**. **To be reviewed again before go-live** with real customers | Higher classification levels need on-prem or dedicated deployments |
 | OD-4 | Sign-in | Email + password with mandatory MFA (TOTP), plus enterprise SSO through OIDC (Microsoft Entra ID) and SAML 2.0. **Nafath** on the roadmap | Nafath is likely required for some government customers |
@@ -492,7 +492,7 @@ flowchart LR
 
 ### 7.1 Deployment profiles
 
-Every Azure-specific dependency sits behind an adapter, chosen by configuration (ADR-0006).
+Every Azure-specific dependency sits behind an adapter, chosen by configuration (ADR-0006). **Only the `cloud` column is built for the MVP**; the `on-prem` column is the target for when the first on-prem customer is confirmed.
 
 | Concern | `cloud` profile | `on-prem` profile |
 |---|---|---|
@@ -510,7 +510,7 @@ Every Azure-specific dependency sits behind an adapter, chosen by configuration 
 | Observability | Azure Monitor | OpenTelemetry Collector → the customer's stack (e.g. Prometheus, Grafana, Loki) |
 | Email / push | managed email provider, FCM | customer SMTP; push only in connected mode |
 
-Quality gate: the AI eval (AI-EVL-001) must pass **on the models of each profile** before a release ships to it. Open-weight models differ in Arabic quality, so the on-prem model is chosen by the eval, not by name.
+Quality gate: the AI eval (AI-EVL-001) must pass **on the models of each profile in use** before a release ships to it. Open-weight models differ in Arabic quality, so the on-prem model is chosen by the eval, not by name.
 
 Key flows:
 
@@ -604,9 +604,9 @@ Search index `majlis-knowledge`: chunk id, tenant_id, workspace_id, document_id,
 - Notifications in-app + email; audit log with export; usage dashboard, quotas, retention; platform admin console.
 - AI: all `M` items in §5, Arabic + English eval sets passing thresholds.
 - NFRs: all of §6 for the MVP capacity.
-- Both deployment profiles in CI: the full test suite and the AI eval run against the `cloud` adapters and the `on-prem` adapters (Docker Compose).
+- Cloud profile only. An architecture test in CI fails the build if business code references an Azure SDK outside the adapter implementations, so on-prem stays possible.
 
-**Not in the MVP:** mobile app, Nafath, SCIM, SharePoint sync, Teams app, live meeting join, external task tools, branches, on-prem installer packaging and air-gapped updates (the code runs on both profiles from the MVP; packaging comes in v1.1), SIEM streaming.
+**Not in the MVP:** mobile app, Nafath, SCIM, SharePoint sync, Teams app, live meeting join, external task tools, branches, the on-prem profile (adapter implementations, installer, air-gapped updates — built when the first on-prem customer is confirmed), SIEM streaming.
 
 ## 10. Roadmap
 
@@ -614,8 +614,9 @@ Search index `majlis-knowledge`: chunk id, tenant_id, workspace_id, document_id,
 |---|---|---|
 | **0 — Foundation** (now) | monorepo, SRS, brand kit, architecture + real-time design, CI, IaC skeleton, auth host, BFF | architecture approved; walking skeleton deployed to dev |
 | **1 — MVP (web)** | §9 | 3 pilot tenants live; eval thresholds met; NCA control mapping reviewed with pilots |
-| **1.1** | **first on-premises installation** (Helm + Compose bundles, offline model pack, licence activation), mobile app (approvals, rooms view, notifications, meetings recording), SharePoint/OneDrive sync, SCIM, Nafath, smart search screen, session summaries & catch-me-up, document compare | mobile in stores; first government tenant on `ksa-strict` |
-| **1.2** | air-gapped installations with signed offline update bundles, customer-managed keys, SIEM streaming, tamper-evident audit, background long tasks, Saudi Arabia East stamp (when its services are confirmed) | first air-gapped customer |
+| **1.1** | mobile app (approvals, rooms view, notifications, meetings recording), SharePoint/OneDrive sync, SCIM, Nafath, smart search screen, session summaries & catch-me-up, document compare | mobile in stores; first government tenant on `ksa-strict` |
+| **1.2** | customer-managed keys, SIEM streaming, tamper-evident audit, background long tasks, Saudi Arabia East stamp (when its services are confirmed) | — |
+| **On demand** | **on-prem profile** when the first on-prem customer is confirmed: on-prem adapters (§7.1), Helm + Compose bundles, offline model pack, licence activation, then air-gapped updates | first on-prem installation passes the eval |
 | **2** | live meeting join (Teams/Zoom), Microsoft Teams app, Jira/Planner/Word integrations, session branches, workflow designer for approval policies (AntV X6) | — |
 
 ## 11. Risks

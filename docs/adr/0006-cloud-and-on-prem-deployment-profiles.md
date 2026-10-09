@@ -42,3 +42,9 @@ SQL Server, Redis, RabbitMQ, SignalR (with the Redis backplane, ADR-0001) and Op
 - Each adapter pair needs tests; capability gaps (e.g. no semantic ranker on-prem) are covered by a self-hosted re-ranker and measured by the eval.
 - On-prem customers need GPU capacity for local models; hardware sizing becomes part of the sales process (to be documented with the v1.1 installer).
 - The skills' Azure choices still apply to the `cloud` profile; this ADR and the folder `CLAUDE.md` files override them where the `on-prem` profile needs something else.
+
+## Amendment — 2026-10-09: cloud first
+The product owner set **cloud as the priority at all times**. Therefore:
+- Only the `cloud` adapter implementations are built for the MVP. The interfaces above are still mandatory from day one.
+- The `on-prem` implementations, the Helm chart, the Compose bundle and the offline model pack are built when the first on-prem customer is confirmed.
+- Instead of running the tests on both adapter sets, CI runs an architecture test that fails if business code references an Azure SDK outside the adapter implementations.

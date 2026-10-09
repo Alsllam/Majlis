@@ -2,7 +2,7 @@
 
 A shared AI workspace for teams, Arabic-first. Teams create **workspaces** and **rooms**. In a room, several people work with the **same AI agent session** in real time: everyone can watch it, redirect it, comment, take control, and hand the session to a colleague. The agent answers from the team's own documents (RAG with citations) and runs tools (create tasks, draft documents, summarize meetings). **Every action that changes data needs a human approval.**
 
-Target users: teams in Saudi Arabia and the GCC first (consulting firms, legal, operations, later government), starting with private-sector customers in any country. Arabic and English with full RTL. Web first, then mobile. Runs as cloud SaaS **and on-premises** from one codebase.
+Target users: teams in Saudi Arabia and the GCC first (consulting firms, legal, operations, later government), starting with private-sector customers in any country. Arabic and English with full RTL. Web first, then mobile. **Cloud SaaS is always the priority**; the code stays ready for on-premises installs later.
 
 ## Monorepo map
 
@@ -26,7 +26,7 @@ Target users: teams in Saudi Arabia and the GCC first (consulting firms, legal, 
 | Tenancy | One tenant = one customer organization. A tenant has many workspaces. A workspace has many rooms |
 | Public entry point | YARP BFF only: `/api/{module}/**` → .NET module hosts, `/ai-api/**` → ai-service, `/hubs/**` → real-time hub |
 | Auth | OpenIddict (authorization code + PKCE). Audiences: `majlis-api`, `ai-api` |
-| Deployment profiles | `cloud` (Azure, multi-tenant, one regional stamp per region) and `on-prem` (customer data center, single tenant, connected or air-gapped). Azure-only services are reached only through adapters — ADR-0006 |
+| Deployment profiles | **`cloud` first** (Azure, multi-tenant, one regional stamp per region) — the only profile built now. `on-prem` (customer data center, single tenant) is built when the first on-prem customer is confirmed; until then Azure-only services are still reached only through adapters — ADR-0006 |
 | Brand kit (source of truth) | `docs/brand/` (see its README). Web and mobile copy from it; never invent a second identity |
 
 ### Local ports (dev)
@@ -44,8 +44,6 @@ Target users: teams in Saudi Arabia and the GCC first (consulting firms, legal, 
 | Redis | 6379 |
 | RabbitMQ (AMQP / management UI) | 5672 / 15672 |
 | Azurite (local Blob Storage, `cloud` adapters) | 10000 |
-| MinIO (S3, `on-prem` adapters) | 9000 |
-| OpenSearch (`on-prem` search) | 9200 |
 
 ## Product invariants (never break these)
 
@@ -56,7 +54,7 @@ Target users: teams in Saudi Arabia and the GCC first (consulting firms, legal, 
 5. **Citations or "I don't know".** Grounded answers cite sources; when sources don't cover it, the agent says so.
 6. **Arabic is first-class.** Every user-facing string has `ar` and `en` in the same commit. Every screen works in RTL. User-generated content is stored as written, with a detected `language`; only system data (lookups, statuses) uses `NameAr`/`NameEn` pairs.
 7. **Everything is audited.** Session control changes (take over, hand off), approvals and agent tool runs are written to the audit log.
-8. **Both profiles work.** No business code imports an Azure SDK directly; every Azure-only dependency goes through its adapter, and tests run on both adapter sets (ADR-0006).
+8. **Cloud first, on-prem possible.** Build and test for the cloud profile. No business code imports an Azure SDK directly; every Azure-only dependency goes through its adapter (checked by an architecture test), so on-prem can be added later (ADR-0006).
 
 ## Working rules
 

@@ -12,7 +12,7 @@ Mobile comes **after** the web app (see the roadmap in `docs/SRS.md`). `mobile/`
 | Application id / bundle id | `sa.majlis.app` (**to confirm** with the owner of the final domain) |
 | Display name | `مجلس` (ar) / `Majlis` (en) |
 | Flavors | `dev`, `staging`, `uat`, `prod` |
-| Deployment | works against both cloud and on-prem backends: the base URL and auth URL come from the flavor, and an on-prem customer can enter its server address on first launch |
+| Deployment | cloud backend (base URL and auth URL from the flavor). Keep the server address configurable so on-prem customers can be supported later |
 | API base URL (dev) | BFF `http://10.0.2.2:7000` (Android emulator) / `http://localhost:7000` (iOS simulator) |
 | OAuth client id | `majlis-mobile` (authorization code + PKCE) |
 | Brand assets | from `docs/brand/`: `logo/app-icon-*.svg` → launcher icon and splash, `tokens/dart/majlis_tokens.dart` → `AppTokens`, `fonts/*.ttf` → `assets/fonts` |
