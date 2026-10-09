@@ -1,6 +1,6 @@
 # 0004 — One driver per session, protected by a fencing epoch
 
-**Status:** Proposed · 2026-10-08
+**Status:** Accepted · 2026-10-09 (proposed 2026-10-08)
 
 ## Context
 The SRS (OD-9, FR-SES-004…011) chose one driver at a time with request, hand-off, take-over and timeout. Races are normal: two people click "take control" together, a driver's tab reconnects after a hand-off, a timeout timer fires after the driver came back.

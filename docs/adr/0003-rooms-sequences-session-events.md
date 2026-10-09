@@ -1,6 +1,6 @@
 # 0003 — Rooms sequences every session event; two lanes for agent output
 
-**Status:** Proposed · 2026-10-08
+**Status:** Accepted · 2026-10-09 (proposed 2026-10-08)
 
 ## Context
 All participants must see the same timeline in the same order, late joiners must catch up, and reconnecting clients must fill gaps without a reload. Events come from several places (Rooms, ai-service, Approvals). Token-level streaming produces many small messages that are worthless once the turn is complete.

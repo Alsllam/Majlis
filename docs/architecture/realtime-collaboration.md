@@ -2,23 +2,23 @@
 
 | | |
 |---|---|
-| Status | **Proposed** — waiting for approval before any code is written |
+| Status | **Accepted** 2026-10-09 |
 | Date | 2026-10-08 |
 | Covers | shared agent sessions, session control (driver, hand-off, take-over), presence, live updates, reconnect and replay |
 | Requirements | FR-SES-001…014, FR-PRS-001/002, FR-APR-004, AI-AGT-002/004, AI-SHR-001/002, NFR-PRF-002/003/008, NFR-AVL-004/005, NFR-SEC-003 (`docs/SRS.md`) |
-| Decisions | ADR-0001 … ADR-0004 (`docs/adr/`) |
+| Decisions | ADR-0001 … ADR-0004, ADR-0006 for deployment profiles (`docs/adr/`) |
 
 ---
 
 ## 1. The problem in one paragraph
 
-Up to 25 people in a room watch **one** agent session. Only the **driver** can instruct the agent, but everyone sees its output stream token by token, sees its searches and tool proposals, comments and suggests, and sees approvals resolve. Control moves between people (request, hand-off, take-over, timeout) and must never be held by two people at once. People join late, lose Wi-Fi, switch devices, and must see exactly the same timeline as everyone else, in the same order, without reloading. All of this must work in Saudi Arabia with data kept in-Kingdom, on the house stack (.NET + Angular + Flutter + Python).
+Up to 25 people in a room watch **one** agent session. Only the **driver** can instruct the agent, but everyone sees its output stream token by token, sees its searches and tool proposals, comments and suggests, and sees approvals resolve. Control moves between people (request, hand-off, take-over, timeout) and must never be held by two people at once. People join late, lose Wi-Fi, switch devices, and must see exactly the same timeline as everyone else, in the same order, without reloading. All of this must work in the cloud (in the tenant's data region) and on-premises, on the house stack (.NET + Angular + Flutter + Python).
 
 ## 2. Decisions at a glance
 
 | # | Decision | Why | ADR |
 |---|---|---|---|
-| 1 | **ASP.NET Core SignalR** in a dedicated **`Majlis.Realtime.Host`**, scaled out with a **Redis backplane**. WebSockets first, Server-Sent Events / long-polling fallback for locked-down government networks | native to the .NET stack, mature clients for Angular (`@microsoft/signalr`) and Flutter (`signalr_netcore`), groups and reconnect built in. Redis runs in KSA; Azure SignalR Service only when it is confirmed in Saudi Arabia East | 0001 |
+| 1 | **ASP.NET Core SignalR** in a dedicated **`Majlis.Realtime.Host`**, scaled out with a **Redis backplane**. WebSockets first, Server-Sent Events / long-polling fallback for locked-down government networks | native to the .NET stack, mature clients for Angular (`@microsoft/signalr`) and Flutter (`signalr_netcore`), groups and reconnect built in. The same design runs in the cloud and on-premises (Redis is available in both); a managed service would not exist on-prem | 0001 |
 | 2 | **Commands go over HTTP, events come over the hub.** Every state change (instruct, stop, comment, hand off, approve) is a normal REST call through the BFF to an AppService. The hub only *pushes* events, plus a few ephemeral client signals (presence heartbeat, typing, viewing) | reuses the existing pipeline: permissions, FluentValidation, error shape, rate limits, audit, idempotency, retries. The hub stays a dumb, stateless fan-out that can restart at any time | 0002 |
 | 3 | **The Rooms module is the single sequencer of every session.** Everything that appears in a session timeline becomes a `SessionEvent` with a per-session monotonic `seq`, written in the same transaction as the state change and published through the outbox | one total order that every client agrees on; late joiners and reconnecting clients replay from `seq`; no event can be shown but not stored | 0003 |
 | 4 | **One driver at a time, protected by a fencing token** (`controlEpoch`). Every control change increments the epoch; every driver command carries the epoch it was issued under; a stale epoch is rejected with 409 | makes "two drivers" impossible even with races, double-clicks, reconnects and multiple tabs | 0004 |
@@ -193,7 +193,7 @@ stateDiagram-v2
 - **Fencing:** commands that only a driver may send (`instruct`, `stop`, `redirect`, `sendSuggestion`, `offerHandOff`, `release`) carry `epoch`. If `epoch != ControlEpoch` → 409 `Rooms:Session:ControlChanged`, and the client re-reads state. A user with two tabs open is the same user, so either tab can drive; the epoch still prevents a stale tab from acting on an old state.
 - **Hand-off** needs the receiver to accept (FR-SES-008); the offer expires after 5 minutes. **Asynchronous hand-off** (FR-SES-012) is the same offer, delivered to `user:{id}` plus a notification, with a `summary.ready` generated for the receiver; it does not expire until the session ends or the driver withdraws it.
 - **Take-over** needs `Permissions.Rooms.TakeOverSession`; the previous driver gets a `user:{id}` notice; audited.
-- **Timeout:** the Realtime host knows when the driver's last connection to `session:{id}` disappears and publishes `DriverPresenceLost {sessionId, userId, epoch}`. Rooms schedules a MassTransit delayed message for +2 min (configurable); when it fires, if the epoch is unchanged and the driver has not come back (`DriverPresenceRestored` clears it), Rooms frees control. Using the epoch makes stale timers harmless.
+- **Timeout:** the Realtime host knows when the driver's last connection to `session:{id}` disappears and publishes `DriverPresenceLost {sessionId, userId, epoch}`. Rooms schedules a MassTransit delayed message for the **driver-absence timeout** — a tenant setting (default 2 min, 30 s – 30 min) that a workspace can override (FR-SES-010), read when the timer is scheduled; when it fires, if the epoch is unchanged and the driver has not come back (`DriverPresenceRestored` clears it), Rooms frees control. Using the epoch makes stale timers harmless.
 - **Mid-turn change:** the running turn finishes under the old driver's identity (AI-SHR-002); the new driver can stop it. The next turn runs with the new driver's token, permissions and knowledge access (FR-SES-011).
 
 ### 5.4 Agent proposes a change → approval
@@ -271,13 +271,13 @@ stateDiagram-v2
 
 **ai-service:** publishes stream-lane messages to Redis (`session:{id}:stream` channel) and durable milestones to RabbitMQ; exposes `POST /internal/sessions/{sessionId}/turns` (internal network only, not routed by the BFF) and reads cancel keys.
 
-## 11. Data residency
+## 11. Data residency and deployment profiles
 
-Every component in this design runs in Saudi Arabia: Realtime host, Redis (Azure Cache for Redis or Redis on Container Apps), RabbitMQ, SQL. **Azure SignalR Service / Azure Web PubSub are not used** until they are confirmed available in Saudi Arabia East; the Redis backplane design can move to them later without changing clients (ADR-0001).
+Every component in this design runs where the tenant's data lives: in the tenant's regional stamp on the `cloud` profile (Realtime host, Azure Cache for Redis, RabbitMQ, Azure SQL), or inside the customer's data center on the `on-prem` profile (the same components, self-hosted). Nothing in the real-time path depends on an Azure-only service, so it needs no adapter (ADR-0006). Azure SignalR Service / Web PubSub are not used, because they would not exist on-prem.
 
-## 12. Open questions for review
+## 12. Decisions on the review questions (2026-10-09)
 
-1. **Citation visibility for viewers with less access than the driver** (§8): show metadata to all members (proposed), or restrict retrieval to the intersection of participants' access?
-2. **Driver absence timeout** — 2 minutes proposed (FR-SES-010). Shorter for big rooms?
-3. **Multiple tabs / devices of the driver** — proposed: any of the driver's own connections may drive. Alternative: control bound to one device.
-4. **Session history retention** — the `SessionEvent` log is the session record; retention follows FR-ADM-003 (default 365 days). Confirm.
+1. **Citation visibility for viewers with less access than the driver:** accepted as proposed. Citation metadata (title, page, short passage) is visible to all room members; opening the full document checks the viewer's own access; room settings warn about members who cannot read part of the knowledge scope.
+2. **Driver-absence timeout:** configurable per tenant, overridable per workspace; default 2 minutes (§5.3).
+3. **Driver's devices:** any connection of the driver's own account may drive (accepted as proposed).
+4. **Session history retention:** follows FR-ADM-003, default 365 days (accepted as proposed).

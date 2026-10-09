@@ -1,6 +1,6 @@
 # 0005 — Backend module list and hosts
 
-**Status:** Proposed · 2026-10-08
+**Status:** Accepted · 2026-10-09 (proposed 2026-10-08)
 
 ## Context
 Step 1 recorded a provisional module list. The real-time design (0001–0004) and the SRS functional areas are now known.

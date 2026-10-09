@@ -1,6 +1,6 @@
 # 0002 — Commands over HTTP, events over the hub
 
-**Status:** Proposed · 2026-10-08
+**Status:** Accepted · 2026-10-09 (proposed 2026-10-08)
 
 ## Context
 Users change state constantly in a room (instruct, stop, comment, suggest, hand off, approve). These actions need permissions, validation, localized errors, rate limits, audit and idempotency — all of which the backend skill already provides for AppService endpoints.

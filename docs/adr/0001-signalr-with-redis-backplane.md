@@ -1,6 +1,6 @@
 # 0001 — Real-time transport: SignalR in its own host with a Redis backplane
 
-**Status:** Proposed · 2026-10-08
+**Status:** Accepted · 2026-10-09 (proposed 2026-10-08)
 
 ## Context
 Shared sessions need server push to up to 25 participants per room with p95 ≤ 300 ms (NFR-PRF-002), automatic reconnect (NFR-AVL-005), web and mobile clients, and all data in Saudi Arabia (NFR-RES-001). Some government networks block or break WebSockets through proxies.

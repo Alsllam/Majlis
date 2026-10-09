@@ -2,10 +2,10 @@
 
 | | |
 |---|---|
-| Status | **Proposed** — waiting for approval; once approved, `CLAUDE.md`, `backend/CLAUDE.md` and `frontend/CLAUDE.md` are updated to match and "provisional" is removed |
+| Status | **Accepted** 2026-10-09 — `CLAUDE.md`, `backend/CLAUDE.md` and `frontend/CLAUDE.md` follow this document |
 | Date | 2026-10-08 |
 | Rules | `.claude/skills/dotnet-modular-backend` (four projects per module, own DbContext and schema, events between modules, no cross-module references) |
-| Related | `docs/SRS.md` §4 (functional requirements by module), `docs/architecture/realtime-collaboration.md`, ADR-0005 |
+| Related | `docs/SRS.md` §4 (functional requirements by module), `docs/architecture/realtime-collaboration.md`, ADR-0005, ADR-0006 (deployment profiles) |
 
 ## 1. Module map
 
@@ -51,13 +51,13 @@ Solid arrows: HTTP (Refit or BFF). Double arrows: MassTransit events over Rabbit
 Every module has the four projects from the skill (`Majlis.{Module}.Domain`, `.Application`, `.EntityFrameworkCore`, `.Tests`), its own schema and migrations, and one host `Majlis.{Module}.Host`.
 
 ### Identity — `identity` · `Majlis.Auth.Host` · 7001
-- **Owns:** Tenant (residency mode, plan, quotas, settings), User (preferences, guest expiry), Group, Role, Permission grants at tenant level, SSO connections (OIDC/SAML), MFA, OpenIddict applications and tokens, support-access grants.
+- **Owns:** Tenant (data region, inference consent, plan, quotas, settings incl. driver-absence timeout), User (preferences, guest expiry), Group, Role, Permission grants at tenant level, SSO connections (OIDC/SAML), MFA, OpenIddict applications and tokens, support-access grants.
 - **Publishes:** `TenantProvisioned`, `UserInvited`, `UserActivated`, `UserDeactivated`, `GroupMembershipChanged`, `TenantSettingsChanged`, `AccessRevoked`.
 - **Consumes:** —
-- **Notes:** issues tokens with `tenant_id`, `residency_mode`, and tenant-level roles. Workspace permissions are **not** put in the token (they change too often); they are resolved by `PermissionHandler` from the cache (`IdentityEntitiesConsts.GetUserPermissionsCacheKey`) that Workspaces keeps up to date. Hosts the platform-admin console APIs (tenant provisioning). Also issues the real-time connection tickets (`/api/realtime/ticket` is routed here).
+- **Notes:** issues tokens with `tenant_id`, `data_region`, and tenant-level roles. On-prem it also supports LDAP / Active Directory sign-in and licence-file activation, and the platform-admin console becomes a local admin console. Workspace permissions are **not** put in the token (they change too often); they are resolved by `PermissionHandler` from the cache (`IdentityEntitiesConsts.GetUserPermissionsCacheKey`) that Workspaces keeps up to date. Hosts the platform-admin console APIs (tenant provisioning). Also issues the real-time connection tickets (`/api/realtime/ticket` is routed here).
 
 ### Workspaces — `workspaces` · 7010
-- **Owns:** Workspace, WorkspaceMember (user or group, role), Invitation, workspace agent instructions and glossary.
+- **Owns:** Workspace, WorkspaceMember (user or group, role), Invitation, workspace agent instructions and glossary (terms with ar/en forms and definitions).
 - **Publishes:** `WorkspaceCreated`, `WorkspaceArchived`, `MemberAdded`, `MemberRoleChanged`, `MemberRemoved` (+ `AccessRevoked`), `WorkspaceInstructionsChanged`.
 - **Consumes:** `UserDeactivated`, `GroupMembershipChanged` (recompute effective permissions cache).
 - **Notes:** the authority for "may user U do X in workspace W". It writes the effective permission set per user × workspace into Redis, which every module's `PermissionHandler` reads. The `ISecuredEntity` scope across all modules is the workspace.
@@ -76,10 +76,10 @@ Every module has the four projects from the skill (`Majlis.{Module}.Domain`, `.A
 - **Notes:** the only door for agent-originated writes. The tool → owning module map is configuration (`create_task → Tasks`, `draft_document → Knowledge`, …). Policy evaluation (who may approve, how many approvals, self-approval) is a domain service `ApprovalPolicyManager`. Expiry runs as a Hangfire job.
 
 ### Knowledge — `knowledge` · 7040
-- **Owns:** Folder (ACL groups), Document, DocumentVersion (blob path, SHA-256, ingestion status), agent Drafts (Document with `Origin = Agent`, status Draft → Approved), glossary terms (if not kept in Workspaces — see open question).
+- **Owns:** Folder (ACL groups), Document, DocumentVersion (blob path, SHA-256, ingestion status), agent Drafts (Document with `Origin = Agent`, status Draft → Approved). (The glossary is owned by Workspaces.)
 - **Publishes:** `DocumentUploaded {tenantId, workspaceId, documentId, versionId, blobUrl, aclGroups, language?}`, `DocumentDeleted`, `DocumentAclChanged`, `ActionExecuted` (for `draft_document`, `add_to_knowledge`).
 - **Consumes:** `DocumentIndexed`, `DocumentIndexingFailed` (from ai-service), `ActionApproved` for its tools.
-- **Notes:** uploads go to Blob Storage through short-lived SAS URLs issued by Knowledge (upload directly from the browser, then `confirm`). Malware scan before `DocumentUploaded`. Exports (DOCX/PDF) of drafts are generated here.
+- **Notes:** uploads go to file storage through short-lived pre-signed URLs issued by Knowledge via `IBlobStorage` (Azure Blob SAS on cloud, S3 pre-signed URLs on-prem), directly from the browser, then `confirm`. Malware scan before `DocumentUploaded`. Exports (DOCX/PDF) of drafts are generated here.
 
 ### Tasks — `tasks` · 7050
 - **Owns:** Task (assignee, due date, priority, status, origin, source session/turn, `ApprovalRequestId`).
@@ -96,7 +96,7 @@ Every module has the four projects from the skill (`Majlis.{Module}.Domain`, `.A
 - **Owns:** Notification, NotificationPreference, delivery log, device registrations (FCM) for mobile.
 - **Publishes:** `NotificationCreated` (Realtime pushes it to `user:{id}`).
 - **Consumes:** `MentionCreated`, `ApprovalRequested/Decided`, `ControlChanged` (hand-off offers, take-over notices), `TaskAssigned`, `TaskDue`, `DocumentIndexingFailed`, `UserInvited`.
-- **Notes:** renders ar/en templates per recipient language, honors quiet hours and weekend days, sends email and push. Email/push providers must keep content in-region or send content-free notifications ("You have a new approval request") — open question.
+- **Notes:** renders ar/en templates per recipient language, honors quiet hours and weekend days, sends email and push through `IEmailSender` / `IPushSender` (ADR-0006). Email and push carry **no content** by default ("You have a new approval request" + link); a tenant can opt in to content previews when its provider is in its data region.
 
 ### Audit — `audit` · 7080
 - **Owns:** AuditEntry (append-only, hash chain per tenant).
@@ -124,12 +124,19 @@ Every module has the four projects from the skill (`Majlis.{Module}.Domain`, `.A
 
 Nine modules stay: Identity, Workspaces, Rooms, Approvals, Knowledge, Tasks, Meetings, Notifications, Audit. No module was merged: each has a different owner, data shape and scaling profile, and the skill's one-schema-per-module rule keeps them cheap to separate later.
 
-## 4. Deployment shape (MVP)
+## 4. Deployment shape
 
-- **Azure Container Apps** in Saudi Arabia East, one app per host, internal ingress for everything except the BFF; zone redundant; minimum 2 replicas for BFF, Realtime, Rooms and Approvals, 1 for the rest in non-prod.
-- **Azure SQL**: one database `Majlis` with one schema per module (one login per module with rights on its schema only). The per-module DbContext lets a busy module (Rooms) move to its own database later without code changes.
-- **Redis**: one cache with key prefixes `majlis:{purpose}:` (permissions, presence, stream, snapshots, tickets, backplane). Backplane traffic can move to a dedicated instance if it grows.
-- **RabbitMQ**: one vhost `majlis`, MassTransit topology (one exchange per event type, one queue per consumer per module).
+Two profiles from the same code (ADR-0006).
+
+**`cloud` — one regional stamp per supported Azure region:**
+- Azure Container Apps, one app per host, internal ingress for everything except the BFF; zone redundant; minimum 2 replicas for BFF, Realtime, Rooms and Approvals, 1 for the rest in non-prod.
+- Azure SQL: one database `Majlis` with one schema per module (one login per module with rights on its schema only). The per-module DbContext lets a busy module (Rooms) move to its own database later without code changes.
+- Azure Cache for Redis with key prefixes `majlis:{purpose}:` (permissions, presence, stream, snapshots, tickets, backplane); RabbitMQ with one vhost `majlis` and MassTransit topology (one exchange per event type, one queue per consumer per module).
+
+**`on-prem` — one installation per customer:**
+- Helm chart for Kubernetes, or a Docker Compose bundle for a single server (small customers, pilots). Same images as the cloud.
+- The customer's SQL Server, or a bundled one; Redis, RabbitMQ, MinIO and OpenSearch bundled or the customer's own; model servers (chat, embeddings, transcription, guard) as separate GPU workloads.
+- Single tenant: the tenant is created at installation; the platform-admin APIs are disabled and a local admin console replaces them.
 
 ## 5. Cross-cutting contracts
 
@@ -137,8 +144,8 @@ Nine modules stay: Identity, Workspaces, Rooms, Approvals, Knowledge, Tasks, Mee
 - **Tool → module map** (Approvals config): `create_task`, `update_task` → Tasks; `draft_document`, `add_to_knowledge` → Knowledge; `save_minutes` → Meetings. A tool without an owning module cannot be registered as mutating.
 - **Idempotency keys:** `clientRequestId` on commands, `approvalRequestId` on executions, `turnId` on AI results, `documentVersionId` on ingestion.
 
-## 6. Open questions for review
+## 6. Decisions on the review questions (2026-10-09)
 
-1. **Glossary** — keep in Workspaces (it is workspace configuration) or Knowledge (it is used by retrieval)? Proposed: Workspaces owns it; ai-service reads it through Refit and caches it.
-2. **Email / push providers** in-Kingdom, or content-free notifications for `ksa-strict` tenants?
-3. **Approvals of non-agent actions** (e.g. a person deleting a folder) — out of scope for MVP; Approvals is only for agent actions. Confirm.
+1. **Glossary:** owned by Workspaces; ai-service reads it through Refit and caches it.
+2. **Email / push:** content-free by default; content previews only when the tenant opts in (see Notifications).
+3. **Approvals of non-agent actions:** out of scope for the MVP; Approvals covers agent actions only.
