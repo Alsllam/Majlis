@@ -17,6 +17,21 @@
 | Deployment profile | **`cloud`** (Azure OpenAI, Azure AI Search, Document Intelligence) — the only profile built now. `on-prem` (OpenAI-compatible model servers, OpenSearch, self-hosted extraction / speech / guard) later — ADR-0006 |
 | Region | the tenant's data region; model calls only to regions allowed by the tenant's inference consent (`docs/SRS.md` §6.2) |
 
+## What exists (walking skeleton)
+
+| Module | State |
+|---|---|
+| `settings.py`, `observability.py`, `api/errors.py` | env configuration, JSON logs, backend error shape with ar/en messages |
+| `security/tokens.py`, `api/deps.py` | RS256 access tokens validated against the Auth host JWKS (`aud = ai-api`); tenant and user only from the token |
+| `llm/provider.py`, `llm/adapters/azure_openai.py` | provider interface + Azure OpenAI Responses API streaming adapter (the only module importing `azure`) |
+| `llm/prompts/agent.v1.md` | the shared-room agent prompt (no knowledge base yet: says so instead of guessing) |
+| `sessions/` | `POST /internal/sessions/{id}/turns` → background `TurnRunner`: coalesced deltas, snapshot, heartbeat, cancel, one result |
+| `messaging/bus.py` | results to RabbitMQ in the MassTransit envelope (ADR-0008) |
+
+Not built yet: RAG (ingestion, search, citations), tools and approvals, conversations/usage in SQL, rate limits and quotas, Prompt Shields, evaluation suite.
+
+**Testing note:** the OpenAI SDK 3.x uses `httpx2`, not `httpx`, so `respx` cannot intercept it. Adapter tests pass an `openai.DefaultAsyncHttpx2Client(transport=httpx2.MockTransport(...))`.
+
 ## Majlis-specific rules
 
 - **Adapters (ADR-0006).** Business code depends only on these interfaces; implement the `cloud` version now, the `on-prem` version only when an on-prem customer is confirmed: `LlmProvider` (Azure OpenAI Responses API / OpenAI-compatible Chat Completions), `Embedder`, `SearchIndex` (Azure AI Search / OpenSearch + re-ranker), `DocumentExtractor`, `Transcriber`, `SafetyGuard`, `BlobStore`. The skill's Azure rules apply to the `cloud` implementations. Azure SDK imports are allowed only inside adapter modules.
@@ -32,3 +47,4 @@
 ```
 cd ai-service && uv run ruff check && uv run ruff format --check && uv run mypy --strict src && uv run pytest
 ```
+Run locally: `uv run uvicorn ai_service.main:create_app --factory --port 8000` (variables in `.env.example`), or `backend/scripts/run-local.sh`, which starts it with the backend.
