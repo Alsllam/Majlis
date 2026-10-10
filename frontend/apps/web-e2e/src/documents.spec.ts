@@ -23,7 +23,8 @@ test('a contributor uploads a document, sees it indexed, and the agent cites it 
   // Upload a markdown regulation to the seeded workspace.
   await page.goto('/documents');
   await expect(page.getByRole('heading', { name: 'المستندات' })).toBeVisible();
-  await page.locator('.ws-select').selectOption({ label: /الشؤون القانونية/ });
+  const legal = await page.locator('.ws-select option', { hasText: 'الشؤون القانونية' }).getAttribute('value');
+  await page.locator('.ws-select').selectOption(legal ?? '');
   await page.locator('.type-select').selectOption('Regulation');
   const name = `لائحة-المشتريات-${Date.now()}.md`;
   await page.locator('input[type=file]').setInputFiles({ name, mimeType: 'text/markdown', buffer: Buffer.from(REGULATION, 'utf8') });

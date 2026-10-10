@@ -56,8 +56,11 @@ test('an owner creates a workspace, adds a member and writes agent instructions;
   await expect(khalid.locator('#room-workspace')).toContainText(name);
   const roomName = 'Procurement ' + Date.now();
   await khalid.locator('#room-name').fill(roomName);
-  await khalid.locator('majlis-room-create-modal button[type="submit"]').click();
-  await expect(khalid.locator('a.room', { hasText: roomName })).toBeVisible();
+  // Rooms learns about the new membership from the MemberAdded event; retry while that is still in flight.
+  await expect(async () => {
+    await khalid.locator('majlis-room-create-modal button[type="submit"]').click({ timeout: 2000 });
+    await expect(khalid.locator('a.room', { hasText: roomName })).toBeVisible({ timeout: 3000 });
+  }).toPass({ timeout: 30000, intervals: [2000] });
   await expect(khalid.locator('a.room', { hasText: roomName })).toContainText(name);
   await khalid.screenshot({ path: testInfo.outputPath('rooms-en-light.png'), fullPage: true });
 });

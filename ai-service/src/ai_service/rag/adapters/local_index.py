@@ -31,11 +31,27 @@ def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
     return dot / (na * nb) if na and nb else 0.0
 
 
+_STOP = {"في", "من", "ما", "على", "عن", "الى", "هل", "او", "و", "ان", "the", "a", "an", "of", "in", "is", "what", "to"}
+
+
+def _stem(token: str) -> str:
+    """Tiny Arabic prefix/suffix strip for the dev index only (the cloud analyzers do this properly)."""
+    for prefix in ("وال", "بال", "كال", "فال", "ال", "لل"):
+        if token.startswith(prefix) and len(token) > len(prefix) + 2:
+            token = token[len(prefix) :]
+            break
+    for suffix in ("ات", "ون", "ين", "ها", "هم", "ه", "ي"):
+        if token.endswith(suffix) and len(token) > len(suffix) + 2:
+            token = token[: -len(suffix)]
+            break
+    return token
+
+
 def _overlap(query_search: str, content_search: str) -> float:
-    q = {t for t in query_search.split() if len(t) > 1}
+    q = {_stem(t) for t in query_search.split() if len(t) > 1 and t not in _STOP and not t.isdigit()}
     if not q:
         return 0.0
-    c = set(content_search.split())
+    c = {_stem(t) for t in content_search.split()}
     return len(q & c) / len(q)
 
 

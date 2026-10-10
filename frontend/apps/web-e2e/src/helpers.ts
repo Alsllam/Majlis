@@ -44,7 +44,8 @@ export async function ensureDriving(page: Page): Promise<void> {
     }
     for (const button of buttons) {
       if (await button.isVisible()) {
-        await button.click();
+        // The button may disable or disappear while a command is in flight; try again on the next tick.
+        await button.click({ timeout: 2000 }).catch(() => undefined);
         break;
       }
     }
