@@ -21,7 +21,8 @@ async def start_turn(
     background: BackgroundTasks,
 ) -> dict[str, str]:
     """
-    Accepts a turn and runs it in the background with the driver's identity (the forwarded token).
+    Accepts a turn and runs it in the background with the driver's identity (the forwarded token, also used
+    for the approval requests the agent's tools create).
     The tenant in the body must match the token; the token wins (invariant 3).
     """
     if body.tenant_id != principal.tenant_id or body.instructed_by.user_id != principal.user_id:
@@ -30,5 +31,5 @@ async def start_turn(
         raise AiServiceError(503, "General:Errors:AiNotConfigured")
 
     runner: TurnRunner = request.app.state.turn_runner
-    background.add_task(runner.run, session_id, body)
+    background.add_task(runner.run, session_id, body, principal.raw_token)
     return {"turnId": str(body.turn_id)}

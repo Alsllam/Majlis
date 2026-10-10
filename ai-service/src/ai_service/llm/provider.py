@@ -5,7 +5,7 @@ The model interface business code depends on (ADR-0006). The cloud implementatio
 
 from collections.abc import AsyncIterator, Sequence
 from dataclasses import dataclass
-from typing import Literal, Protocol
+from typing import Any, Literal, Protocol
 
 from ai_service.llm.models import ModelRole
 
@@ -17,8 +17,37 @@ class ChatMessage:
 
 
 @dataclass(frozen=True, slots=True)
+class ToolCallMessage:
+    """A function call the model made earlier in this turn (fed back as input on the next round)."""
+
+    call_id: str
+    name: str
+    arguments: str
+
+
+@dataclass(frozen=True, slots=True)
+class ToolResultMessage:
+    """What the service answered to that call (fed back as input on the next round)."""
+
+    call_id: str
+    output: str
+
+
+InputItem = ChatMessage | ToolCallMessage | ToolResultMessage
+
+
+@dataclass(frozen=True, slots=True)
 class TextDelta:
     text: str
+
+
+@dataclass(frozen=True, slots=True)
+class FunctionCall:
+    """The model wants a tool to run. Emitted once the arguments are complete."""
+
+    call_id: str
+    name: str
+    arguments: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,7 +62,7 @@ class Completed:
     usage: Usage
 
 
-StreamEvent = TextDelta | Completed
+StreamEvent = TextDelta | FunctionCall | Completed
 
 
 class LlmError(Exception):
@@ -70,12 +99,13 @@ class LlmProvider(Protocol):
         self,
         role: ModelRole,
         instructions: str,
-        messages: Sequence[ChatMessage],
+        messages: Sequence[InputItem],
         *,
         temperature: float,
         max_output_tokens: int,
+        tools: Sequence[dict[str, Any]] | None = None,
     ) -> AsyncIterator[StreamEvent]:
-        """Streams text deltas, then one `Completed` with usage. Raises `LlmError` subclasses."""
+        """Streams text deltas and function calls, then one `Completed` with usage. Raises `LlmError` subclasses."""
         ...
 
     async def aclose(self) -> None: ...

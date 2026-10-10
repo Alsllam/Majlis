@@ -23,6 +23,7 @@ from ai_service.rag.ingestion.pipeline import IngestionPipeline
 from ai_service.rag.ports import DocumentExtractor, SearchIndex
 from ai_service.rag.retrieval.search import RetrievalOptions, Retriever
 from ai_service.security.tokens import TokenValidator
+from ai_service.sessions.approvals import ApprovalsClient
 from ai_service.sessions.turn_runner import TurnRunner
 from ai_service.settings import Settings, get_settings
 from ai_service.workers.ingest_worker import IngestWorker
@@ -90,11 +91,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         else:
             log.warning("knowledge_not_configured", hint="set AZURE_STORAGE_* and the search backend to enable RAG")
 
+        approvals = ApprovalsClient(settings.approvals_url, settings.approvals_timeout_s)
         app.state.retriever = retriever
-        app.state.turn_runner = TurnRunner(settings, llm, redis, publisher, retriever)
+        app.state.turn_runner = TurnRunner(settings, llm, redis, publisher, retriever=retriever, approvals=approvals)
         try:
             yield
         finally:
+            await approvals.aclose()
             if worker_channel is not None:
                 await worker_channel.close()
             for close in closers:

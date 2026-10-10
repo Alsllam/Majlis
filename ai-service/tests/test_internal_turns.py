@@ -18,8 +18,8 @@ class RecordingRunner:
     def __init__(self) -> None:
         self.runs: list[Any] = []
 
-    async def run(self, session_id: Any, request: Any) -> None:
-        self.runs.append((session_id, request))
+    async def run(self, session_id: Any, request: Any, bearer_token: str = "") -> None:
+        self.runs.append((session_id, request, bearer_token))
 
 
 @pytest.fixture
@@ -53,6 +53,7 @@ async def test_accepts_turn_and_runs_it_in_background(app: FastAPI, rsa_key: rsa
     assert response.status_code == 202
     assert response.json() == {"turnId": payload["turnId"]}
     assert len(app.state.turn_runner.runs) == 1
+    assert app.state.turn_runner.runs[0][2] == response.request.headers["authorization"].removeprefix("Bearer ")
 
 
 async def test_rejects_missing_token_with_backend_error_shape(app: FastAPI) -> None:

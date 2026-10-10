@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from jwt.algorithms import RSAAlgorithm
 
 from ai_service.llm.models import ModelRole
-from ai_service.llm.provider import ChatMessage, Completed, StreamEvent, TextDelta, Usage
+from ai_service.llm.provider import Completed, FunctionCall, InputItem, StreamEvent, TextDelta, Usage
 from ai_service.sessions.contracts import AiActor, StartAiTurnRequest, TurnResult
 from ai_service.settings import Settings
 
@@ -55,29 +55,45 @@ def turn_request(**overrides: Any) -> StartAiTurnRequest:
 
 
 class FakeLlm:
-    """Yields scripted deltas with small pauses; optionally raises after them."""
+    """Yields scripted deltas with small pauses; optionally raises after them.
 
-    def __init__(self, deltas: Sequence[str], delay_s: float = 0.02, error: Exception | None = None) -> None:
+    `rounds` scripts the tool loop: one list of events per model call (text deltas as `str`, `FunctionCall`
+    objects as is); the first call uses `deltas` when `rounds` is empty.
+    """
+
+    def __init__(
+        self,
+        deltas: Sequence[str],
+        delay_s: float = 0.02,
+        error: Exception | None = None,
+        rounds: Sequence[Sequence[str | FunctionCall]] | None = None,
+    ) -> None:
         self.deltas = deltas
         self.delay_s = delay_s
         self.error = error
-        self.calls: list[list[ChatMessage]] = []
+        self.rounds = [list(r) for r in rounds] if rounds else []
+        self.calls: list[list[InputItem]] = []
         self.instructions: list[str] = []
+        self.tools: list[list[dict[str, Any]] | None] = []
 
     async def stream(
         self,
         role: ModelRole,
         instructions: str,
-        messages: Sequence[ChatMessage],
+        messages: Sequence[InputItem],
         *,
         temperature: float,
         max_output_tokens: int,
+        tools: Sequence[dict[str, Any]] | None = None,
     ) -> AsyncIterator[StreamEvent]:
         self.calls.append(list(messages))
         self.instructions.append(instructions)
-        for delta in self.deltas:
+        self.tools.append(list(tools) if tools else None)
+        round_no = len(self.calls) - 1
+        script: Sequence[str | FunctionCall] = self.rounds[round_no] if round_no < len(self.rounds) else self.deltas
+        for item in script:
             await asyncio.sleep(self.delay_s)
-            yield TextDelta(delta)
+            yield TextDelta(item) if isinstance(item, str) else item
         if self.error is not None:
             raise self.error
         yield Completed(Usage(input_tokens=120, output_tokens=30, cached_tokens=64))

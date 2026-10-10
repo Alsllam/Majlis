@@ -4,21 +4,26 @@ The only module that imports Azure libraries.
 """
 
 from collections.abc import AsyncIterator, Sequence
+from typing import Any, cast
 
 import openai
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, omit
+from openai.types.responses import ResponseInputItemParam, ToolParam
 
 from ai_service.llm.models import ModelRole
 from ai_service.llm.provider import (
     ChatMessage,
     Completed,
+    FunctionCall,
+    InputItem,
     LlmBusyError,
     LlmContentBlockedError,
     LlmError,
     LlmNotConfiguredError,
     StreamEvent,
     TextDelta,
+    ToolCallMessage,
     Usage,
 )
 from ai_service.settings import Settings
@@ -41,6 +46,14 @@ def build_client(settings: Settings) -> AsyncOpenAI:
 _TRANSIENT = (openai.RateLimitError, openai.APITimeoutError, openai.APIConnectionError, openai.InternalServerError)
 
 
+def _input_item(item: InputItem) -> ResponseInputItemParam:
+    if isinstance(item, ChatMessage):
+        return {"role": item.role, "content": item.content}
+    if isinstance(item, ToolCallMessage):
+        return {"type": "function_call", "call_id": item.call_id, "name": item.name, "arguments": item.arguments}
+    return {"type": "function_call_output", "call_id": item.call_id, "output": item.output}
+
+
 def _stream_error(code: str | None) -> LlmError:
     """Errors can arrive mid-stream with HTTP 200 (skill §7); map them like HTTP errors."""
     return LlmContentBlockedError() if code == "content_filter" else LlmBusyError()
@@ -60,28 +73,37 @@ class AzureOpenAIProvider:
         self,
         role: ModelRole,
         instructions: str,
-        messages: Sequence[ChatMessage],
+        messages: Sequence[InputItem],
         *,
         temperature: float,
         max_output_tokens: int,
+        tools: Sequence[dict[str, Any]] | None = None,
     ) -> AsyncIterator[StreamEvent]:
         deployment = self._deployments.get(role)
         if self._client is None or not deployment:
             raise LlmNotConfiguredError
 
+        tool_params = [cast(ToolParam, t) for t in tools] if tools else None
         try:
             events = await self._client.responses.create(
                 model=deployment,
                 instructions=instructions,
-                input=[{"role": m.role, "content": m.content} for m in messages],
+                input=[_input_item(m) for m in messages],
                 temperature=temperature,
                 max_output_tokens=max_output_tokens,
                 store=False,
                 stream=True,
+                tools=tool_params if tool_params else omit,
+                tool_choice="auto" if tool_params else omit,
+                parallel_tool_calls=False if tool_params else omit,
             )
             async for event in events:
                 if event.type == "response.output_text.delta":
                     yield TextDelta(event.delta)
+                elif event.type == "response.output_item.done":
+                    item = event.item
+                    if item.type == "function_call":
+                        yield FunctionCall(item.call_id, item.name, str(item.arguments))
                 elif event.type == "response.completed":
                     usage = event.response.usage
                     yield Completed(

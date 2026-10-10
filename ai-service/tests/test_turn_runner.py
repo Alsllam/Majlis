@@ -1,12 +1,14 @@
 import asyncio
 import json
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import fakeredis
 
-from ai_service.llm.provider import LlmContentBlockedError
+from ai_service.llm.provider import FunctionCall, LlmContentBlockedError, ToolCallMessage, ToolResultMessage
+from ai_service.llm.tools import tool_definitions
 from ai_service.rag.models import IndexedChunk, SearchHit
 from ai_service.rag.retrieval.search import Retriever
+from ai_service.sessions.approvals import ApprovalRequest, ApprovalRequestError
 from ai_service.sessions.contracts import AiHistoryTurn, TurnCompleted, TurnFailed, TurnStopped
 from ai_service.sessions.stream import cancel_key, heartbeat_key, stream_channel, text_key
 from ai_service.sessions.turn_runner import TurnRunner, build_messages
@@ -14,7 +16,9 @@ from ai_service.settings import Settings
 from tests.conftest import FakeLlm, FakePublisher, turn_request
 
 
-async def run_capturing(runner: TurnRunner, redis: fakeredis.FakeAsyncRedis, session_id, request, on_first_delta=None):  # type: ignore[no-untyped-def]
+async def run_capturing(
+    runner: TurnRunner, redis: fakeredis.FakeAsyncRedis, session_id, request, *, on_first_delta=None, bearer_token=""
+):  # type: ignore[no-untyped-def]
     pubsub = redis.pubsub()
     await pubsub.subscribe(stream_channel(session_id))
     messages: list[dict[str, object]] = []
@@ -27,7 +31,7 @@ async def run_capturing(runner: TurnRunner, redis: fakeredis.FakeAsyncRedis, ses
                     await on_first_delta()
 
     task = asyncio.create_task(reader())
-    result = await runner.run(session_id, request)
+    result = await runner.run(session_id, request, bearer_token)
     await asyncio.sleep(0.05)
     task.cancel()
     await pubsub.aclose()
@@ -165,7 +169,7 @@ async def test_run_grounds_the_answer_and_resolves_citations(
     llm = FakeLlm(["الغرامة واحد بالمائة ", "[S1]."])
     publisher = FakePublisher()
     request = turn_request()
-    result = await TurnRunner(settings, llm, redis, publisher, retriever).run(uuid4(), request)
+    result = await TurnRunner(settings, llm, redis, publisher, retriever=retriever).run(uuid4(), request)
 
     assert isinstance(result, TurnCompleted)
     assert [c.label for c in result.citations] == ["S1"]
@@ -173,3 +177,107 @@ async def test_run_grounds_the_answer_and_resolves_citations(
     assert result.citations[0].page == 3
     assert retriever.calls == [(request.instruction, [f"ws:{request.workspace_id}", f"room:{request.room_id}"])]
     assert '<source id="S1"' in llm.instructions[-1]
+
+
+class FakeApprovals:
+    """Records approval requests; `error` makes every call fail."""
+
+    def __init__(self, error: Exception | None = None) -> None:
+        self.error = error
+        self.requests: list[tuple[ApprovalRequest, str, str]] = []
+
+    async def create(self, request: ApprovalRequest, bearer_token: str, language: str) -> UUID:
+        self.requests.append((request, bearer_token, language))
+        if self.error is not None:
+            raise self.error
+        return UUID(int=len(self.requests))
+
+
+CALL = FunctionCall("call_1", "create_task", '{"title": "مراجعة العقد", "assigneeName": "سارة", "priority": "High"}')
+
+
+async def test_tool_call_becomes_an_approval_request_and_the_model_gets_the_outcome(
+    settings: Settings, redis: fakeredis.FakeAsyncRedis
+) -> None:
+    llm = FakeLlm([], rounds=[["سأقترح ", "مهمة.", CALL], ["أُرسل طلب إنشاء المهمة للموافقة."]])
+    approvals, publisher = FakeApprovals(), FakePublisher()
+    session_id, request = uuid4(), turn_request(instruction="أنشئ مهمة لمراجعة العقد وأسندها إلى سارة")
+    runner = TurnRunner(settings, llm, redis, publisher, approvals=approvals)  # type: ignore[arg-type]
+
+    result, messages = await run_capturing(runner, redis, session_id, request, bearer_token="tok-driver")
+
+    assert isinstance(result, TurnCompleted)
+    assert result.text == "سأقترح مهمة.أُرسل طلب إنشاء المهمة للموافقة."
+    assert (result.input_tokens, result.output_tokens) == (240, 60)
+    # The approval request carries the session, the validated args and the driver's token.
+    ((approval, token, language),) = approvals.requests
+    assert (approval.session_id, approval.turn_id, approval.tool, token, language) == (
+        session_id,
+        request.turn_id,
+        "create_task",
+        "tok-driver",
+        "ar",
+    )
+    assert approval.args == {"title": "مراجعة العقد", "assigneeName": "سارة", "priority": "High"}
+    assert approval.summary == "إنشاء مهمة: مراجعة العقد · مسندة إلى سارة"
+    # Round two feeds the call and its output back to the model, with the tools still offered.
+    assert len(llm.calls) == 2
+    assert llm.tools == [tool_definitions(), tool_definitions()]
+    assert llm.calls[1][-2:] == [
+        ToolCallMessage("call_1", "create_task", CALL.arguments),
+        ToolResultMessage(
+            "call_1",
+            json.dumps(
+                {"status": "pending_approval", "requestId": str(UUID(int=1)), "summary": approval.summary},
+                ensure_ascii=False,
+            ),
+        ),
+    ]
+    progress = next(m for m in messages if m["type"] == "turn.progress")
+    assert progress["data"]["key"] == "Session.Progress.RequestingApproval"  # type: ignore[index]
+    assert "## Tools and approvals" in llm.instructions[0]
+
+
+async def test_invalid_tool_arguments_and_approval_errors_go_back_to_the_model(
+    settings: Settings, redis: fakeredis.FakeAsyncRedis
+) -> None:
+    bad = FunctionCall("call_1", "create_task", '{"description": "بدون عنوان"}')
+    unknown = FunctionCall("call_2", "delete_everything", "{}")
+    llm = FakeLlm([], rounds=[[bad], [unknown], [CALL], ["اعتذر، تعذّر إرسال الطلب."]])
+    approvals = FakeApprovals(error=ApprovalRequestError("Approvals:Request:NotWorkspaceMember", 403))
+    runner = TurnRunner(settings, llm, redis, FakePublisher(), approvals=approvals)  # type: ignore[arg-type]
+
+    result = await runner.run(uuid4(), turn_request())
+
+    assert isinstance(result, TurnCompleted)
+    assert result.text == "اعتذر، تعذّر إرسال الطلب."
+    outputs = [json.loads(i.output) for i in llm.calls[-1] if isinstance(i, ToolResultMessage)]
+    assert outputs[0]["status"] == "error"
+    assert "title" in outputs[0]["message"]
+    assert outputs[1] == {"status": "error", "message": "Unknown tool 'delete_everything'."}
+    assert outputs[2] == {"status": "rejected", "message": "Approvals:Request:NotWorkspaceMember"}
+    assert len(approvals.requests) == 1
+
+
+async def test_tool_loop_stops_offering_tools_on_the_last_round(
+    settings: Settings, redis: fakeredis.FakeAsyncRedis
+) -> None:
+    settings = settings.model_copy(update={"max_tool_rounds": 2})
+    llm = FakeLlm(["نص ", "أخير"], rounds=[[CALL]])
+    runner = TurnRunner(settings, llm, redis, FakePublisher(), approvals=FakeApprovals())  # type: ignore[arg-type]
+
+    result = await runner.run(uuid4(), turn_request())
+
+    assert isinstance(result, TurnCompleted)
+    assert result.text == "نص أخير"
+    assert llm.tools == [[*tool_definitions()], None]
+
+
+async def test_without_an_approvals_client_no_tools_are_offered(
+    settings: Settings, redis: fakeredis.FakeAsyncRedis
+) -> None:
+    llm = FakeLlm(["مرحبا"])
+
+    await TurnRunner(settings, llm, redis, FakePublisher()).run(uuid4(), turn_request())
+
+    assert llm.tools == [None]

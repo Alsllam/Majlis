@@ -22,7 +22,9 @@ class Settings(BaseSettings):
     llm_timeout_s: float = 60.0
     chat_temperature: float = 0.3
     max_output_tokens: int = 1500
-    agent_prompt_version: str = "agent.v2"
+    agent_prompt_version: str = "agent.v3"
+    # Agent tools: at most this many model rounds per turn (each tool call costs one round).
+    max_tool_rounds: int = Field(default=5, ge=1, le=10)
 
     # Knowledge: blob storage (documents uploaded through the Knowledge module), extraction, search index.
     azure_storage_connection_string: SecretStr | None = None
@@ -45,6 +47,10 @@ class Settings(BaseSettings):
     auth_issuer: str = "http://localhost:7000/"
     auth_jwks_url: str = ""
     auth_audience: str = "ai-api"
+
+    # Approvals module through the BFF; called with the driver's forwarded token (never a service identity).
+    approvals_url: str = "http://localhost:7000/api/approvals"
+    approvals_timeout_s: float = 10.0
 
     redis_url: str = "redis://localhost:6379/0"
     rabbitmq_url: SecretStr = SecretStr("amqp://guest:guest@localhost:5672/majlis")
