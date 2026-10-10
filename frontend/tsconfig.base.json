@@ -1,0 +1,33 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "bundler",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2022",
+    "module": "esnext",
+    "lib": ["es2022", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "paths": {
+      "@majlis/core": ["./libs/core/src/index.ts"],
+      "@majlis/theme-shared": ["./libs/theme-shared/src/index.ts"],
+      "@majlis/shared-ui-common": ["./libs/shared/ui-common/src/index.ts"],
+      "@majlis/shared-charts": ["./libs/shared/charts/src/index.ts"],
+      "@majlis/shared-realtime": ["./libs/shared/realtime/src/index.ts"],
+      "@majlis/rooms-proxy": ["./libs/shared/rooms-proxy/src/index.ts"],
+      "@majlis/rooms-config": ["./libs/rooms/config/src/index.ts"],
+      "@majlis/rooms-ui-common": ["./libs/rooms/ui-common/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}
