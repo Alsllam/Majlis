@@ -1,14 +1,13 @@
 using System.Linq.Expressions;
 using Majlis.Framework.Domain.Entities;
 using Majlis.Framework.Domain.Security;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace Majlis.Framework.EntityFrameworkCore;
 
 /// <summary>
-/// Base for every module's DbContext: one schema per module, audit columns, soft-delete and tenant filters,
-/// and the MassTransit outbox tables so integration events are published only after commit.
+/// Base for every module's DbContext: one schema per module, audit columns, soft-delete and tenant filters.
+/// Integration events go through Wolverine's transactional outbox, whose tables live in the same schema (ADR-0009).
 /// </summary>
 public abstract class MajlisDbContext : DbContext
 {
@@ -35,10 +34,6 @@ public abstract class MajlisDbContext : DbContext
     {
         modelBuilder.HasDefaultSchema(Schema);
         modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
-
-        modelBuilder.AddInboxStateEntity();
-        modelBuilder.AddOutboxMessageEntity();
-        modelBuilder.AddOutboxStateEntity();
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {

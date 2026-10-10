@@ -1,6 +1,6 @@
 ---
 name: dotnet-modular-backend
-description: Rules for building or extending a .NET 10 modular backend (DDD layers per module, dynamic controllers from AppServices, YARP BFF, OpenIddict, MassTransit). Use for any backend work in these projects.
+description: Rules for building or extending a .NET 10 modular backend (DDD layers per module, dynamic controllers from AppServices, YARP BFF, OpenIddict, Wolverine). Use for any backend work in these projects.
 ---
 
 # .NET Modular Backend Rules
@@ -22,7 +22,7 @@ Naming placeholders: `{Co}` = company/org prefix, `{Product}` = product name, `{
 | Identity | ASP.NET Core Identity with `Guid` keys |
 | Validation | FluentValidation (`AbstractValidator<T>`) |
 | Mapping | AutoMapper, one `Profile` per module |
-| Messaging | MassTransit + RabbitMQ (events between modules) |
+| Messaging | Wolverine + RabbitMQ (events between modules, transactional outbox per module schema) |
 | Service-to-service HTTP | Refit clients |
 | Background jobs | Hangfire (SQL Server storage) in its own host |
 | Caching | `IDistributedCache` (Redis), in-memory fallback |
@@ -64,7 +64,7 @@ backend/
 **Dependency direction (enforce it):**
 `Domain` ← `EntityFrameworkCore` ← `Application` ← `Host`.
 - `Domain` references only `Framework.Domain`.
-- A module never references another module's projects. Modules talk through **MassTransit events** or **Refit clients** declared in `Framework.Application/RefitClients/{Module}`.
+- A module never references another module's projects. Modules talk through **integration events (Wolverine)** or **Refit clients** declared in `Framework.Application/RefitClients/{Module}`.
 - Hosts contain no business logic, only composition (`Program.cs`, `appsettings*.json`).
 
 **Spell names correctly.** Use `Management`, `Extensions`, `Definitions`. No placeholder files (`Class1.cs`, `TextFile1.txt`, `WeatherForecast.cs`). Delete them when a template creates them.
@@ -125,7 +125,7 @@ DomainServices/      # *Manager classes for logic spanning several entities
 │   ├── Create{Feature}Validator.cs
 │   └── Update{Feature}Validator.cs
 └── Rules/                        # optional: business-rule classes too big for the service
-EventHandlers/                    # MassTransit IConsumer<T> classes for this module
+EventHandlers/                    # Wolverine handlers ([WolverineHandler] static classes) for this module
 {Module}AutoMapperProfile.cs      # split per feature once it passes ~300 lines
 {Module}ApplicationModule.cs      # Add{Module}ApplicationModule(services, configuration)
 ```
@@ -188,11 +188,11 @@ Export reuses the same private query with `SkipCount = 0` and a capped `MaxResul
 - Messages are localization keys: `General:Fields:Required`, `General:Fields:InvalidCharacters`, `General:Fields:AlreadyExist`, `General:Fields:MaxLength`.
 - Check uniqueness with `MustAsync` against `IReadOnlyRepository.AnyAsync(...)`, scoped to the parent where relevant (e.g. code unique per compound). Exclude the current `Id` on update.
 
-### Events (MassTransit)
+### Events (Wolverine)
 - Event contracts (`*Event` / `*Eto`) implement `IEvent`. Put them in `Framework.Domain/Events` if several modules consume them, otherwise in the module's `Domain/Events`.
-- Consumers: `{EventName}Consumer : IConsumer<TEvent>` in `Application/EventHandlers`. Log with structured templates (`"... {UnitId}"`, not string interpolation), then rethrow so MassTransit retries.
-- Consumers must be idempotent, since the same message can arrive twice.
-- The host passes its consumers namespace to `AddSharedEntityFrameworkCoreModule(config, "{Co}.{Product}.{Module}.Application.EventHandlers")`.
+- Handlers: `[WolverineHandler] public static class {EventName}Handler { public static Task Handle(TEvent message, …services, CancellationToken ct) }` in `Application/EventHandlers`. Log with structured templates (`"... {UnitId}"`, not string interpolation), then rethrow so Wolverine retries.
+- Handlers must be idempotent, since the same message can arrive twice.
+- The host registers its topology with `builder.AddMajlisMessaging<{Module}DbContext>(module, schema, {Module}ApplicationModule.Topology, typeof({Module}ApplicationModule).Assembly)`.
 
 ## 6. Cross-cutting rules
 
@@ -217,7 +217,7 @@ Map exceptions to status codes: `ValidationException`/`CustomValidationException
 ```
 services: Add{Module}ApplicationModule → AddControllers → AddFluentValidationAutoValidation → AddCORSExtensions
           → AddApiDefinition → AddLocalizationService → AddSwaggerGen → Add{Product}DbContext
-          → AddSharedEntityFrameworkCoreModule(config, consumersNamespace) → AddHttpContextAccessor
+          → AddMajlisMessaging<TContext>(topology) → AddHttpContextAccessor
           → AddLoggingService → AddOpenIddictExtension → AddHangfireWithSqlServer (if needed)
           → Configure<JsonOptions> → AddDynamicControllers → SuppressModelStateInvalidFilter
           → AddSlidingWindowRateLimiterStrategy → AddHealthChecks().AddCheck("self")

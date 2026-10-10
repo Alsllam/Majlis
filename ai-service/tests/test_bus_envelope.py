@@ -1,19 +1,18 @@
+import json
 from uuid import uuid4
 
-from ai_service.messaging.bus import envelope, exchange_name
+from ai_service.messaging.bus import alias_of, body_of, exchange_name
 from ai_service.sessions.contracts import TurnCompleted, TurnFailed
 
 
-def test_envelope_matches_masstransit_contract() -> None:
+def test_completed_message_is_plain_camel_case_json_with_alias() -> None:
     message = TurnCompleted(
         session_id=uuid4(), turn_id=uuid4(), text="نص", citations=[], input_tokens=1, output_tokens=2, cached_tokens=0
     )
 
-    env = envelope(message)
-
-    assert exchange_name(message) == "Majlis.Framework.Domain.Events:TurnCompleted"
-    assert env["messageType"] == ["urn:message:Majlis.Framework.Domain.Events:TurnCompleted"]
-    assert env["message"] == {
+    assert alias_of(message) == "turn-completed"
+    assert exchange_name(message) == "majlis.turn-completed"
+    assert json.loads(body_of(message)) == {
         "sessionId": str(message.session_id),
         "turnId": str(message.turn_id),
         "text": "نص",
@@ -27,5 +26,5 @@ def test_envelope_matches_masstransit_contract() -> None:
 def test_failed_message_uses_its_own_exchange() -> None:
     message = TurnFailed(session_id=uuid4(), turn_id=uuid4(), reason_key="General:Errors:AiBusy")
 
-    assert exchange_name(message) == "Majlis.Framework.Domain.Events:TurnFailed"
-    assert envelope(message)["message"]["reasonKey"] == "General:Errors:AiBusy"  # type: ignore[index]
+    assert exchange_name(message) == "majlis.turn-failed"
+    assert json.loads(body_of(message))["reasonKey"] == "General:Errors:AiBusy"

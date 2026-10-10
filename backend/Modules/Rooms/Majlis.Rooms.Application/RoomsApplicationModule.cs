@@ -1,4 +1,7 @@
 using FluentValidation;
+using Majlis.Framework.Application.Messaging;
+using Majlis.Framework.Domain.Events;
+using Majlis.Rooms.Domain.Events;
 using Majlis.Rooms.Application.Ai;
 using Majlis.Rooms.Application.Background;
 using Majlis.Rooms.Application.Sessions;
@@ -13,6 +16,17 @@ namespace Majlis.Rooms.Application;
 public static class RoomsApplicationModule
 {
     public const string ModuleName = "rooms";
+
+    /// <summary>What Rooms publishes and listens to (exchange and queue names derive from the types; ADR-0009).</summary>
+    public static MessagingTopology Topology => new MessagingTopology()
+        .Publish<SessionEventAppended>()
+        .Publish<TurnStopRequested>()
+        .Publish<AccessRevoked>()
+        .Listen<TurnCompleted>()
+        .Listen<TurnStopped>()
+        .Listen<TurnFailed>()
+        .Listen<SessionPresenceLost>()
+        .Listen<SessionPresenceRestored>();
 
     public static IServiceCollection AddRoomsApplicationModule(this IServiceCollection services, IConfiguration configuration)
     {

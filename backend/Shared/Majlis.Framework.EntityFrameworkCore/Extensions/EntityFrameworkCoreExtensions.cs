@@ -19,11 +19,11 @@ public static class EntityFrameworkCoreExtensions
         var connectionString = configuration.GetConnectionString(connectionStringName)
             ?? throw new InvalidOperationException($"Connection string '{connectionStringName}' is missing.");
 
-        services.AddDbContext<TContext>(options => options.UseSqlServer(connectionString, sql =>
-        {
-            sql.MigrationsHistoryTable("__EFMigrationsHistory", schema);
-            sql.EnableRetryOnFailure(maxRetryCount: 5);
-        }));
+        // No retrying execution strategy: Wolverine's outbox commits the rows and the events in one transaction it
+        // opens itself, which EF's retry strategy forbids. Transient failures are retried at the message level instead.
+        services.AddDbContext<TContext>(
+            options => options.UseSqlServer(connectionString, sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", schema)),
+            optionsLifetime: ServiceLifetime.Singleton);
 
         services.AddMajlisRepositories<TContext>();
         return services;

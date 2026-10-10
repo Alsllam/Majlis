@@ -12,3 +12,4 @@ One file per decision: `NNNN-short-title.md` with **Status**, **Context**, **Dec
 | [0006](0006-cloud-and-on-prem-deployment-profiles.md) | Cloud and on-prem deployment profiles from one codebase | Accepted |
 | [0007](0007-runtime-versions-dotnet-10-angular-22.md) | Runtime versions: .NET 10 and Angular 22 | Accepted |
 | [0008](0008-backend-library-choices.md) | Backend library choices: licences, mapping, Refit, test runner | Accepted |
+| [0009](0009-wolverine-for-messaging.md) | Wolverine for messaging (replaces MassTransit) | Accepted |

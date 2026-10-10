@@ -26,7 +26,7 @@
 | `llm/provider.py`, `llm/adapters/azure_openai.py` | provider interface + Azure OpenAI Responses API streaming adapter (the only module importing `azure`) |
 | `llm/prompts/agent.v1.md` | the shared-room agent prompt (no knowledge base yet: says so instead of guessing) |
 | `sessions/` | `POST /internal/sessions/{id}/turns` → background `TurnRunner`: coalesced deltas, snapshot, heartbeat, cancel, one result |
-| `messaging/bus.py` | results to RabbitMQ in the MassTransit envelope (ADR-0008) |
+| `messaging/bus.py` | results to RabbitMQ as plain camelCase JSON on exchange `majlis.{alias}` with the alias in the AMQP `type` property (ADR-0009) |
 
 Not built yet: RAG (ingestion, search, citations), tools and approvals, conversations/usage in SQL, rate limits and quotas, Prompt Shields, evaluation suite.
 
@@ -35,7 +35,7 @@ Not built yet: RAG (ingestion, search, citations), tools and approvals, conversa
 ## Majlis-specific rules
 
 - **Adapters (ADR-0006).** Business code depends only on these interfaces; implement the `cloud` version now, the `on-prem` version only when an on-prem customer is confirmed: `LlmProvider` (Azure OpenAI Responses API / OpenAI-compatible Chat Completions), `Embedder`, `SearchIndex` (Azure AI Search / OpenSearch + re-ranker), `DocumentExtractor`, `Transcriber`, `SafetyGuard`, `BlobStore`. The skill's Azure rules apply to the `cloud` implementations. Azure SDK imports are allowed only inside adapter modules.
-- **Shared sessions** are started by Rooms through `POST /internal/sessions/{sessionId}/turns` (internal only, not routed by the BFF; body `startAiTurnRequest`, the driver's `Authorization` header forwarded; answer 202 and run the turn in the background). Token deltas go to Redis pub/sub `majlis:session:{sessionId}:stream` with the running text in the hash `majlis:turn:{turnId}:text` (`text`, `chunk`); results (`TurnCompleted`, `TurnStopped`, `TurnFailed`) go to RabbitMQ in the MassTransit envelope for Rooms to sequence; check `majlis:turn:{turnId}:cancel` between deltas; refresh `majlis:turn:{turnId}:hb` every 5 s. Every shape is in `docs/architecture/events.schema.json`.
+- **Shared sessions** are started by Rooms through `POST /internal/sessions/{sessionId}/turns` (internal only, not routed by the BFF; body `startAiTurnRequest`, the driver's `Authorization` header forwarded; answer 202 and run the turn in the background). Token deltas go to Redis pub/sub `majlis:session:{sessionId}:stream` with the running text in the hash `majlis:turn:{turnId}:text` (`text`, `chunk`); results (`TurnCompleted`, `TurnStopped`, `TurnFailed`) go to RabbitMQ as plain JSON (exchange `majlis.turn-completed` etc., durable fanout, AMQP `type` = alias) for Rooms to sequence; check `majlis:turn:{turnId}:cancel` between deltas; refresh `majlis:turn:{turnId}:hb` every 5 s. Every shape is in `docs/architecture/events.schema.json`.
 
 - **The agent session is shared.** A session belongs to a room, not a user. Each turn records who sent it; the tool loop runs with the token of the person **currently in control** of the session, so their permissions apply.
 - **Every mutating tool returns `confirm_required`** and becomes an approval request in the backend Approvals module. The tool only runs after the `ActionApproved` event. The agent never retries a rejected action unless a person asks again.

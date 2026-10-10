@@ -11,7 +11,7 @@ Building the first backend code on .NET 10 (ADR-0007) showed that several librar
 - **.NET 10** runs `dotnet test` on Microsoft.Testing.Platform; xUnit v3 is built for it, the VSTest adapter and coverlet's collector are not.
 
 ## Decision
-1. **Messaging:** MassTransit **8.5.x (Apache-2.0)**, pinned in `Directory.Packages.props`. Business code depends only on `IEventPublisher`; MassTransit types appear in host registration and consumers. Revisit before MassTransit 8 support ends: buy a licence, or move to another open-source bus (e.g. Wolverine, Rebus) behind the same interface.
+1. **Messaging:** ~~MassTransit 8.5.x (Apache-2.0), pinned~~ **Superseded by ADR-0009 (Wolverine, 2026-10-10).** Business code depended only on `IEventPublisher`, which is what made the swap a small change.
 2. **Mapping:** no AutoMapper. Each module has explicit `ToDto()` extension methods (`{Module}Mappings.cs`). Compile-time checked, no reflection, no licence.
 3. **HTTP clients:** Refit with generated clients (`AddRefitGeneratedClient<T>()`).
 4. **Validation:** FluentValidation validators are called explicitly once per command (`ApplicationService.ValidateAsync`); no automatic MVC validation, so async database rules never run twice. Same effect as the skill's `ISkipAutoValidation` pattern, with less code.

@@ -3,12 +3,12 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Majlis.Framework.EntityFrameworkCore.Repositories;
 
-/// <summary>Disposable both ways: request scopes dispose asynchronously, background scopes synchronously.</summary>
+/// <summary>Plain EF Core unit of work (tests, the migrator). Hosts with messaging use <c>OutboxUnitOfWork</c> instead.</summary>
 public sealed class UnitOfWork(MajlisDbContext dbContext) : IUnitOfWork, IDisposable, IAsyncDisposable
 {
     private IDbContextTransaction? _transaction;
 
-    public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) => dbContext.SaveChangesAsync(cancellationToken);
+    public Task SaveChangesAsync(CancellationToken cancellationToken = default) => dbContext.SaveChangesAsync(cancellationToken);
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
         => _transaction ??= await dbContext.Database.BeginTransactionAsync(cancellationToken);

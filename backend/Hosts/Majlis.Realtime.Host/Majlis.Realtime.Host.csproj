@@ -9,4 +9,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Wolverine compiles handler code at startup (TypeLoadMode.Dynamic). Production will pre-generate it (TypeLoadMode.Static) and drop this. -->
+    <PackageReference Include="WolverineFx.RuntimeCompilation" />
+  </ItemGroup>
 </Project>

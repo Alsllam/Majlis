@@ -42,9 +42,9 @@ Real-time rules: commands are always HTTP AppService calls; the hub only pushes 
 
 | Project | State |
 |---|---|
-| `Shared/Majlis.Framework.{Domain,EntityFrameworkCore,Application}` | base entities, repositories, unit of work, tenant + soft-delete filters, dynamic controllers, error middleware, ar/en JSON localization, permissions, OpenIddict validation, MassTransit + outbox, real-time tickets, service tokens |
+| `Shared/Majlis.Framework.{Domain,EntityFrameworkCore,Application}` | base entities, repositories, unit of work, tenant + soft-delete filters, dynamic controllers, error middleware, ar/en JSON localization, permissions, OpenIddict validation, Wolverine messaging with the transactional outbox, real-time tickets, service tokens |
 | `Modules/Identity` + `Hosts/Majlis.Auth.Host` | tenants, users, roles; OpenIddict server (code + PKCE, refresh, client credentials); ar/en login page; `/realtime/ticket` |
-| `Modules/Rooms` + `Hosts/Majlis.Rooms.Host` | rooms, sessions, control state machine with epoch, turns, timeline sequencer, AI result + presence consumers, absence/stuck-turn sweeper |
+| `Modules/Rooms` + `Hosts/Majlis.Rooms.Host` | rooms, sessions, control state machine with epoch, turns, timeline sequencer, AI result + presence handlers, absence/stuck-turn sweeper |
 | `Hosts/Majlis.Realtime.Host` | SignalR hub, Redis presence, fan-out, stream relay |
 | `Hosts/Majlis.BFF.Host` | YARP routes, security headers, compression |
 | `Shared/Majlis.DbMigrator` | migrations + idempotent seed (demo tenant, users, clients, room) |
@@ -56,7 +56,7 @@ Not built yet: Workspaces, Approvals, Knowledge, Tasks, Meetings, Notifications,
 
 - No AutoMapper: explicit `ToDto()` methods in `{Module}Mappings.cs`.
 - Validators are called explicitly once per command (`ValidateAsync` in `ApplicationService`); no auto-validation.
-- MassTransit pinned to 8.5.x (Apache-2.0); 9.x is commercial.
+- Messaging is Wolverine, not MassTransit (ADR-0009): `MajlisMessaging.AddMajlisMessaging…` with a per-host topology; handlers are `[WolverineHandler]` static classes with `Handle(message, services…)`; `IEventPublisher`/`IUnitOfWork` write through the transactional outbox in the module schema.
 - Refit clients are source-generated (`AddRefitGeneratedClient`).
 - Tests run on Microsoft.Testing.Platform (xUnit v3); coverage via `Microsoft.Testing.Extensions.CodeCoverage`.
 - `[NonAction]` instead of `[NonActionApi]` (ASP.NET's attribute is sealed).

@@ -6,7 +6,7 @@ A shared AI workspace for teams, Arabic-first. Teams work together with the same
 
 | Folder | Stack |
 |---|---|
-| [`backend/`](backend/CLAUDE.md) | .NET 9 modular backend, YARP BFF, OpenIddict, MassTransit, SQL Server |
+| [`backend/`](backend/CLAUDE.md) | .NET 10 modular backend, YARP BFF, OpenIddict, Wolverine, SQL Server |
 | [`frontend/`](frontend/CLAUDE.md) | Angular 20 in an Nx workspace, ECharts, AntV X6 |
 | [`mobile/`](mobile/CLAUDE.md) | Flutter, Clean Architecture, BLoC |
 | [`ai-service/`](ai-service/CLAUDE.md) | Python FastAPI, Azure OpenAI, Azure AI Search |

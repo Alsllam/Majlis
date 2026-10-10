@@ -11,7 +11,7 @@ public interface IAuditable
     string AuditAction { get; }
 }
 
-/// <summary>Publishes integration events. Implemented over MassTransit with the EF Core outbox.</summary>
+/// <summary>Publishes integration events. Module hosts implement it over the transactional outbox (ADR-0009).</summary>
 public interface IEventPublisher
 {
     Task PublishAsync<TEvent>(TEvent message, CancellationToken cancellationToken = default) where TEvent : class, IEvent;

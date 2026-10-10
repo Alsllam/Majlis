@@ -1,6 +1,5 @@
 using Majlis.Framework.Domain.Events;
 using Majlis.Realtime.Host.Hubs;
-using MassTransit;
 using Microsoft.AspNetCore.SignalR;
 using StackExchange.Redis;
 
@@ -49,10 +48,10 @@ public sealed partial class PresenceSweeper(
         }
 
         using var scope = scopes.CreateScope();
-        var publisher = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
+        var publisher = scope.ServiceProvider.GetRequiredService<IEventPublisher>();
         foreach (var (sessionId, userId) in gone)
         {
-            await publisher.Publish(new SessionPresenceLost(sessionId, userId, clock.GetUtcNow().UtcDateTime), cancellationToken);
+            await publisher.PublishAsync(new SessionPresenceLost(sessionId, userId, clock.GetUtcNow().UtcDateTime), cancellationToken);
         }
 
         foreach (var sessionId in gone.Select(g => g.SessionId).Distinct())

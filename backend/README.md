@@ -37,4 +37,8 @@ cd backend && dotnet build Majlis.sln && dotnet test
 cd backend && dotnet tool restore
 dotnet ef migrations add <Name> -p Modules/<Module>/Majlis.<Module>.EntityFrameworkCore -s Modules/<Module>/Majlis.<Module>.EntityFrameworkCore -o Migrations
 ```
-Migrations are applied only by `Shared/Majlis.DbMigrator`, never at host startup.
+Migrations are applied only by `Shared/Majlis.DbMigrator`, never at host startup. The exception is Wolverine, which creates and migrates its own `wolverine_*` tables in each module schema when the host starts (ADR-0009).
+
+## Messaging
+
+Wolverine over RabbitMQ (ADR-0009). Each host declares a topology (`RoomsApplicationModule.Topology`); exchanges `majlis.{alias}` and queues `{module}.{alias}` are provisioned at startup. Handlers are `[WolverineHandler]` static classes in `Application/EventHandlers`. If queues from an older topology linger (e.g. after a bus change), remove them in the RabbitMQ console or reset with `docker compose down -v`.

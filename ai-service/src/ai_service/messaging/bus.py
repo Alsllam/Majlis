@@ -1,11 +1,10 @@
 """
-Turn results → RabbitMQ for Rooms to sequence. Rooms consumes with MassTransit 8, so messages are published in the
-MassTransit JSON envelope to the exchange named after the .NET message type (ADR-0008). This is the only module that
-knows the envelope; changing the .NET bus changes only this adapter.
+Turn results → RabbitMQ for Rooms to sequence. The backend runs Wolverine (ADR-0009), which consumes plain JSON:
+camelCase body, the message alias in the AMQP `type` property, published to the durable fanout exchange
+`majlis.{alias}` that Rooms declares and binds its queue to. Nothing here depends on the .NET bus library.
 """
 
 import json
-from datetime import UTC, datetime
 from typing import Protocol
 from uuid import uuid4
 
@@ -14,31 +13,24 @@ from aio_pika.abc import AbstractRobustChannel, AbstractRobustConnection
 
 from ai_service.sessions.contracts import TurnCompleted, TurnFailed, TurnResult, TurnStopped
 
-DOTNET_NAMESPACE = "Majlis.Framework.Domain.Events"
-MESSAGE_TYPES: dict[type[TurnResult], str] = {
-    TurnCompleted: "TurnCompleted",
-    TurnStopped: "TurnStopped",
-    TurnFailed: "TurnFailed",
+EXCHANGE_PREFIX = "majlis."
+ALIASES: dict[type[TurnResult], str] = {
+    TurnCompleted: "turn-completed",
+    TurnStopped: "turn-stopped",
+    TurnFailed: "turn-failed",
 }
 
 
+def alias_of(message: TurnResult) -> str:
+    return ALIASES[type(message)]
+
+
 def exchange_name(message: TurnResult) -> str:
-    return f"{DOTNET_NAMESPACE}:{MESSAGE_TYPES[type(message)]}"
+    return EXCHANGE_PREFIX + alias_of(message)
 
 
-def envelope(message: TurnResult, source_host: str = "ai-service") -> dict[str, object]:
-    """The MassTransit envelope (application/vnd.masstransit+json)."""
-    name = exchange_name(message)
-    return {
-        "messageId": str(uuid4()),
-        "sourceAddress": f"rabbitmq://localhost/{source_host}",
-        "destinationAddress": f"rabbitmq://localhost/{name}",
-        "messageType": [f"urn:message:{name}"],
-        "message": message.model_dump(mode="json", by_alias=True),
-        "sentTime": datetime.now(UTC).isoformat(),
-        "headers": {},
-        "host": {"machineName": source_host, "processName": "ai-service", "frameworkVersion": "python"},
-    }
+def body_of(message: TurnResult) -> bytes:
+    return json.dumps(message.model_dump(mode="json", by_alias=True), ensure_ascii=False).encode("utf-8")
 
 
 class ResultPublisher(Protocol):
@@ -62,16 +54,17 @@ class RabbitResultPublisher:
     async def publish(self, message: TurnResult) -> None:
         if self._channel is None:
             raise RuntimeError("Publisher not started.")
-        # Same exchange shape MassTransit declares: durable fanout, named after the message type.
+        # Same declaration Wolverine makes (durable fanout); RabbitMQ rejects a mismatch, so the two must stay equal.
         exchange = await self._channel.declare_exchange(
             exchange_name(message), aio_pika.ExchangeType.FANOUT, durable=True
         )
         await exchange.publish(
             aio_pika.Message(
-                body=json.dumps(envelope(message), ensure_ascii=False).encode("utf-8"),
-                content_type="application/vnd.masstransit+json",
-                delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
+                body=body_of(message),
+                content_type="application/json",
+                type=alias_of(message),
                 message_id=str(uuid4()),
+                delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
             ),
             routing_key="",
         )

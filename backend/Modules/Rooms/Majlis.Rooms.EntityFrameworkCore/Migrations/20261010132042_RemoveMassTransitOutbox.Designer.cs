@@ -4,6 +4,7 @@ using Majlis.Rooms.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Majlis.Rooms.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(RoomsDbContext))]
-    partial class RoomsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261010132042_RemoveMassTransitOutbox")]
+    partial class RemoveMassTransitOutbox
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -1,19 +1,20 @@
-using FakeItEasy;
 using Majlis.Framework.Domain.Events;
+using Majlis.Framework.Domain.Repositories;
+using Majlis.Rooms.Application.Sessions;
+using Majlis.Rooms.Domain.Entities;
 using Majlis.Rooms.Application.EventHandlers;
 using Majlis.Rooms.Application.Sessions.DTOs;
 using Majlis.Rooms.Domain.Constants;
 using Majlis.Rooms.Domain.Enums;
 using Majlis.Rooms.EntityFrameworkCore;
 using Majlis.Rooms.Tests.Application.TestInfrastructure;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using static Majlis.Rooms.Tests.Application.TestInfrastructure.RoomsTestHost;
 
 namespace Majlis.Rooms.Tests.Application.EventHandlers;
 
-public class TurnCompletedConsumerTests : IDisposable
+public class TurnCompletedHandlerTests : IDisposable
 {
     private readonly RoomsTestHost _host = new();
 
@@ -45,10 +46,15 @@ public class TurnCompletedConsumerTests : IDisposable
         for (var i = 0; i < 2; i++)
         {
             using var scope = _host.Scope(Sara);
-            var consumer = ActivatorUtilities.CreateInstance<TurnCompletedConsumer>(scope.ServiceProvider);
-            var context = A.Fake<ConsumeContext<TurnCompleted>>();
-            A.CallTo(() => context.Message).Returns(message);
-            await consumer.Consume(context);
+            var sp = scope.ServiceProvider;
+            await TurnCompletedHandler.Handle(
+                message,
+                sp.GetRequiredService<IRepository<AgentSession, Guid>>(),
+                sp.GetRequiredService<IRepository<Turn, Guid>>(),
+                sp.GetRequiredService<SessionTimeline>(),
+                sp.GetRequiredService<IUnitOfWork>(),
+                sp.GetRequiredService<TimeProvider>(),
+                TestContext.Current.CancellationToken);
         }
 
         using var check = _host.Scope(Sara);

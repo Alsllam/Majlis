@@ -1,20 +1,20 @@
 using System.Text.Json;
 using Majlis.Framework.Domain.Events;
 using Majlis.Realtime.Host.Hubs;
-using MassTransit;
 using Microsoft.AspNetCore.SignalR;
+using Wolverine.Attributes;
 
 namespace Majlis.Realtime.Host.Fanout;
 
 /// <summary>
-/// Pushes every durable session event to the session group. One instance consumes each message (competing consumers);
-/// the Redis backplane delivers it to connections on every instance. Clients apply events strictly by <c>seq</c>.
+/// Pushes every durable session event to the session group. One instance handles each message (competing consumers
+/// on one queue); the Redis backplane delivers it to connections on every instance. Clients apply events strictly by <c>seq</c>.
 /// </summary>
-public sealed class SessionEventAppendedConsumer(IHubContext<SessionHub> hub) : IConsumer<SessionEventAppended>
+[WolverineHandler]
+public static class SessionEventAppendedHandler
 {
-    public async Task Consume(ConsumeContext<SessionEventAppended> context)
+    public static async Task Handle(SessionEventAppended m, IHubContext<SessionHub> hub, CancellationToken cancellationToken)
     {
-        var m = context.Message;
         using var data = JsonDocument.Parse(m.DataJson);
         var envelope = new
         {
@@ -27,6 +27,6 @@ public sealed class SessionEventAppendedConsumer(IHubContext<SessionHub> hub) : 
             actor = new { kind = m.ActorKind, id = m.ActorId, displayName = m.ActorDisplayName },
             data = data.RootElement.Clone(),
         };
-        await hub.Clients.Group(SessionHub.SessionGroup(m.SessionId)).SendAsync("sessionEvent", envelope, context.CancellationToken);
+        await hub.Clients.Group(SessionHub.SessionGroup(m.SessionId)).SendAsync("sessionEvent", envelope, cancellationToken);
     }
 }

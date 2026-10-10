@@ -37,7 +37,7 @@ flowchart LR
   subgraph Realtime["Majlis.Realtime.Host (N instances)"]
     HUB[SessionHub<br/>SignalR]
     PRS[Presence tracker]
-    FAN[Event fan-out<br/>MassTransit consumer]
+    FAN[Event fan-out<br/>Wolverine handler]
     STR[Stream relay<br/>Redis subscriber]
   end
   ROOMS[Majlis.Rooms.Host<br/>session aggregate · control · sequencer]

@@ -101,7 +101,7 @@
       }
     },
     "turnCompleted": {
-      "description": "ai-service → Rooms over RabbitMQ (MassTransit message type urn:message:Majlis.Framework.Domain.Events:TurnCompleted). Consumers are idempotent on turnId.",
+      "description": "ai-service → Rooms over RabbitMQ: plain JSON body, published to the durable fanout exchange majlis.turn-completed with AMQP type = turn-completed (ADR-0009). Handlers are idempotent on turnId.",
       "type": "object",
       "required": ["sessionId", "turnId", "text", "citations", "inputTokens", "outputTokens", "cachedTokens"],
       "properties": {
@@ -129,13 +129,13 @@
       }
     },
     "turnStopped": {
-      "description": "ai-service → Rooms (urn:message:Majlis.Framework.Domain.Events:TurnStopped) after it saw majlis:turn:{turnId}:cancel or a TurnStopRequested message.",
+      "description": "ai-service → Rooms (exchange majlis.turn-stopped, type turn-stopped) after it saw majlis:turn:{turnId}:cancel or a TurnStopRequested message.",
       "type": "object",
       "required": ["sessionId", "turnId", "partialText"],
       "properties": { "sessionId": { "$ref": "#/$defs/uuid" }, "turnId": { "$ref": "#/$defs/uuid" }, "partialText": { "type": "string" } }
     },
     "turnFailed": {
-      "description": "ai-service → Rooms (urn:message:Majlis.Framework.Domain.Events:TurnFailed).",
+      "description": "ai-service → Rooms (exchange majlis.turn-failed, type turn-failed).",
       "type": "object",
       "required": ["sessionId", "turnId", "reasonKey"],
       "properties": { "sessionId": { "$ref": "#/$defs/uuid" }, "turnId": { "$ref": "#/$defs/uuid" }, "reasonKey": { "type": "string" }, "partialText": { "type": ["string", "null"] } }

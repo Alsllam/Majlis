@@ -44,7 +44,7 @@ flowchart TB
   ROOMS & APPR & KNW & TSK & MTG == "domain events" ==> NTF & AUD & RT
 ```
 
-Solid arrows: HTTP (Refit or BFF). Double arrows: MassTransit events over RabbitMQ. Dotted: read-only Refit lookups (cached).
+Solid arrows: HTTP (Refit or BFF). Double arrows: integration events over RabbitMQ (Wolverine, ADR-0009). Dotted: read-only Refit lookups (cached).
 
 ## 2. Modules
 
@@ -67,7 +67,7 @@ Every module has the four projects from the skill (`Majlis.{Module}.Domain`, `.A
 - **Publishes:** `SessionEventAppended` (every timeline event, for the Realtime host), `TurnRequested`, `TurnStopRequested`, `SessionEnded`, `ControlChanged`, `ParticipantAdded/Removed` (+ `AccessRevoked`), `MentionCreated`.
 - **Consumes:** `TurnProgressed/TurnCompleted/TurnStopped/TurnFailed/ToolProposed/SummaryReady` (from ai-service), `ApprovalRequested/Decided/Executed/Expired` (from Approvals), `DriverPresenceLost/Restored` (from Realtime), `MemberRemoved`.
 - **Calls:** ai-service `POST /internal/sessions/{id}/turns` with the driver's token; Workspaces (membership, cached).
-- **Notes:** single writer of session state. Scale out horizontally — per-session ordering comes from the DB (row version + seq counter on `AgentSession`), not from in-memory state. Uses the MassTransit EF Core outbox so events are published only after commit and in order.
+- **Notes:** single writer of session state. Scale out horizontally — per-session ordering comes from the DB (row version + seq counter on `AgentSession`), not from in-memory state. Uses Wolverine's transactional outbox in the `rooms` schema so events are published only after commit and in order.
 
 ### Approvals — `approvals` · 7030
 - **Owns:** ApprovalPolicy, ApprovalRequest (tool, args, preview/diff, risk, requester, origin session/turn, expiry), ApprovalDecision (approve/reject/edit-then-approve).
@@ -131,7 +131,7 @@ Cloud is the priority and the only profile built now; on-prem follows the same c
 **`cloud` — one regional stamp per supported Azure region:**
 - Azure Container Apps, one app per host, internal ingress for everything except the BFF; zone redundant; minimum 2 replicas for BFF, Realtime, Rooms and Approvals, 1 for the rest in non-prod.
 - Azure SQL: one database `Majlis` with one schema per module (one login per module with rights on its schema only). The per-module DbContext lets a busy module (Rooms) move to its own database later without code changes.
-- Azure Cache for Redis with key prefixes `majlis:{purpose}:` (permissions, presence, stream, snapshots, tickets, backplane); RabbitMQ with one vhost `majlis` and MassTransit topology (one exchange per event type, one queue per consumer per module).
+- Azure Cache for Redis with key prefixes `majlis:{purpose}:` (permissions, presence, stream, snapshots, tickets, backplane); RabbitMQ with one vhost `majlis` and the Wolverine topology: one durable fanout exchange per event type (`majlis.{alias}`) and one queue per listening module (`{module}.{alias}`).
 
 **`on-prem` — one installation per customer (built later, when the first on-prem customer is confirmed):**
 - Helm chart for Kubernetes, or a Docker Compose bundle for a single server (small customers, pilots). Same images as the cloud.

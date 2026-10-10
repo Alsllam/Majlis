@@ -1,5 +1,6 @@
 using Majlis.Framework.Application.DynamicControllers;
 using Majlis.Framework.Application.Hosting;
+using Majlis.Framework.Application.Messaging;
 using Majlis.Rooms.Application;
 using Majlis.Rooms.EntityFrameworkCore;
 
@@ -13,7 +14,7 @@ services.AddCORSExtensions(config);
 services.AddLocalizationService();
 services.AddMajlisSwagger("Majlis Rooms API");
 services.AddRoomsEntityFrameworkCoreModule(config);
-services.AddSharedEntityFrameworkCoreModule<RoomsDbContext>(config, RoomsApplicationModule.ModuleName, typeof(RoomsApplicationModule).Assembly);
+builder.AddMajlisMessaging<RoomsDbContext>(RoomsApplicationModule.ModuleName, RoomsDbContext.SchemaName, RoomsApplicationModule.Topology, typeof(RoomsApplicationModule).Assembly);
 services.AddMajlisCache(config);
 services.AddLoggingService(config);
 services.AddOpenIddictExtension(config);

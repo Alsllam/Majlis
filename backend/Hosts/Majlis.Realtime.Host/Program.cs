@@ -1,4 +1,6 @@
 using Majlis.Framework.Application.Hosting;
+using Majlis.Framework.Application.Messaging;
+using Majlis.Framework.Domain.Events;
 using Majlis.Framework.Application.Security;
 using Majlis.Framework.Domain.Security;
 using Majlis.Realtime.Host.Auth;
@@ -47,7 +49,10 @@ services.AddRefitGeneratedClient<IRoomsInternalClient>()
     .ConfigureHttpClient(c => c.BaseAddress = new Uri(config["Services:RoomsUrl"] ?? "http://localhost:7020"))
     .AddHttpMessageHandler<ServiceTokenHandler>();
 
-services.AddMajlisMessaging(config, "realtime", typeof(Program).Assembly);
+builder.AddMajlisMessaging(
+    "realtime",
+    new MessagingTopology().Publish<SessionPresenceLost>().Publish<SessionPresenceRestored>().Listen<SessionEventAppended>(),
+    typeof(Program).Assembly);
 services.AddHostedService<StreamRelay>();
 services.AddHostedService<PresenceSweeper>();
 services.Configure<ForwardedHeadersOptions>(o =>

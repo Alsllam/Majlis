@@ -4,7 +4,6 @@ using Majlis.Framework.Domain.Security;
 using Majlis.Realtime.Host.Auth;
 using Majlis.Realtime.Host.Clients;
 using Majlis.Realtime.Host.Presence;
-using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
@@ -28,7 +27,7 @@ public sealed class SessionHub(
     IMemoryCache accessCache,
     PresenceStore presence,
     LocalConnections local,
-    IPublishEndpoint publisher,
+    IEventPublisher publisher,
     RealtimeTicketStore tickets,
     IConnectionMultiplexer redis,
     TimeProvider clock) : Hub
@@ -77,7 +76,7 @@ public sealed class SessionHub(
 
         if (await presence.UpsertAsync(sessionId, Context.ConnectionId, UserId, DisplayName, "active"))
         {
-            await publisher.Publish(new SessionPresenceRestored(sessionId, UserId, clock.GetUtcNow().UtcDateTime));
+            await publisher.PublishAsync(new SessionPresenceRestored(sessionId, UserId, clock.GetUtcNow().UtcDateTime), Context.ConnectionAborted);
         }
 
         var snapshot = await presence.SnapshotAsync(sessionId);
@@ -127,7 +126,7 @@ public sealed class SessionHub(
     {
         if (await presence.RemoveAsync(sessionId, Context.ConnectionId) is { } userId)
         {
-            await publisher.Publish(new SessionPresenceLost(sessionId, userId, clock.GetUtcNow().UtcDateTime));
+            await publisher.PublishAsync(new SessionPresenceLost(sessionId, userId, clock.GetUtcNow().UtcDateTime));
         }
 
         await Clients.Group(SessionGroup(sessionId)).SendAsync("presence", await presence.SnapshotAsync(sessionId));

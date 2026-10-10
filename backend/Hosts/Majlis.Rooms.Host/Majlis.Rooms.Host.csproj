@@ -6,4 +6,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Modules\Rooms\Majlis.Rooms.Application\Majlis.Rooms.Application.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Wolverine compiles handler code at startup (TypeLoadMode.Dynamic). Production will pre-generate it (TypeLoadMode.Static) and drop this. -->
+    <PackageReference Include="WolverineFx.RuntimeCompilation" />
+  </ItemGroup>
 </Project>

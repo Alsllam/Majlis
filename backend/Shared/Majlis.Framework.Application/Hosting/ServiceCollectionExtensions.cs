@@ -2,12 +2,8 @@ using System.Reflection;
 using System.Threading.RateLimiting;
 using FluentValidation;
 using Majlis.Framework.Application.Localization;
-using Majlis.Framework.Application.Messaging;
 using Majlis.Framework.Application.Security;
-using Majlis.Framework.Domain.Events;
 using Majlis.Framework.Domain.Security;
-using Majlis.Framework.EntityFrameworkCore;
-using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -44,57 +40,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ILocalizer, JsonLocalizer>();
         services.AddSingleton(TimeProvider.System);
         ValidatorOptions.Global.LanguageManager.Enabled = false;
-        return services;
-    }
-
-    /// <summary>
-    /// MassTransit over RabbitMQ with the EF Core outbox of <typeparamref name="TContext"/> and the consumers of
-    /// <paramref name="consumersAssembly"/>. Queues are prefixed with the module name so each module gets its own copy of an event.
-    /// </summary>
-    public static IServiceCollection AddSharedEntityFrameworkCoreModule<TContext>(
-        this IServiceCollection services, IConfiguration configuration, string moduleName, Assembly? consumersAssembly)
-        where TContext : MajlisDbContext
-        => services.AddMajlisMessaging(configuration, moduleName, consumersAssembly, x =>
-        {
-            x.AddEntityFrameworkOutbox<TContext>(o =>
-            {
-                o.UseSqlServer();
-                o.UseBusOutbox();
-                o.QueryDelay = TimeSpan.FromMilliseconds(250);
-            });
-            x.AddConfigureEndpointsCallback((context, _, cfg) => cfg.UseEntityFrameworkOutbox<TContext>(context));
-        });
-
-    /// <summary>MassTransit over RabbitMQ without a database (hosts that only consume or fan out, e.g. Realtime).</summary>
-    public static IServiceCollection AddMajlisMessaging(
-        this IServiceCollection services, IConfiguration configuration, string moduleName, Assembly? consumersAssembly,
-        Action<IBusRegistrationConfigurator>? configure = null)
-    {
-        var rabbit = configuration.GetSection("RabbitMq").Get<RabbitMqSettings>() ?? new RabbitMqSettings();
-        services.AddMassTransit(x =>
-        {
-            x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter(moduleName, false));
-            if (consumersAssembly is not null)
-            {
-                x.AddConsumers(consumersAssembly);
-            }
-
-            x.AddConfigureEndpointsCallback((_, _, cfg) =>
-                cfg.UseMessageRetry(r => r.Exponential(5, TimeSpan.FromMilliseconds(200), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(200))));
-            configure?.Invoke(x);
-
-            x.UsingRabbitMq((context, cfg) =>
-            {
-                cfg.Host(rabbit.Host, rabbit.VirtualHost, h =>
-                {
-                    h.Username(rabbit.Username);
-                    h.Password(rabbit.Password);
-                });
-                cfg.ConfigureEndpoints(context);
-            });
-        });
-
-        services.AddScoped<IEventPublisher, MassTransitEventPublisher>();
         return services;
     }
 

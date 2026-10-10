@@ -36,7 +36,7 @@ public class ArchitectureTests
     {
         var result = Types.InAssembly(Load(assembly))
             .ShouldNot()
-            .HaveDependencyOnAny("Microsoft.EntityFrameworkCore", "Microsoft.AspNetCore.Mvc", "Microsoft.AspNetCore.Http", "MassTransit")
+            .HaveDependencyOnAny("Microsoft.EntityFrameworkCore", "Microsoft.AspNetCore.Mvc", "Microsoft.AspNetCore.Http", "Wolverine", "MassTransit")
             .GetResult();
 
         Assert.True(result.IsSuccessful, Failing(result));
