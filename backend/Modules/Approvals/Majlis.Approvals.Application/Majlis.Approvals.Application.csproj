@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Majlis.Approvals.Application</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Majlis.Approvals.Domain\Majlis.Approvals.Domain.csproj" />
+    <ProjectReference Include="..\Majlis.Approvals.EntityFrameworkCore\Majlis.Approvals.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Majlis.Framework.Application\Majlis.Framework.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="WolverineFx" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\*.json" />
+  </ItemGroup>
+</Project>

@@ -13,6 +13,8 @@ public class ArchitectureTests
         typeof(Majlis.Identity.Domain.Entities.Tenant).Assembly,
         typeof(Majlis.Workspaces.Domain.Entities.Workspace).Assembly,
         typeof(Majlis.Knowledge.Domain.Entities.Document).Assembly,
+        typeof(Majlis.Approvals.Domain.Entities.ApprovalRequest).Assembly,
+        typeof(Majlis.Tasks.Domain.Entities.TaskItem).Assembly,
     ];
 
     private static readonly Assembly[] AllMajlis =
@@ -28,7 +30,13 @@ public class ArchitectureTests
         typeof(Majlis.Workspaces.Application.WorkspacesApplicationModule).Assembly,
         typeof(Majlis.Knowledge.EntityFrameworkCore.KnowledgeDbContext).Assembly,
         typeof(Majlis.Knowledge.Application.KnowledgeApplicationModule).Assembly,
+        typeof(Majlis.Approvals.EntityFrameworkCore.ApprovalsDbContext).Assembly,
+        typeof(Majlis.Approvals.Application.ApprovalsApplicationModule).Assembly,
+        typeof(Majlis.Tasks.EntityFrameworkCore.TasksDbContext).Assembly,
+        typeof(Majlis.Tasks.Application.TasksApplicationModule).Assembly,
     ];
+
+    private static readonly string[] ModuleRoots = ["Majlis.Identity", "Majlis.Rooms", "Majlis.Workspaces", "Majlis.Knowledge", "Majlis.Approvals", "Majlis.Tasks"];
 
     public static TheoryData<string> DomainNames => new(Domains.Select(a => a.GetName().Name!));
 
@@ -62,6 +70,19 @@ public class ArchitectureTests
     {
         var identity = AllMajlis.Where(a => a.GetName().Name!.StartsWith("Majlis.Identity.", StringComparison.Ordinal)).ToArray();
         var result = Types.InAssemblies(identity).ShouldNot().HaveDependencyOnAny("Majlis.Rooms", "Majlis.Workspaces").GetResult();
+
+        Assert.True(result.IsSuccessful, Failing(result));
+    }
+
+    [Theory]
+    [InlineData("Majlis.Approvals.")]
+    [InlineData("Majlis.Tasks.")]
+    [InlineData("Majlis.Knowledge.")]
+    public void Module_ShouldNotReferenceOtherModules_WhenCompiled(string prefix)
+    {
+        var module = AllMajlis.Where(a => a.GetName().Name!.StartsWith(prefix, StringComparison.Ordinal)).ToArray();
+        var others = ModuleRoots.Where(o => !prefix.StartsWith(o, StringComparison.Ordinal)).ToArray();
+        var result = Types.InAssemblies(module).ShouldNot().HaveDependencyOnAny(others).GetResult();
 
         Assert.True(result.IsSuccessful, Failing(result));
     }

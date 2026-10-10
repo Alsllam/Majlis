@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>Majlis.Approvals.Host</RootNamespace>
+    <UserSecretsId>majlis-approvals-host</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Approvals\Majlis.Approvals.Application\Majlis.Approvals.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Wolverine compiles handler code at startup (TypeLoadMode.Dynamic). Production will pre-generate it (TypeLoadMode.Static) and drop this. -->
+    <PackageReference Include="WolverineFx.RuntimeCompilation" />
+  </ItemGroup>
+</Project>

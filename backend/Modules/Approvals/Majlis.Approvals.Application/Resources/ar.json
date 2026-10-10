@@ -1,0 +1,9 @@
+{
+  "Approvals:Request:NotWorkspaceMember": "لست عضواً في مساحة العمل هذه.",
+  "Approvals:Request:NotPending": "تم البتّ في هذا الطلب من قبل أو انتهت صلاحيته.",
+  "Approvals:Request:SelfApprovalNotAllowed": "لا يمكن لمن طلب هذا الإجراء اعتماده بنفسه؛ يلزم معتمد آخر.",
+  "Approvals:Request:ApproverRoleRequired": "اعتماد هذا الإجراء يتطلب مالك مساحة العمل أو مشرفها.",
+  "Approvals:Request:UnknownTool": "الأداة المطلوبة غير معروفة.",
+  "Approvals:Request:InvalidArgs": "معطيات الإجراء غير صالحة.",
+  "Approvals:Request:ReasonRequired": "اذكر سبب الرفض."
+}

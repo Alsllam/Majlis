@@ -14,6 +14,10 @@ public static class SessionEventTypes
     public const string TurnCompleted = "turn.completed";
     public const string TurnStopped = "turn.stopped";
     public const string TurnFailed = "turn.failed";
+    public const string ApprovalRequested = "approval.requested";
+    public const string ApprovalDecided = "approval.decided";
+    public const string ApprovalExecuted = "approval.executed";
+    public const string ApprovalExpired = "approval.expired";
 }
 
 public static class ActorKinds

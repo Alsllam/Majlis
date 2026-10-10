@@ -10,6 +10,8 @@
     <ProjectReference Include="..\..\Modules\Identity\Majlis.Identity.Application\Majlis.Identity.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Workspaces\Majlis.Workspaces.Application\Majlis.Workspaces.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Knowledge\Majlis.Knowledge.Application\Majlis.Knowledge.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Approvals\Majlis.Approvals.Application\Majlis.Approvals.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Tasks\Majlis.Tasks.Application\Majlis.Tasks.Application.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NetArchTest.Rules" />

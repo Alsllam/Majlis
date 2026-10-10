@@ -1,0 +1,5 @@
+{
+  "Tasks:Task:NotWorkspaceMember": "لست عضواً في مساحة العمل هذه.",
+  "Tasks:Task:AssigneeNotMember": "المكلَّف ليس عضواً في مساحة العمل.",
+  "Tasks:Task:Created": "أُنشئت المهمة «{0}»."
+}

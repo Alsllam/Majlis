@@ -29,7 +29,10 @@ public static class RoomsApplicationModule
         .Listen<SessionPresenceRestored>()
         .Listen<MemberAdded>()
         .Listen<MemberRoleChanged>()
-        .Listen<MemberRemoved>();
+        .Listen<MemberRemoved>()
+        .Listen<ApprovalRequested>()
+        .Listen<ApprovalDecided>()
+        .Listen<ApprovalExecuted>();
 
     public static IServiceCollection AddRoomsApplicationModule(this IServiceCollection services, IConfiguration configuration)
     {

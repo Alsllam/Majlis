@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>Majlis.Tasks.Host</RootNamespace>
+    <UserSecretsId>majlis-tasks-host</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Tasks\Majlis.Tasks.Application\Majlis.Tasks.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Wolverine compiles handler code at startup (TypeLoadMode.Dynamic). Production will pre-generate it (TypeLoadMode.Static) and drop this. -->
+    <PackageReference Include="WolverineFx.RuntimeCompilation" />
+  </ItemGroup>
+</Project>

@@ -29,6 +29,15 @@ public static class WorkspaceRolePermissions
         "Permissions.Rooms.ManageParticipants",
         "Permissions.Rooms.DriveSession",
         "Permissions.Rooms.TakeOverSession",
+        "Permissions.Knowledge.ViewDocument",
+        "Permissions.Knowledge.UploadDocument",
+        "Permissions.Knowledge.DeleteDocument",
+        "Permissions.Approvals.ViewApproval",
+        "Permissions.Approvals.RequestAction",
+        "Permissions.Approvals.ApproveAction",
+        "Permissions.Tasks.ViewTask",
+        "Permissions.Tasks.CreateTask",
+        "Permissions.Tasks.UpdateTask",
     ];
 
     public static IReadOnlyList<string> For(WorkspaceRole role) => role switch
@@ -41,8 +50,23 @@ public static class WorkspaceRolePermissions
             "Permissions.Rooms.ViewRoom",
             "Permissions.Rooms.CreateRoom",
             "Permissions.Rooms.DriveSession",
+            "Permissions.Knowledge.ViewDocument",
+            "Permissions.Knowledge.UploadDocument",
+            "Permissions.Approvals.ViewApproval",
+            "Permissions.Approvals.RequestAction",
+            "Permissions.Approvals.ApproveAction",
+            "Permissions.Tasks.ViewTask",
+            "Permissions.Tasks.CreateTask",
+            "Permissions.Tasks.UpdateTask",
         ],
-        WorkspaceRole.Viewer => [WorkspacesPermissions.ViewWorkspace, "Permissions.Rooms.ViewRoom"],
+        WorkspaceRole.Viewer =>
+        [
+            WorkspacesPermissions.ViewWorkspace,
+            "Permissions.Rooms.ViewRoom",
+            "Permissions.Knowledge.ViewDocument",
+            "Permissions.Approvals.ViewApproval",
+            "Permissions.Tasks.ViewTask",
+        ],
         _ => [],
     };
 

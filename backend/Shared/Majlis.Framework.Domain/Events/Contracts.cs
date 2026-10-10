@@ -68,3 +68,59 @@ public sealed record DocumentIndexed(Guid TenantId, Guid DocumentId, Guid Versio
 
 /// <summary>ai-service → Knowledge: ingestion failed; <c>ReasonKey</c> is a localization key.</summary>
 public sealed record DocumentIndexingFailed(Guid TenantId, Guid DocumentId, Guid VersionId, string ReasonKey, string? Detail) : IEvent;
+
+// Approvals ↔ Rooms, Tasks, Knowledge (FR-APR-001…007). The tool → owning module map is configuration in Approvals.
+
+/// <summary>Approvals → Rooms: a mutating tool proposed by the agent waits for a person (appended as <c>approval.requested</c>).</summary>
+public sealed record ApprovalRequested(
+    Guid TenantId,
+    Guid WorkspaceId,
+    Guid RoomId,
+    Guid SessionId,
+    Guid? TurnId,
+    Guid RequestId,
+    string Tool,
+    string Summary,
+    string? Reason,
+    string Risk,
+    string ArgsJson,
+    Guid RequestedByUserId,
+    string RequestedByDisplayName,
+    DateTime ExpiresAt) : IEvent;
+
+/// <summary>Approvals → Rooms: a person approved or rejected (<c>Decision</c> = Approved | Rejected), or the request expired.</summary>
+public sealed record ApprovalDecided(
+    Guid TenantId,
+    Guid SessionId,
+    Guid RequestId,
+    string Tool,
+    string Decision,
+    Guid? DecidedByUserId,
+    string? DecidedByDisplayName,
+    string? Note,
+    string? EditedArgsJson) : IEvent;
+
+/// <summary>Approvals → Rooms: the owning module ran the action (or failed); <c>ResultSummary</c> is shown on the card.</summary>
+public sealed record ApprovalExecuted(Guid TenantId, Guid SessionId, Guid RequestId, string Tool, bool Succeeded, string? ResultSummary, Guid? EntityId, string? ReasonKey) : IEvent;
+
+/// <summary>Approvals → the owning module: run the tool with these (possibly edited) arguments, idempotently on <c>RequestId</c>.</summary>
+public sealed record ActionApproved(
+    Guid TenantId,
+    Guid WorkspaceId,
+    Guid RoomId,
+    Guid SessionId,
+    Guid? TurnId,
+    Guid RequestId,
+    string Tool,
+    string ArgsJson,
+    Guid RequestedByUserId,
+    string RequestedByDisplayName,
+    Guid ApprovedByUserId,
+    string ApprovedByDisplayName) : IEvent;
+
+public sealed record ActionRejected(Guid TenantId, Guid SessionId, Guid RequestId, string Tool, Guid RejectedByUserId, string? Reason) : IEvent;
+
+/// <summary>Owning module → Approvals: the action ran; <c>EntityId</c> is the created or changed record.</summary>
+public sealed record ActionExecuted(Guid TenantId, Guid RequestId, string Tool, Guid? EntityId, string? ResultSummary) : IEvent;
+
+public sealed record ActionExecutionFailed(Guid TenantId, Guid RequestId, string Tool, string ReasonKey, string? Detail) : IEvent;

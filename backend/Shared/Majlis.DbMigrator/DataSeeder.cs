@@ -8,6 +8,8 @@ using Majlis.Workspaces.Domain.Entities;
 using Majlis.Workspaces.Domain.Enums;
 using Majlis.Workspaces.EntityFrameworkCore;
 using Majlis.Knowledge.EntityFrameworkCore;
+using Majlis.Approvals.EntityFrameworkCore;
+using Majlis.Tasks.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -23,6 +25,8 @@ public sealed partial class DataSeeder(
     RoomsDbContext roomsDb,
     WorkspacesDbContext workspacesDb,
     KnowledgeDbContext knowledgeDb,
+    ApprovalsDbContext approvalsDb,
+    TasksDbContext tasksDb,
     UserManager<MajlisUser> users,
     RoleManager<MajlisRole> roles,
     IOpenIddictApplicationManager applications,
@@ -227,6 +231,22 @@ public sealed partial class DataSeeder(
         }
 
         await knowledgeDb.SaveChangesAsync();
+
+        var knownInApprovals = await approvalsDb.WorkspaceMemberships.IgnoreQueryFilters().Where(m => m.WorkspaceId == Seed.DemoWorkspaceId).Select(m => m.UserId).ToListAsync();
+        foreach (var member in members.Where(m => !knownInApprovals.Contains(m.UserId)))
+        {
+            approvalsDb.WorkspaceMemberships.Add(new Majlis.Approvals.Domain.Entities.WorkspaceMembership(Seed.TenantId, Seed.DemoWorkspaceId, member.UserId, member.DisplayName, member.Role.ToString()));
+        }
+
+        await approvalsDb.SaveChangesAsync();
+
+        var knownInTasks = await tasksDb.WorkspaceMemberships.IgnoreQueryFilters().Where(m => m.WorkspaceId == Seed.DemoWorkspaceId).Select(m => m.UserId).ToListAsync();
+        foreach (var member in members.Where(m => !knownInTasks.Contains(m.UserId)))
+        {
+            tasksDb.WorkspaceMemberships.Add(new Majlis.Tasks.Domain.Entities.WorkspaceMembership(Seed.TenantId, Seed.DemoWorkspaceId, member.UserId, member.DisplayName, member.Role.ToString()));
+        }
+
+        await tasksDb.SaveChangesAsync();
     }
 
     private async Task SeedDemoRoomAsync(List<MajlisUser> seededUsers)
