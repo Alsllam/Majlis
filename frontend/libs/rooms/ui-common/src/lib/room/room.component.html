@@ -1,0 +1,124 @@
+@let room = facade.room();
+@let state = facade.state();
+<div class="room-screen">
+  <header class="room-head card-surface">
+    <div class="titles">
+      <a routerLink="/rooms" class="back">‹ {{ 'Rooms.Back' | translate }}</a>
+      <h1>{{ room?.name ?? ('General.Loading' | translate) }}</h1>
+      @if (room?.purpose) {
+        <p class="purpose">{{ room?.purpose }}</p>
+      }
+    </div>
+    <div class="control">
+      <span class="status-tag" [class]="'status-tag status-tag-' + (facade.connection() === 'connected' ? 'success' : 'warning')">
+        {{ 'Session.Connection.' + facade.connection() | translate }}
+      </span>
+      @if (state?.status === 'Active') {
+        @if (state?.driver; as driver) {
+          <span class="driver" [class.me]="facade.isDriver()">
+            <majlis-avatar [name]="driver.displayName" [driver]="true" style="--avatar-size: 24px" />
+            {{ facade.isDriver() ? ('Control.YouDrive' | translate) : ('Control.Driver' | translate) + ': ' + driver.displayName }}
+          </span>
+        } @else {
+          <span class="status-tag status-tag-info">{{ 'Control.Free' | translate }}</span>
+        }
+        @if (facade.isDriver()) {
+          @if (facade.colleagues().length) {
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="handOff()" [disabled]="facade.busy()">{{ 'Control.HandOff' | translate }}</button>
+          }
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="facade.release()" [disabled]="facade.busy()">{{ 'Control.Release' | translate }}</button>
+          <button type="button" class="btn btn-sm btn-outline-danger" (click)="facade.end()" [disabled]="facade.busy()">{{ 'Session.End' | translate }}</button>
+        } @else if (facade.canDrive()) {
+          @if (facade.controlFree()) {
+            <button type="button" class="btn btn-sm btn-primary" (click)="facade.claim()" [majlisBusy]="facade.busy()">{{ 'Control.Claim' | translate }}</button>
+          } @else if (!facade.myRequestPending()) {
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="facade.requestControl()" [majlisBusy]="facade.busy()">{{ 'Control.Request' | translate }}</button>
+          } @else {
+            <span class="status-tag status-tag-warning">{{ 'Control.Requested' | translate }}</span>
+          }
+          @if (facade.canTakeOver() && !facade.controlFree()) {
+            <button type="button" class="btn btn-sm btn-outline-danger" (click)="facade.takeOver()" [disabled]="facade.busy()">{{ 'Control.TakeOver' | translate }}</button>
+          }
+        }
+      }
+    </div>
+  </header>
+
+  @if (state?.status === 'Active') {
+    @if (facade.isDriver() && state?.pendingRequests.length) {
+      @for (request of state?.pendingRequests; track request.id) {
+        <div class="banner card-surface" role="status">
+          <span>{{ 'Control.RequestFrom' | translate: { name: request.displayName } }}</span>
+          <span class="actions">
+            <button type="button" class="btn btn-sm btn-primary" (click)="facade.resolveRequest(request.id, true)" [disabled]="facade.busy()">{{ 'General.Accept' | translate }}</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="facade.resolveRequest(request.id, false)" [disabled]="facade.busy()">{{ 'General.Decline' | translate }}</button>
+          </span>
+        </div>
+      }
+    }
+    @if (facade.handOffToMe()) {
+      <div class="banner card-surface handoff" role="status">
+        <span>
+          {{ 'Control.HandOffOffered' | translate: { name: state?.driver?.displayName ?? '' } }}
+          @if (state?.pendingHandOffNote) { <em class="note">«{{ state?.pendingHandOffNote }}»</em> }
+        </span>
+        <span class="actions">
+          <button type="button" class="btn btn-sm btn-primary" (click)="facade.resolveHandOff(true)" [disabled]="facade.busy()">{{ 'General.Accept' | translate }}</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="facade.resolveHandOff(false)" [disabled]="facade.busy()">{{ 'General.Decline' | translate }}</button>
+        </span>
+      </div>
+    } @else if (facade.isDriver() && state?.pendingHandOffTo; as to) {
+      <div class="banner card-surface" role="status">{{ 'Control.HandOffPending' | translate: { name: to.displayName } }}</div>
+    }
+  }
+
+  <div class="body">
+    <section class="session card-surface">
+      @if (facade.loading()) {
+        <p class="p-4 text-secondary">{{ 'General.Loading' | translate }}</p>
+      } @else if (!state) {
+        <majlis-empty-state title="Session.Start" text="Session.StartText">
+          @if (facade.canDrive()) {
+            <button type="button" class="btn btn-primary" (click)="facade.startSession()" [majlisBusy]="facade.busy()">{{ 'Session.Start' | translate }}</button>
+          }
+        </majlis-empty-state>
+      } @else {
+        <majlis-session-timeline [items]="facade.timeline()" [meId]="facade.me()?.id ?? ''" />
+        @if (state.status === 'Active') {
+          <majlis-session-composer
+            [canInstruct]="facade.canInstruct()"
+            [running]="!!facade.activeTurn()"
+            [isDriver]="facade.isDriver()"
+            [driverName]="state.driver?.displayName ?? null"
+            [busy]="facade.busy()"
+            (send)="facade.instruct($event)"
+            (stop)="facade.stop()" />
+        } @else {
+          <div class="ended">
+            <span>{{ 'Session.EndedText' | translate }}</span>
+            @if (facade.canDrive()) {
+              <button type="button" class="btn btn-primary btn-sm" (click)="facade.startSession()" [majlisBusy]="facade.busy()">{{ 'Session.Start' | translate }}</button>
+            }
+          </div>
+        }
+      }
+    </section>
+
+    <aside class="people card-surface" [attr.aria-label]="'Presence.Here' | translate">
+      <h2>{{ 'Presence.Here' | translate }}</h2>
+      <ul>
+        @for (p of facade.presence(); track p.userId) {
+          <li [class.idle]="p.state === 'idle'">
+            <majlis-avatar [name]="p.displayName" [driver]="p.userId === state?.driver?.userId" style="--avatar-size: 28px" />
+            <span class="who">
+              <span class="name">{{ p.displayName }}</span>
+              <span class="state">{{ 'Presence.' + p.state | translate }}</span>
+            </span>
+          </li>
+        } @empty {
+          <li class="text-secondary">—</li>
+        }
+      </ul>
+    </aside>
+  </div>
+</div>

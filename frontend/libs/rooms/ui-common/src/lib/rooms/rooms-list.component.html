@@ -1,0 +1,39 @@
+<majlis-page-header title="Rooms.Title" subtitle="Rooms.Subtitle">
+  @if (items()?.length) {
+    <button *majlisPermission="permissions.createRoom" type="button" class="btn btn-primary" (click)="create()">
+      + {{ 'Rooms.Create' | translate }}
+    </button>
+  }
+</majlis-page-header>
+
+@if (items() === null) {
+  <div class="grid">
+    @for (s of skeleton; track s) {
+      <div class="card-surface room skeleton" aria-hidden="true"></div>
+    }
+  </div>
+} @else if (items()?.length === 0) {
+  <majlis-empty-state title="Rooms.EmptyTitle" text="Rooms.EmptyText" />
+} @else {
+  <div class="grid">
+    @for (room of items(); track room.id; let i = $index) {
+      <a class="card-surface room" [routerLink]="[room.id]" [style.animation-delay.ms]="i * 30">
+        <div class="head">
+          <h2>{{ room.name }}</h2>
+          @if (room.activeSessionId) {
+            <span class="status-tag status-tag-success"><span class="live"></span>{{ 'Rooms.Live' | translate }}</span>
+          } @else {
+            <span class="status-tag status-tag-neutral">{{ 'Rooms.NoSession' | translate }}</span>
+          }
+        </div>
+        @if (room.purpose) {
+          <p class="purpose">{{ room.purpose }}</p>
+        }
+        <div class="meta">
+          <span>{{ 'Rooms.Participants' | translate: { count: (room.participantCount | enar) } }}</span>
+          <span class="num">{{ room.creationTime | date: 'mediumDate' : undefined : lang() }}</span>
+        </div>
+      </a>
+    }
+  </div>
+}

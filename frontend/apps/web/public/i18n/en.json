@@ -1,0 +1,129 @@
+{
+  "General": {
+    "MainMenu": "Main menu",
+    "ToggleMenu": "Show or hide the menu",
+    "Language": "Language",
+    "Theme": "Theme",
+    "SignOut": "Sign out",
+    "Close": "Close",
+    "Cancel": "Cancel",
+    "Save": "Save",
+    "Create": "Create",
+    "Home": "Home",
+    "Loading": "Loading…",
+    "Accept": "Accept",
+    "Decline": "Decline",
+    "Send": "Send",
+    "Stop": "Stop",
+    "Retry": "Retry"
+  },
+  "Language": {
+    "ar": "العربية",
+    "en": "English"
+  },
+  "Theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "dim": "Dim"
+  },
+  "Menu": {
+    "Rooms": "Rooms"
+  },
+  "Errors": {
+    "Network": "The server could not be reached. Check your connection and try again.",
+    "Unexpected": "Something unexpected went wrong.",
+    "ForbiddenTitle": "You cannot open this page",
+    "ForbiddenText": "Ask your workspace admin for the right permission.",
+    "NotFoundTitle": "Page not found",
+    "NotFoundText": "The page may have moved or been deleted."
+  },
+  "Rooms": {
+    "Title": "Rooms",
+    "Subtitle": "Your shared rooms with the AI agent",
+    "Create": "New room",
+    "Name": "Room name",
+    "Purpose": "Purpose",
+    "Visibility": "Visibility",
+    "VisibilityPrivate": "Private",
+    "VisibilityOpen": "Open",
+    "Participants": "{{count}} participants",
+    "Live": "Live session",
+    "NoSession": "No session",
+    "EmptyTitle": "No rooms yet",
+    "EmptyText": "Create a room to work with your team and the AI agent in one session.",
+    "Created": "Room created",
+    "Open": "Open room",
+    "NameRequired": "The room name is required",
+    "Back": "All rooms"
+  },
+  "Session": {
+    "Start": "Start a session",
+    "StartText": "Start a session with the AI agent; everyone in the room can watch and take part.",
+    "Ended": "Session ended",
+    "EndedText": "This session has ended. Start a new one to continue.",
+    "End": "End session",
+    "Composer": "Write your instruction for the agent…",
+    "ComposerHint": "Enter to send · Shift+Enter for a new line",
+    "ViewerHint": "{{name}} is driving. You can follow along or request control.",
+    "FreeHint": "Nobody is driving. You can take control.",
+    "TurnRunning": "The agent is working…",
+    "Thinking": "Thinking",
+    "Stopped": "Stopped",
+    "Failed": "Failed",
+    "AiLabel": "AI-generated",
+    "Sources": "Sources",
+    "Agent": "Agent",
+    "You": "You",
+    "EmptyTimeline": "No instructions yet. The driver writes the first one.",
+    "Connection": {
+      "connected": "Connected",
+      "connecting": "Connecting…",
+      "reconnecting": "Reconnecting…",
+      "offline": "Offline"
+    },
+    "Reason": {
+      "AiUnavailable": "The AI service is unavailable right now",
+      "ModelError": "The answer could not be completed",
+      "Unknown": "The answer could not be completed",
+      "AiBusy": "The AI service is busy right now; try again in a moment",
+      "Cancelled": "The answer was cancelled"
+    }
+  },
+  "Control": {
+    "Driver": "Driver",
+    "Free": "Control is free",
+    "YouDrive": "You are driving",
+    "Claim": "Take control",
+    "Request": "Request control",
+    "Requested": "Request sent",
+    "TakeOver": "Take over",
+    "Release": "Release control",
+    "HandOff": "Hand off",
+    "HandOffTo": "Hand control to",
+    "HandOffNote": "Note for your colleague (optional)",
+    "HandOffPending": "Hand-off pending to {{name}}",
+    "HandOffOffered": "{{name}} offers you control of the session",
+    "RequestFrom": "{{name}} requests control",
+    "Changed": {
+      "start": "{{to}} started the session",
+      "claim": "{{to}} took control",
+      "request-accepted": "{{from}} handed control to {{to}} on request",
+      "handoff": "{{from}} handed control to {{to}}",
+      "takeover": "{{to}} took over control from {{from}}",
+      "release": "{{from}} released control",
+      "timeout": "Control was freed because {{from}} was away",
+      "other": "Session control changed"
+    },
+    "Requested_": "{{name}} requested control",
+    "RequestResolved": "The control request was resolved",
+    "HandOffResolved": "The hand-off was resolved",
+    "ChangedWarning": "Session control changed; the state was refreshed."
+  },
+  "Presence": {
+    "Here": "Here now",
+    "idle": "Idle",
+    "active": "Active",
+    "typing:comment": "Typing a comment",
+    "typing:suggestion": "Typing a suggestion"
+  }
+}

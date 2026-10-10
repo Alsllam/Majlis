@@ -1,0 +1,75 @@
+<div class="shell" [class.collapsed]="collapsed()">
+  <aside class="sidebar" [attr.aria-label]="'General.MainMenu' | translate">
+    <a class="brand" routerLink="/">
+      <img [src]="logo()" alt="Majlis · مجلس" height="32" width="120" />
+    </a>
+    <nav>
+      @for (node of routes.tree(); track node.name) {
+        @if (node.children.length === 0) {
+          <a class="item" [routerLink]="node.path" routerLinkActive="active" [attr.title]="node.name | translate">
+            <span class="icon" aria-hidden="true">{{ node.icon }}</span>
+            <span class="label">{{ node.name | translate }}</span>
+          </a>
+        } @else {
+          <div class="group">
+            <span class="group-title">{{ node.name | translate }}</span>
+            @for (child of node.children; track child.name) {
+              <a class="item" [routerLink]="child.path" routerLinkActive="active">
+                <span class="icon" aria-hidden="true">{{ child.icon }}</span>
+                <span class="label">{{ child.name | translate }}</span>
+              </a>
+            }
+          </div>
+        }
+      }
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button type="button" class="icon-btn" (click)="toggle()" [attr.aria-label]="'General.ToggleMenu' | translate">☰</button>
+      <span class="spacer"></span>
+
+      <div ngbDropdown class="d-inline-block">
+        <button type="button" class="chip" ngbDropdownToggle [attr.aria-label]="'General.Language' | translate">
+          {{ 'Language.' + localization.lang() | translate }}
+        </button>
+        <div ngbDropdownMenu>
+          @for (lang of languages; track lang) {
+            <button ngbDropdownItem type="button" [class.active]="lang === localization.lang()" (click)="localization.use(lang)">
+              {{ 'Language.' + lang | translate }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div ngbDropdown class="d-inline-block">
+        <button type="button" class="chip" ngbDropdownToggle [attr.aria-label]="'General.Theme' | translate">
+          {{ 'Theme.' + theme.theme() | translate }}
+        </button>
+        <div ngbDropdownMenu>
+          @for (t of themes; track t) {
+            <button ngbDropdownItem type="button" [class.active]="t === theme.theme()" (click)="theme.use(t)">
+              {{ 'Theme.' + t | translate }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div ngbDropdown class="d-inline-block" placement="bottom-end">
+        <button type="button" class="avatar-btn" ngbDropdownToggle [attr.aria-label]="auth.user()?.name">
+          <span class="avatar">{{ initials() }}</span>
+          <span class="name d-none d-md-inline">{{ auth.user()?.name }}</span>
+        </button>
+        <div ngbDropdownMenu>
+          <button ngbDropdownItem type="button" (click)="auth.logout()">{{ 'General.SignOut' | translate }}</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>
+<majlis-toasts />

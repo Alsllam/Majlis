@@ -1,1 +1,64 @@
-/* You can add global styles to this file, and also import other style files */
+/* Brand tokens are copied from docs/brand/tokens/css (the master copy); never edit them here first. */
+@use './styles/brand/fonts.css';
+@use './styles/brand/colors.css';
+@use './styles/brand/typography.css';
+@use './styles/brand/motion.css';
+
+/* Bootstrap (loaded as /vendor/bootstrap[.rtl].min.css in index.html) reads the brand through its variables. */
+:root,
+[data-bs-theme] {
+  --bs-body-font-family: var(--font-sans);
+  --bs-body-bg: var(--surface-sunken);
+  --bs-body-color: var(--text-primary);
+  --bs-secondary-color: var(--text-muted);
+  --bs-border-color: var(--border-subtle);
+  --bs-border-radius: var(--radius-md);
+  --bs-link-color: var(--brand-text);
+  --bs-link-hover-color: var(--brand-solid-hover);
+  --bs-primary: var(--brand-solid);
+  --bs-primary-rgb: 6, 115, 104;
+  --bs-focus-ring-color: color-mix(in srgb, var(--focus-ring) 40%, transparent);
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--brand-solid);
+  --bs-btn-border-color: var(--brand-solid);
+  --bs-btn-color: var(--text-on-brand);
+  --bs-btn-hover-bg: var(--brand-solid-hover);
+  --bs-btn-hover-border-color: var(--brand-solid-hover);
+  --bs-btn-active-bg: var(--brand-solid-hover);
+  --bs-btn-active-border-color: var(--brand-solid-hover);
+  --bs-btn-disabled-bg: var(--brand-solid);
+  --bs-btn-disabled-border-color: var(--brand-solid);
+}
+.btn-outline-primary {
+  --bs-btn-color: var(--brand-text);
+  --bs-btn-border-color: var(--brand-solid);
+  --bs-btn-hover-bg: var(--brand-subtle);
+  --bs-btn-hover-color: var(--brand-subtle-text);
+  --bs-btn-hover-border-color: var(--brand-solid);
+  --bs-btn-active-bg: var(--brand-subtle);
+  --bs-btn-active-color: var(--brand-subtle-text);
+}
+.btn { transition: transform var(--motion-fast) var(--ease-out), box-shadow var(--motion-fast) var(--ease-out);
+  &:hover:not(:disabled) { transform: translateY(calc(-1 * var(--motion-distance-lift))); box-shadow: var(--shadow-sm); }
+  &:active:not(:disabled) { transform: scale(var(--motion-scale-press)); }
+}
+.form-control, .form-select {
+  background: var(--surface); color: var(--text-primary); border-color: var(--border-subtle);
+  &:focus { border-color: var(--focus-ring); box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--focus-ring) 30%, transparent); }
+}
+.dropdown-menu { --bs-dropdown-bg: var(--surface-overlay); --bs-dropdown-color: var(--text-primary); --bs-dropdown-link-color: var(--text-primary); --bs-dropdown-link-hover-bg: var(--surface-hover); --bs-dropdown-link-active-bg: var(--brand-subtle); --bs-dropdown-link-active-color: var(--brand-subtle-text); --bs-dropdown-border-color: var(--border-subtle); box-shadow: var(--shadow-md); }
+.modal-content { background: var(--surface-overlay); color: var(--text-primary); border-color: var(--border-subtle); border-radius: var(--radius-lg); }
+
+.card-surface { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-subtle); }
+.status-tag { display: inline-flex; align-items: center; gap: var(--space-1); padding: 2px var(--space-2); border-radius: var(--radius-full); font-size: var(--fs-xs); font-weight: var(--fw-medium); border: 1px solid transparent; }
+.status-tag-success { background: var(--success-bg); color: var(--success-text); border-color: var(--success-border); }
+.status-tag-warning { background: var(--warning-bg); color: var(--warning-text); border-color: var(--warning-border); }
+.status-tag-danger { background: var(--danger-bg); color: var(--danger-text); border-color: var(--danger-border); }
+.status-tag-info { background: var(--info-bg); color: var(--info-text); border-color: var(--info-border); }
+.status-tag-neutral { background: var(--surface-hover); color: var(--text-secondary); border-color: var(--border-subtle); }
+.status-tag-agent { background: var(--agent-subtle); color: var(--accent-text); }
+
+:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; } }

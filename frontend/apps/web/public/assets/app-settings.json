@@ -1,0 +1,21 @@
+{
+  "application": { "name": "Majlis", "baseUrl": "http://localhost:7000", "defaultLanguage": "ar" },
+  "oAuthConfig": {
+    "issuer": "http://localhost:7000/",
+    "clientId": "majlis-web",
+    "responseType": "code",
+    "scope": "openid profile offline_access majlis-api ai-api",
+    "requireHttps": false,
+    "strictDiscoveryDocumentValidation": false
+  },
+  "apis": {
+    "rooms": { "url": "http://localhost:7000/api/rooms" },
+    "ai": { "url": "http://localhost:7000/ai-api" }
+  },
+  "realtime": { "hubUrl": "http://localhost:7000/hubs/session", "ticketUrl": "http://localhost:7000/api/realtime/ticket" },
+  "rolePermissions": {
+    "TenantOwner": ["*"],
+    "TenantAdmin": ["*"],
+    "Member": ["Permissions.Rooms.ViewRoom", "Permissions.Rooms.CreateRoom", "Permissions.Rooms.DriveSession"]
+  }
+}

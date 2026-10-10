@@ -1,0 +1,46 @@
+<div class="timeline" #scroller>
+  @for (item of items(); track item.seq) {
+    @if (item.kind === 'notice') {
+      <div class="notice"><span>{{ item.key | translate: item.params }}</span><time class="num">{{ item.at | date: 'shortTime' : undefined : lang() }}</time></div>
+    } @else {
+      <article class="turn">
+        <div class="msg user" [class.me]="item.instructedBy.userId === meId()" [attr.lang]="item.language" [attr.dir]="item.language === 'ar' ? 'rtl' : 'ltr'">
+          <majlis-avatar [name]="item.instructedBy.displayName" style="--avatar-size: 28px" />
+          <div class="bubble">
+            <div class="meta"><span class="name">{{ item.instructedBy.userId === meId() ? ('Session.You' | translate) : item.instructedBy.displayName }}</span><time class="num">{{ item.at | date: 'shortTime' : undefined : lang() }}</time></div>
+            <p>{{ item.instruction }}</p>
+          </div>
+        </div>
+        <div class="msg agent" [attr.lang]="item.language" [attr.dir]="item.language === 'ar' ? 'rtl' : 'ltr'">
+          <majlis-avatar [name]="'Session.Agent' | translate" kind="agent" style="--avatar-size: 28px" />
+          <div class="bubble">
+            <div class="meta">
+              <span class="name">{{ 'Session.Agent' | translate }}</span>
+              <span class="status-tag status-tag-agent">{{ 'Session.AiLabel' | translate }}</span>
+              @if (item.status === 'stopped') { <span class="status-tag status-tag-warning">{{ 'Session.Stopped' | translate }}</span> }
+              @if (item.status === 'failed') { <span class="status-tag status-tag-danger">{{ 'Session.Failed' | translate }}</span> }
+            </div>
+            @if (item.text) {
+              <p class="text" [class.streaming]="item.status === 'streaming'">{{ item.text }}</p>
+            } @else if (item.status === 'streaming') {
+              <p class="thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span> {{ (item.progressKey ?? 'Session.Thinking') | translate }}</p>
+            }
+            @if (item.status === 'failed' && item.reasonKey) {
+              <p class="reason">{{ 'Session.Reason.' + item.reasonKey | translate }}</p>
+            }
+            @if (item.citations.length) {
+              <div class="sources">
+                <span class="label">{{ 'Session.Sources' | translate }}:</span>
+                @for (c of item.citations; track c.marker) {
+                  <span class="cite" [attr.title]="c.passage">[{{ c.marker }}] {{ c.title }}@if (c.page) { · {{ c.page }}}</span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </article>
+    }
+  } @empty {
+    <p class="empty">{{ 'Session.EmptyTimeline' | translate }}</p>
+  }
+</div>

@@ -7,7 +7,7 @@ A shared AI workspace for teams, Arabic-first. Teams work together with the same
 | Folder | Stack |
 |---|---|
 | [`backend/`](backend/CLAUDE.md) | .NET 10 modular backend, YARP BFF, OpenIddict, Wolverine, SQL Server |
-| [`frontend/`](frontend/CLAUDE.md) | Angular 20 in an Nx workspace, ECharts, AntV X6 |
+| [`frontend/`](frontend/CLAUDE.md) | Angular 22 in an Nx 23 workspace: brand theme (light/dark/dim, RTL), OAuth login through the BFF, SignalR client, the shared room screen |
 | [`mobile/`](mobile/CLAUDE.md) | Flutter, Clean Architecture, BLoC |
 | [`ai-service/`](ai-service/CLAUDE.md) | Python FastAPI, Azure OpenAI, Azure AI Search |
 | [`docs/`](docs/CLAUDE.md) | SRS, architecture, ADRs, brand kit |

@@ -4,11 +4,15 @@
   "projectType": "application",
   "prefix": "majlis",
   "sourceRoot": "apps/web/src",
-  "tags": ["type:app"],
+  "tags": [
+    "type:app"
+  ],
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/apps/web",
@@ -19,22 +23,34 @@
           {
             "glob": "**/*",
             "input": "apps/web/public"
+          },
+          {
+            "glob": "bootstrap{,.rtl}.min.css",
+            "input": "node_modules/bootstrap/dist/css",
+            "output": "vendor"
           }
         ],
-        "styles": ["apps/web/src/styles.scss"]
+        "styles": [
+          "apps/web/src/styles.scss"
+        ],
+        "stylePreprocessorOptions": {
+          "includePaths": [
+            "apps/web/src/styles"
+          ]
+        }
       },
       "configurations": {
         "production": {
           "budgets": [
             {
               "type": "initial",
-              "maximumWarning": "500kb",
-              "maximumError": "1mb"
+              "maximumWarning": "1mb",
+              "maximumError": "1.5mb"
             },
             {
               "type": "anyComponentStyle",
-              "maximumWarning": "4kb",
-              "maximumError": "8kb"
+              "maximumWarning": "8kb",
+              "maximumError": "16kb"
             }
           ],
           "outputHashing": "all"
@@ -57,6 +73,9 @@
         "development": {
           "buildTarget": "web:build:development"
         }
+      },
+      "options": {
+        "port": 4200
       }
     },
     "lint": {
@@ -64,7 +83,9 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
       "options": {
         "jestConfig": "apps/web/jest.config.cts",
         "tsConfig": "apps/web/tsconfig.spec.json"

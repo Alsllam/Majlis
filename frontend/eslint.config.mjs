@@ -16,10 +16,13 @@ export default [
           enforceBuildableLibDependency: true,
           allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
           depConstraints: [
-            {
-              sourceTag: '*',
-              onlyDependOnLibsWithTags: ['*'],
-            },
+            { sourceTag: 'type:app', onlyDependOnLibsWithTags: ['type:feature', 'type:config', 'type:proxy', 'type:ui', 'type:core'] },
+            { sourceTag: 'type:e2e', onlyDependOnLibsWithTags: [] },
+            { sourceTag: 'type:feature', onlyDependOnLibsWithTags: ['type:config', 'type:proxy', 'type:ui', 'type:core'] },
+            { sourceTag: 'type:config', onlyDependOnLibsWithTags: ['type:core'] },
+            { sourceTag: 'type:proxy', onlyDependOnLibsWithTags: ['type:core'] },
+            { sourceTag: 'type:ui', onlyDependOnLibsWithTags: ['type:core'] },
+            { sourceTag: 'type:core', onlyDependOnLibsWithTags: ['type:core'] },
           ],
         },
       ],

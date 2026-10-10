@@ -1,1 +1,1 @@
-export * from './lib/rooms-ui-common/rooms-ui-common';
+export * from './lib/rooms.routes';

@@ -1,1 +1,1 @@
-export * from './lib/shared-charts/shared-charts';
+export * from './lib/chart-themes';
