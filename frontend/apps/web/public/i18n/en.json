@@ -31,7 +31,8 @@
   },
   "Menu": {
     "Rooms": "Rooms",
-    "Workspaces": "Workspaces"
+    "Workspaces": "Workspaces",
+    "Documents": "Documents"
   },
   "Errors": {
     "Network": "The server could not be reached. Check your connection and try again.",
@@ -95,6 +96,9 @@
       "Unknown": "The answer could not be completed",
       "AiBusy": "The AI service is busy right now; try again in a moment",
       "Cancelled": "The answer was cancelled"
+    },
+    "Progress": {
+      "Searching": "Searching the team's documents…"
     }
   },
   "Control": {
@@ -186,5 +190,54 @@
     "RoleChanged": "Role changed",
     "Back": "All workspaces",
     "OpenRooms": "Rooms"
+  },
+  "Documents": {
+    "Title": "Documents",
+    "Subtitle": "The workspace knowledge the agent answers from, with citations",
+    "Upload": "Upload",
+    "Uploading": "Uploading",
+    "Confirming": "Confirming…",
+    "Queued": "Waiting to be indexed",
+    "UploadFailed": "Upload failed. Try again.",
+    "TypeNotSupported": "Unsupported file type",
+    "Uploaded": "{{name}} uploaded",
+    "Deleted": "Document deleted",
+    "Name": "Document",
+    "Type": "Type",
+    "Status": "Status",
+    "Pages": "Pages",
+    "Chunks": "Chunks",
+    "Added": "Added",
+    "File": "File",
+    "Download": "Download",
+    "Back": "All documents",
+    "Versions": "Versions",
+    "CitedPassage": "Cited passage",
+    "Page": "page {{page}}",
+    "EmptyTitle": "No documents yet",
+    "EmptyText": "Upload regulations, contracts and policies so the agent answers from them with the source and page.",
+    "Types": {
+      "Regulation": "Regulation",
+      "Contract": "Contract",
+      "Policy": "Policy",
+      "Sop": "Procedure",
+      "Report": "Report",
+      "Other": "Other"
+    },
+    "Statuses": {
+      "Pending": "Waiting for the file",
+      "Queued": "Queued",
+      "Processing": "Indexing",
+      "Indexed": "Indexed",
+      "Failed": "Failed",
+      "Superseded": "Older version"
+    },
+    "Reasons": {
+      "Knowledge:Ingestion:Unsupported": "Text could not be extracted from this type",
+      "Knowledge:Ingestion:Empty": "No text was found in the file",
+      "Knowledge:Ingestion:Failed": "Indexing failed",
+      "General:Errors:AiBusy": "The AI service is busy",
+      "General:Errors:AiNotConfigured": "The AI service is not configured"
+    }
   }
 }

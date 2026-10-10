@@ -1,0 +1,89 @@
+<majlis-page-header title="Documents.Title" subtitle="Documents.Subtitle">
+  @if (myWorkspaces()?.length) {
+    <select class="form-select form-select-sm ws-select" [ngModel]="selectedWorkspace()" (ngModelChange)="selectWorkspace($event)" [attr.aria-label]="'Rooms.Workspace' | translate">
+      @for (w of myWorkspaces(); track w.id) {
+        <option [value]="w.id">{{ w.icon }} {{ w.name }}</option>
+      }
+    </select>
+  }
+  @if (canUpload()) {
+    <ng-container *majlisPermission="permissions.uploadDocument">
+      <select class="form-select form-select-sm type-select" [ngModel]="uploadType()" (ngModelChange)="uploadType.set($event)" [attr.aria-label]="'Documents.Type' | translate">
+        @for (t of types; track t) {
+          <option [value]="t">{{ 'Documents.Types.' + t | translate }}</option>
+        }
+      </select>
+      <input #fileInput type="file" class="d-none" multiple accept=".pdf,.docx,.xlsx,.pptx,.txt,.md,.png,.jpg,.jpeg" (change)="onFiles($event)" />
+      <button type="button" class="btn btn-primary" (click)="pickFiles()">↑ {{ 'Documents.Upload' | translate }}</button>
+    </ng-container>
+  }
+</majlis-page-header>
+
+@if (uploads.jobs().length) {
+  <div class="uploads">
+    @for (job of uploads.jobs(); track job.id) {
+      <div class="card-surface job" [class.error]="job.state === 'error'">
+        <span class="name">{{ job.name }}</span>
+        <span class="state">
+          @switch (job.state) {
+            @case ('uploading') { {{ 'Documents.Uploading' | translate }} {{ job.progress | enar }}% }
+            @case ('confirming') { {{ 'Documents.Confirming' | translate }} }
+            @case ('done') { {{ 'Documents.Queued' | translate }} }
+            @case ('error') { {{ (job.errorKey ?? 'Documents.UploadFailed') | translate }} }
+          }
+        </span>
+        <span class="bar"><span class="fill" [style.width.%]="job.progress"></span></span>
+        <button type="button" class="btn-close" [attr.aria-label]="'General.Close' | translate" (click)="uploads.dismiss(job.id)"></button>
+      </div>
+    }
+  </div>
+}
+
+@if (items() === null) {
+  <p class="text-secondary">{{ 'General.Loading' | translate }}</p>
+} @else if (items()?.length === 0) {
+  <majlis-empty-state title="Documents.EmptyTitle" text="Documents.EmptyText">
+    @if (canUpload()) {
+      <button *majlisPermission="permissions.uploadDocument" type="button" class="btn btn-primary" (click)="pickFiles()">{{ 'Documents.Upload' | translate }}</button>
+    }
+  </majlis-empty-state>
+} @else {
+  <div class="card-surface">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>{{ 'Documents.Name' | translate }}</th>
+          <th>{{ 'Documents.Type' | translate }}</th>
+          <th>{{ 'Documents.Status' | translate }}</th>
+          <th class="num">{{ 'Documents.Pages' | translate }}</th>
+          <th>{{ 'Documents.Added' | translate }}</th>
+          <th class="text-end"><span class="visually-hidden">{{ 'General.Actions' | translate }}</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (doc of items(); track doc.id) {
+          <tr>
+            <td>
+              <a [routerLink]="[doc.id]" class="title">{{ doc.title }}</a>
+              <div class="file">{{ doc.fileName }}</div>
+            </td>
+            <td><span class="status-tag status-tag-neutral">{{ 'Documents.Types.' + doc.type | translate }}</span></td>
+            <td>
+              @switch (doc.status) {
+                @case ('Indexed') { <span class="status-tag status-tag-success">{{ 'Documents.Statuses.Indexed' | translate }}</span> }
+                @case ('Failed') { <span class="status-tag status-tag-danger" [attr.title]="doc.failureReasonKey ? ('Documents.Reasons.' + doc.failureReasonKey | translate) : ''">{{ 'Documents.Statuses.Failed' | translate }}</span> }
+                @default { <span class="status-tag status-tag-info"><span class="live"></span>{{ 'Documents.Statuses.' + doc.status | translate }}</span> }
+              }
+            </td>
+            <td class="num">{{ doc.pageCount || '' | enar }}</td>
+            <td class="num">{{ doc.creationTime | date: 'mediumDate' : undefined : lang() }}</td>
+            <td class="text-end actions">
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="download(doc)">{{ 'Documents.Download' | translate }}</button>
+              <button *majlisPermission="permissions.deleteDocument" type="button" class="btn btn-sm btn-outline-danger" (click)="remove(doc)">{{ 'General.Remove' | translate }}</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

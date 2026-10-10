@@ -51,7 +51,9 @@ class AzureOpenAIProvider:
         self._deployments = {
             ModelRole.CHAT: settings.azure_openai_chat_deployment,
             ModelRole.FAST: settings.azure_openai_fast_deployment or settings.azure_openai_chat_deployment,
+            ModelRole.EMBED: settings.azure_openai_embed_deployment,
         }
+        self._dimensions = settings.embed_dimensions
         self._client = client or (build_client(settings) if settings.llm_configured else None)
 
     async def stream(
@@ -102,6 +104,32 @@ class AzureOpenAIProvider:
         except (openai.AuthenticationError, openai.PermissionDeniedError, openai.NotFoundError) as exc:
             # Misconfiguration (identity, role or deployment name). Alert-worthy; shown to people as a generic error.
             raise LlmError from exc
+
+    @property
+    def dimensions(self) -> int:
+        return self._dimensions
+
+    async def embed(self, texts: Sequence[str]) -> list[list[float]]:
+        """Embeddings for ingestion and queries (`Embedder`). Batching is the caller's job (skill §5 step 6)."""
+        deployment = self._deployments.get(ModelRole.EMBED)
+        if self._client is None or not deployment:
+            raise LlmNotConfiguredError
+        if not texts:
+            return []
+        try:
+            response = await self._client.embeddings.create(
+                model=deployment, input=list(texts), dimensions=self._dimensions
+            )
+        except _TRANSIENT as exc:
+            raise LlmBusyError from exc
+        except openai.BadRequestError as exc:
+            if "content_filter" in str(exc):
+                raise LlmContentBlockedError from exc
+            raise LlmError from exc
+        except openai.APIStatusError as exc:
+            raise LlmError from exc
+        vectors = sorted(response.data, key=lambda d: d.index)
+        return [list(v.embedding) for v in vectors]
 
     async def aclose(self) -> None:
         if self._client is not None:

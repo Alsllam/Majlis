@@ -62,6 +62,7 @@ class FakeLlm:
         self.delay_s = delay_s
         self.error = error
         self.calls: list[list[ChatMessage]] = []
+        self.instructions: list[str] = []
 
     async def stream(
         self,
@@ -73,6 +74,7 @@ class FakeLlm:
         max_output_tokens: int,
     ) -> AsyncIterator[StreamEvent]:
         self.calls.append(list(messages))
+        self.instructions.append(instructions)
         for delta in self.deltas:
             await asyncio.sleep(self.delay_s)
             yield TextDelta(delta)

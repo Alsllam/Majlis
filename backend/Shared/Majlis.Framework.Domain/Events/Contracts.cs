@@ -44,3 +44,27 @@ public sealed record TurnStopped(Guid SessionId, Guid TurnId, string PartialText
 public sealed record TurnFailed(Guid SessionId, Guid TurnId, string ReasonKey, string? PartialText) : IEvent;
 
 public sealed record CitationContract(string Label, Guid DocumentId, Guid VersionId, string Title, int? Page, string Passage);
+
+/// <summary>Knowledge → ai-service: a document version is in blob storage and should be indexed (idempotent on version + content hash).</summary>
+public sealed record DocumentUploaded(
+    Guid TenantId,
+    Guid WorkspaceId,
+    Guid? RoomId,
+    Guid DocumentId,
+    Guid VersionId,
+    string BlobPath,
+    string FileName,
+    string ContentType,
+    string Title,
+    string DocType,
+    string? Language,
+    IReadOnlyList<string> AclGroups) : IEvent;
+
+/// <summary>Knowledge → ai-service: remove every chunk of the document from the index.</summary>
+public sealed record DocumentDeleted(Guid TenantId, Guid DocumentId) : IEvent;
+
+/// <summary>ai-service → Knowledge: the version is searchable.</summary>
+public sealed record DocumentIndexed(Guid TenantId, Guid DocumentId, Guid VersionId, int ChunkCount, string Sha256, string? Language, int PageCount) : IEvent;
+
+/// <summary>ai-service → Knowledge: ingestion failed; <c>ReasonKey</c> is a localization key.</summary>
+public sealed record DocumentIndexingFailed(Guid TenantId, Guid DocumentId, Guid VersionId, string ReasonKey, string? Detail) : IEvent;

@@ -12,6 +12,7 @@ public class ArchitectureTests
         typeof(Majlis.Rooms.Domain.Entities.Room).Assembly,
         typeof(Majlis.Identity.Domain.Entities.Tenant).Assembly,
         typeof(Majlis.Workspaces.Domain.Entities.Workspace).Assembly,
+        typeof(Majlis.Knowledge.Domain.Entities.Document).Assembly,
     ];
 
     private static readonly Assembly[] AllMajlis =
@@ -25,6 +26,8 @@ public class ArchitectureTests
         typeof(Majlis.Identity.Application.IdentityApplicationModule).Assembly,
         typeof(Majlis.Workspaces.EntityFrameworkCore.WorkspacesDbContext).Assembly,
         typeof(Majlis.Workspaces.Application.WorkspacesApplicationModule).Assembly,
+        typeof(Majlis.Knowledge.EntityFrameworkCore.KnowledgeDbContext).Assembly,
+        typeof(Majlis.Knowledge.Application.KnowledgeApplicationModule).Assembly,
     ];
 
     public static TheoryData<string> DomainNames => new(Domains.Select(a => a.GetName().Name!));

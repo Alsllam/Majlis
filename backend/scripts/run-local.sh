@@ -19,7 +19,7 @@ mkdir -p .local/logs
 dotnet build Majlis.sln -v q -nologo
 dotnet run --no-build --project Shared/Majlis.DbMigrator
 
-for host in Auth Workspaces Rooms Realtime BFF; do
+for host in Auth Workspaces Rooms Knowledge Realtime BFF; do
   dotnet run --no-build --project "Hosts/Majlis.$host.Host" > ".local/logs/$host.log" 2>&1 &
   echo $! > ".local/$host.pid"
   echo "Started $host (pid $!) — log: backend/.local/logs/$host.log"

@@ -1,0 +1,63 @@
+@let doc = document();
+<div class="document">
+  <header class="card-surface head">
+    <div>
+      <a [routerLink]="['/documents']" [queryParams]="{ workspaceId: doc?.workspaceId }" class="back">‹ {{ 'Documents.Back' | translate }}</a>
+      <h1>{{ doc?.title ?? ('General.Loading' | translate) }}</h1>
+      @if (doc) {
+        <div class="meta">
+          <span class="status-tag status-tag-neutral">{{ 'Documents.Types.' + doc.type | translate }}</span>
+          @if (doc.language) { <span class="status-tag status-tag-neutral">{{ 'Language.' + doc.language | translate }}</span> }
+          @if (doc.origin === 'Agent') { <span class="status-tag status-tag-agent">{{ 'Session.AiLabel' | translate }}</span> }
+          <span class="num muted">{{ doc.creationTime | date: 'mediumDate' : undefined : lang() }}</span>
+        </div>
+      }
+    </div>
+    @if (doc?.currentVersionId; as current) {
+      <button type="button" class="btn btn-primary" (click)="download(current)">{{ 'Documents.Download' | translate }}</button>
+    }
+  </header>
+
+  @if (passage()) {
+    <section class="card-surface cited">
+      <h2>{{ 'Documents.CitedPassage' | translate }}@if (page()) { · {{ 'Documents.Page' | translate: { page: (page() | enar) } }}}</h2>
+      <blockquote>{{ passage() }}</blockquote>
+    </section>
+  }
+
+  <section class="card-surface versions">
+    <h2>{{ 'Documents.Versions' | translate }}</h2>
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th class="num">#</th>
+          <th>{{ 'Documents.File' | translate }}</th>
+          <th>{{ 'Documents.Status' | translate }}</th>
+          <th class="num">{{ 'Documents.Pages' | translate }}</th>
+          <th class="num">{{ 'Documents.Chunks' | translate }}</th>
+          <th>{{ 'Documents.Added' | translate }}</th>
+          <th class="text-end"><span class="visually-hidden">{{ 'General.Actions' | translate }}</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (v of doc?.versions; track v.id) {
+          <tr>
+            <td class="num">{{ v.number | enar }}</td>
+            <td><span class="file">{{ v.fileName }}</span></td>
+            <td>
+              @switch (v.status) {
+                @case ('Indexed') { <span class="status-tag status-tag-success">{{ 'Documents.Statuses.Indexed' | translate }}</span> }
+                @case ('Failed') { <span class="status-tag status-tag-danger">{{ 'Documents.Statuses.Failed' | translate }}</span> @if (v.failureReasonKey) { <div class="reason">{{ 'Documents.Reasons.' + v.failureReasonKey | translate }}</div> } }
+                @default { <span class="status-tag status-tag-info">{{ 'Documents.Statuses.' + v.status | translate }}</span> }
+              }
+            </td>
+            <td class="num">{{ v.pageCount || '' | enar }}</td>
+            <td class="num">{{ v.chunkCount || '' | enar }}</td>
+            <td class="num">{{ v.creationTime | date: 'short' : undefined : lang() }}</td>
+            <td class="text-end"><button type="button" class="btn btn-sm btn-outline-secondary" (click)="download(v.id)">{{ 'Documents.Download' | translate }}</button></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</div>

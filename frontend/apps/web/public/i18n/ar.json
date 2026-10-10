@@ -31,7 +31,8 @@
   },
   "Menu": {
     "Rooms": "الغرف",
-    "Workspaces": "مساحات العمل"
+    "Workspaces": "مساحات العمل",
+    "Documents": "المستندات"
   },
   "Errors": {
     "Network": "تعذّر الوصول إلى الخادم. تحقق من الاتصال ثم أعد المحاولة.",
@@ -95,6 +96,9 @@
       "Unknown": "تعذّر إكمال الإجابة",
       "AiBusy": "خدمة الذكاء الاصطناعي مشغولة الآن؛ حاول مرة أخرى بعد قليل",
       "Cancelled": "أُلغيت الإجابة"
+    },
+    "Progress": {
+      "Searching": "يبحث في مستندات الفريق…"
     }
   },
   "Control": {
@@ -186,5 +190,54 @@
     "RoleChanged": "تغيّر الدور",
     "Back": "كل مساحات العمل",
     "OpenRooms": "الغرف"
+  },
+  "Documents": {
+    "Title": "المستندات",
+    "Subtitle": "معرفة مساحة العمل التي يجيب منها الوكيل مع الاستشهاد",
+    "Upload": "رفع مستند",
+    "Uploading": "جارٍ الرفع",
+    "Confirming": "جارٍ التأكيد…",
+    "Queued": "في انتظار الفهرسة",
+    "UploadFailed": "فشل الرفع. حاول مرة أخرى.",
+    "TypeNotSupported": "نوع الملف غير مدعوم",
+    "Uploaded": "رُفع {{name}}",
+    "Deleted": "حُذف المستند",
+    "Name": "المستند",
+    "Type": "النوع",
+    "Status": "الحالة",
+    "Pages": "الصفحات",
+    "Chunks": "المقاطع",
+    "Added": "أُضيف",
+    "File": "الملف",
+    "Download": "تنزيل",
+    "Back": "كل المستندات",
+    "Versions": "النسخ",
+    "CitedPassage": "المقطع المُستشهد به",
+    "Page": "صفحة {{page}}",
+    "EmptyTitle": "لا توجد مستندات بعد",
+    "EmptyText": "ارفع اللوائح والعقود والسياسات ليجيب الوكيل منها مع الاستشهاد بالمصدر والصفحة.",
+    "Types": {
+      "Regulation": "لائحة",
+      "Contract": "عقد",
+      "Policy": "سياسة",
+      "Sop": "إجراء",
+      "Report": "تقرير",
+      "Other": "أخرى"
+    },
+    "Statuses": {
+      "Pending": "بانتظار الملف",
+      "Queued": "في الانتظار",
+      "Processing": "قيد الفهرسة",
+      "Indexed": "مفهرس",
+      "Failed": "فشل",
+      "Superseded": "نسخة قديمة"
+    },
+    "Reasons": {
+      "Knowledge:Ingestion:Unsupported": "تعذّر استخراج النص من هذا النوع",
+      "Knowledge:Ingestion:Empty": "لم يُعثر على نص في الملف",
+      "Knowledge:Ingestion:Failed": "فشلت الفهرسة",
+      "General:Errors:AiBusy": "خدمة الذكاء الاصطناعي مشغولة",
+      "General:Errors:AiNotConfigured": "خدمة الذكاء الاصطناعي غير مهيأة"
+    }
   }
 }

@@ -22,7 +22,24 @@ class Settings(BaseSettings):
     llm_timeout_s: float = 60.0
     chat_temperature: float = 0.3
     max_output_tokens: int = 1500
-    agent_prompt_version: str = "agent.v1"
+    agent_prompt_version: str = "agent.v2"
+
+    # Knowledge: blob storage (documents uploaded through the Knowledge module), extraction, search index.
+    azure_storage_connection_string: SecretStr | None = None
+    azure_storage_account_url: str = ""
+    blob_container: str = "documents"
+    document_intelligence_endpoint: str = ""
+    document_intelligence_api_key: SecretStr | None = None
+    azure_search_endpoint: str = ""
+    azure_search_api_key: SecretStr | None = None
+    azure_search_index: str = "majlis-knowledge"
+    embed_dimensions: int = 1536
+    # `azure` when deployed; `local` (a Redis-backed dev index) only for development without Azure AI Search.
+    search_backend: Literal["azure", "local"] = "azure"
+    ingest_concurrency: int = 2
+    retrieval_top_k: int = 8
+    retrieval_min_score: float = 0.15
+    context_budget_tokens: int = 6000
 
     # Tokens issued by Majlis.Auth.Host (through the BFF).
     auth_issuer: str = "http://localhost:7000/"
@@ -45,6 +62,12 @@ class Settings(BaseSettings):
     @property
     def llm_configured(self) -> bool:
         return bool(self.azure_openai_endpoint and self.azure_openai_chat_deployment)
+
+    @property
+    def knowledge_configured(self) -> bool:
+        storage = bool(self.azure_storage_connection_string or self.azure_storage_account_url)
+        index = self.search_backend == "local" or bool(self.azure_search_endpoint)
+        return storage and index and bool(self.azure_openai_embed_deployment)
 
 
 @lru_cache

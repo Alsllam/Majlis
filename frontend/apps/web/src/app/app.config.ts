@@ -1,6 +1,7 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
 import { provideMajlisCore } from '@majlis/core';
+import { provideKnowledgeConfig } from '@majlis/knowledge-config';
 import { provideRoomsConfig } from '@majlis/rooms-config';
 import { provideThemeShared } from '@majlis/theme-shared';
 import { provideWorkspacesConfig } from '@majlis/workspaces-config';
@@ -16,5 +17,6 @@ export const appConfig: ApplicationConfig = {
     provideThemeShared(),
     provideWorkspacesConfig(),
     provideRoomsConfig(),
+    provideKnowledgeConfig(),
   ],
 };

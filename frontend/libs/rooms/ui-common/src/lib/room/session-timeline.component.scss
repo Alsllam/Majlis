@@ -14,7 +14,7 @@ p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .reason { color: var(--danger-text); font-size: var(--fs-sm); margin-top: var(--space-1); }
 .sources { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2); font-size: var(--fs-xs);
   .label { color: var(--text-muted); }
-  .cite { background: var(--agent-subtle); color: var(--accent-text); border-radius: var(--radius-sm); padding: 1px var(--space-1); cursor: help; }
+  .cite { background: var(--agent-subtle); color: var(--accent-text); border-radius: var(--radius-sm); padding: 1px var(--space-1); text-decoration: none; &:hover { text-decoration: underline; } }
 }
 .empty { text-align: center; color: var(--text-muted); padding: var(--space-6) 0; }
 @keyframes rise { from { opacity: 0; transform: translateY(var(--motion-distance-enter)); } to { opacity: 1; transform: none; } }

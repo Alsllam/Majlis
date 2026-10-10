@@ -59,6 +59,13 @@ class LlmNotConfiguredError(LlmError):
 
 
 class LlmProvider(Protocol):
+    """Chat streaming plus embeddings (the `Embedder` port in `rag/ports.py`), one adapter per profile."""
+
+    @property
+    def dimensions(self) -> int: ...
+
+    async def embed(self, texts: Sequence[str]) -> list[list[float]]: ...
+
     def stream(
         self,
         role: ModelRole,

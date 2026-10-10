@@ -165,6 +165,57 @@
         "workspaceId": { "$ref": "#/$defs/uuid" },
         "userId": { "$ref": "#/$defs/uuid" }
       }
+    },
+    "documentUploaded": {
+      "description": "Knowledge → ai-service (exchange majlis.document-uploaded): index this version; idempotent on version + content hash.",
+      "type": "object",
+      "required": ["tenantId", "workspaceId", "documentId", "versionId", "blobPath", "fileName", "contentType", "title", "docType", "aclGroups"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "workspaceId": { "$ref": "#/$defs/uuid" },
+        "roomId": { "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }] },
+        "documentId": { "$ref": "#/$defs/uuid" },
+        "versionId": { "$ref": "#/$defs/uuid" },
+        "blobPath": { "type": "string", "description": "{tenant}/{workspace}/{document}/{version}/{file} in the documents container" },
+        "fileName": { "type": "string" },
+        "contentType": { "type": "string" },
+        "title": { "type": "string" },
+        "docType": { "type": "string", "enum": ["Other", "Regulation", "Contract", "Policy", "Sop", "Report"] },
+        "language": { "type": ["string", "null"], "enum": ["ar", "en", null] },
+        "aclGroups": { "type": "array", "items": { "type": "string" }, "description": "ws:{workspaceId} or room:{roomId}; stored on every chunk and filtered on every query" }
+      }
+    },
+    "documentDeleted": {
+      "description": "Knowledge → ai-service (exchange majlis.document-deleted): drop every chunk of the document.",
+      "type": "object",
+      "required": ["tenantId", "documentId"],
+      "properties": { "tenantId": { "$ref": "#/$defs/uuid" }, "documentId": { "$ref": "#/$defs/uuid" } }
+    },
+    "documentIndexed": {
+      "description": "ai-service → Knowledge (exchange majlis.document-indexed).",
+      "type": "object",
+      "required": ["tenantId", "documentId", "versionId", "chunkCount", "sha256"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "documentId": { "$ref": "#/$defs/uuid" },
+        "versionId": { "$ref": "#/$defs/uuid" },
+        "chunkCount": { "type": "integer" },
+        "sha256": { "type": "string" },
+        "language": { "type": ["string", "null"] },
+        "pageCount": { "type": "integer" }
+      }
+    },
+    "documentIndexingFailed": {
+      "description": "ai-service → Knowledge (exchange majlis.document-indexing-failed); reasonKey is a localization key (Knowledge:Ingestion:*).",
+      "type": "object",
+      "required": ["tenantId", "documentId", "versionId", "reasonKey"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "documentId": { "$ref": "#/$defs/uuid" },
+        "versionId": { "$ref": "#/$defs/uuid" },
+        "reasonKey": { "type": "string" },
+        "detail": { "type": ["string", "null"] }
+      }
     }
   },
   "x-redis-keys": {

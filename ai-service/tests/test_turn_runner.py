@@ -5,6 +5,8 @@ from uuid import uuid4
 import fakeredis
 
 from ai_service.llm.provider import LlmContentBlockedError
+from ai_service.rag.models import IndexedChunk, SearchHit
+from ai_service.rag.retrieval.search import Retriever
 from ai_service.sessions.contracts import AiHistoryTurn, TurnCompleted, TurnFailed, TurnStopped
 from ai_service.sessions.stream import cancel_key, heartbeat_key, stream_channel, text_key
 from ai_service.sessions.turn_runner import TurnRunner, build_messages
@@ -123,3 +125,51 @@ def test_build_messages_prefixes_speaker_and_keeps_history_order() -> None:
         ("assistant", "سنتان."),
         ("user", "سارة: وما شروط التجديد؟"),
     ]
+
+
+async def test_run_grounds_the_answer_and_resolves_citations(
+    settings: Settings, redis: fakeredis.FakeAsyncRedis
+) -> None:
+    """With a retriever, the instructions carry the sources and `[S#]` markers become citations."""
+    doc = uuid4()
+    hit = SearchHit(
+        IndexedChunk(
+            id="c1",
+            tenant_id=uuid4(),
+            document_id=doc,
+            version_id=uuid4(),
+            title="عقد المورد",
+            heading_path="",
+            page=3,
+            language="ar",
+            doc_type="Contract",
+            acl_groups=["ws:x"],
+            content="غرامة التأخير واحد بالمائة.",
+            content_search="غرامه التاخير",
+            content_vector=[],
+            ordinal=0,
+            content_sha256="s",
+        ),
+        0.9,
+    )
+
+    class FakeRetriever(Retriever):
+        def __init__(self) -> None:
+            self.calls: list[tuple[str, list[str]]] = []
+
+        async def retrieve(self, *, tenant_id, acl_groups, question):  # type: ignore[no-untyped-def]
+            self.calls.append((question, list(acl_groups)))
+            return [hit]
+
+    retriever = FakeRetriever()
+    llm = FakeLlm(["الغرامة واحد بالمائة ", "[S1]."])
+    publisher = FakePublisher()
+    request = turn_request()
+    result = await TurnRunner(settings, llm, redis, publisher, retriever).run(uuid4(), request)
+
+    assert isinstance(result, TurnCompleted)
+    assert [c.label for c in result.citations] == ["S1"]
+    assert result.citations[0].document_id == doc
+    assert result.citations[0].page == 3
+    assert retriever.calls == [(request.instruction, [f"ws:{request.workspace_id}", f"room:{request.room_id}"])]
+    assert '<source id="S1"' in llm.instructions[-1]

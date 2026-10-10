@@ -1,7 +1,9 @@
 import { DatePipe } from '@angular/common';
 import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, inject, input, viewChild } from '@angular/core';
 import { LocalizationService } from '@majlis/core';
+import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { EnArPipe } from '@majlis/core';
 import { AvatarComponent } from '@majlis/shared-ui-common';
 import { TimelineItem } from './room-session.facade';
 
@@ -9,7 +11,7 @@ import { TimelineItem } from './room-session.facade';
 @Component({
   selector: 'majlis-session-timeline',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, DatePipe, AvatarComponent],
+  imports: [TranslatePipe, DatePipe, AvatarComponent, RouterLink, EnArPipe],
   templateUrl: './session-timeline.component.html',
   styleUrl: './session-timeline.component.scss',
 })

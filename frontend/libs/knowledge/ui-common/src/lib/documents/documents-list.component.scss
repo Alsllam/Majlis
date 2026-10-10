@@ -1,0 +1,15 @@
+.ws-select { max-width: 240px; }
+.type-select { max-width: 160px; }
+.uploads { display: grid; gap: var(--space-2); margin-bottom: var(--space-4); }
+.job { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); position: relative; overflow: hidden;
+  &.error { border-color: var(--danger-border); .state { color: var(--danger-text); } }
+}
+.name { font-size: var(--fs-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.state { font-size: var(--fs-xs); color: var(--text-muted); }
+.bar { position: absolute; inset-inline: 0; bottom: 0; height: 3px; background: var(--surface-hover); .fill { display: block; height: 100%; background: var(--brand-solid); transition: width var(--motion-fast); } }
+.table { --bs-table-bg: transparent; --bs-table-color: var(--text-primary); --bs-table-border-color: var(--border-subtle); }
+.title { color: var(--text-primary); font-weight: var(--fw-medium); text-decoration: none; &:hover { color: var(--brand-text); } }
+.file { font-size: var(--fs-xs); color: var(--text-muted); direction: ltr; text-align: start; }
+.actions { white-space: nowrap; display: flex; gap: var(--space-1); justify-content: flex-end; }
+.live { width: 8px; height: 8px; border-radius: 50%; background: var(--info-solid); animation: pulse var(--motion-pulse) ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }

@@ -17,6 +17,7 @@
     <div class="actions">
       <span class="status-tag status-tag-neutral">{{ 'Workspaces.Role.' + (ws?.myRole ?? 'Viewer') | translate }}</span>
       <button type="button" class="btn btn-sm btn-outline-primary" (click)="openRooms()">{{ 'Workspaces.OpenRooms' | translate }}</button>
+      <a class="btn btn-sm btn-outline-primary" [routerLink]="['/documents']" [queryParams]="{ workspaceId: workspaceId() }">{{ 'Menu.Documents' | translate }}</a>
       @if (canManage() && !ws?.isArchived) {
         <button type="button" class="btn btn-sm btn-outline-secondary" (click)="edit()">{{ 'General.Edit' | translate }}</button>
       }

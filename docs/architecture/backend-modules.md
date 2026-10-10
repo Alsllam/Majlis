@@ -79,7 +79,7 @@ Every module has the four projects from the skill (`Majlis.{Module}.Domain`, `.A
 - **Owns:** Folder (ACL groups), Document, DocumentVersion (blob path, SHA-256, ingestion status), agent Drafts (Document with `Origin = Agent`, status Draft → Approved). (The glossary is owned by Workspaces.)
 - **Publishes:** `DocumentUploaded {tenantId, workspaceId, documentId, versionId, blobUrl, aclGroups, language?}`, `DocumentDeleted`, `DocumentAclChanged`, `ActionExecuted` (for `draft_document`, `add_to_knowledge`).
 - **Consumes:** `DocumentIndexed`, `DocumentIndexingFailed` (from ai-service), `ActionApproved` for its tools.
-- **Notes:** uploads go to file storage through short-lived pre-signed URLs issued by Knowledge via `IBlobStorage` (Azure Blob SAS on cloud, S3 pre-signed URLs on-prem), directly from the browser, then `confirm`. Malware scan before `DocumentUploaded`. Exports (DOCX/PDF) of drafts are generated here.
+- **Notes:** uploads go to file storage through short-lived pre-signed URLs issued by Knowledge via `IBlobStorage` (Azure Blob SAS on cloud, S3 pre-signed URLs on-prem), directly from the browser, then `confirm`. Malware scan before `DocumentUploaded`. Exports (DOCX/PDF) of drafts are generated here. *(Built 2026-10-10: documents and versions, two-step upload, ingestion status, download, delete, membership read model from the Workspaces member events. Folders with ACL groups, drafts, malware scan and live status push follow.)*
 
 ### Tasks — `tasks` · 7050
 - **Owns:** Task (assignee, due date, priority, status, origin, source session/turn, `ApprovalRequestId`).

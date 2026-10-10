@@ -45,13 +45,14 @@ Real-time rules: commands are always HTTP AppService calls; the hub only pushes 
 | `Shared/Majlis.Framework.{Domain,EntityFrameworkCore,Application}` | base entities, repositories, unit of work, tenant + soft-delete filters, dynamic controllers, error middleware, ar/en JSON localization, permissions, OpenIddict validation, Wolverine messaging with the transactional outbox, real-time tickets, service tokens |
 | `Modules/Identity` + `Hosts/Majlis.Auth.Host` | tenants, users, roles; OpenIddict server (code + PKCE, refresh, client credentials); ar/en login page; `/realtime/ticket`; `/users/lookup` (tenant user picker, routed as `/api/identity/users/lookup`) |
 | `Modules/Workspaces` + `Hosts/Majlis.Workspaces.Host` | workspaces, members with workspace roles (Owner/Admin/Contributor/Viewer), agent instructions, archive/restore; publishes `WorkspaceCreated/Archived/InstructionsChanged`, `MemberAdded/RoleChanged/Removed`, `AccessRevoked`; writes each user's effective grants to the permission cache (`majlis:permissions:{userId}`); `/internal/workspaces/access` |
+| `Modules/Knowledge` + `Hosts/Majlis.Knowledge.Host` | documents and versions per workspace (or room), two-step upload (pre-signed url → confirm), ingestion status from ai-service (`DocumentIndexed` / `DocumentIndexingFailed`), download urls, delete (`DocumentDeleted`), membership read model; `IBlobStorage` adapter (`Adapters/Storage/AzureBlobStorage`, Azurite locally, CORS set at startup for browser uploads) |
 | `Modules/Rooms` + `Hosts/Majlis.Rooms.Host` | rooms, sessions, control state machine with epoch, turns, timeline sequencer, AI result + presence handlers, absence/stuck-turn sweeper, `WorkspaceMembership` read model fed by the member events (checked on create room / add participant) |
 | `Hosts/Majlis.Realtime.Host` | SignalR hub, Redis presence, fan-out, stream relay |
 | `Hosts/Majlis.BFF.Host` | YARP routes, security headers, compression |
 | `Shared/Majlis.DbMigrator` | migrations + idempotent seed (demo tenant, users, clients, room) |
-| `Modules/Rooms/Majlis.Rooms.Tests`, `Modules/Workspaces/Majlis.Workspaces.Tests`, `tests/Majlis.Architecture.Tests` | domain, app service, validator, consumer and architecture tests |
+| `Modules/Rooms/Majlis.Rooms.Tests`, `Modules/Workspaces/Majlis.Workspaces.Tests`, `Modules/Knowledge/Majlis.Knowledge.Tests`, `tests/Majlis.Architecture.Tests` | domain, app service, validator, consumer and architecture tests |
 
-Not built yet: Approvals, Knowledge, Tasks, Meetings, Notifications, Audit, Jobs host. Workspaces still lacks groups, invitations and the glossary.
+Not built yet: Approvals, Tasks, Meetings, Notifications, Audit, Jobs host. Workspaces still lacks groups, invitations and the glossary; Knowledge still lacks folders with ACL groups, agent drafts, live status push (`document.status`) and the viewer.
 
 ## Deviations from the skill (ADR-0008)
 
@@ -64,7 +65,7 @@ Not built yet: Approvals, Knowledge, Tasks, Meetings, Notifications, Audit, Jobs
 
 ## Majlis-specific rules
 
-- **Deployment profiles (ADR-0006).** Azure-only services are used only through adapters in `Majlis.Framework.Application`: `IBlobStorage` (Azure Blob / S3-compatible), `IEmailSender`, `IPushSender`, and secrets through the configuration provider (Key Vault / Kubernetes secrets / Vault). Build the `cloud` implementations now; `on-prem` ones (S3, SMTP, Vault) come when an on-prem customer is confirmed. The profile is configuration (`Deployment:Profile`, default `cloud`). An architecture test forbids Azure SDK references outside adapter projects.
+- **Deployment profiles (ADR-0006).** Azure-only services are used only through adapters in `Majlis.Framework.Application`: `IBlobStorage` (`Storage/IBlobStorage.cs`; Azure Blob implementation in `Adapters/Storage`, S3-compatible later), `IEmailSender`, `IPushSender`, and secrets through the configuration provider (Key Vault / Kubernetes secrets / Vault). Build the `cloud` implementations now; `on-prem` ones (S3, SMTP, Vault) come when an on-prem customer is confirmed. The profile is configuration (`Deployment:Profile`, default `cloud`). An architecture test forbids Azure SDK references outside adapter projects.
 
 - **Permissions** follow `Permissions.{Module}.{Action}{Entity}` (e.g. `Permissions.Rooms.CreateRoom`, `Permissions.Approvals.ApproveAction`). `PermissionChecker` grants the union of the tenant role's permissions (`RolePermissions` in each host's appsettings) and the cached workspace grants; Workspaces computes those from `WorkspaceRolePermissions` (Owner/Admin/Contributor/Viewer) as one set **per user** across their workspaces, so the owning app service must still check the role in the specific workspace (membership read model or `EnsureManager`). The `ISecuredEntity` scope is the **workspace**.
 - **Cross-module membership.** Modules never call Workspaces on the hot path: they keep a read model from `MemberAdded/MemberRoleChanged/MemberRemoved` (Rooms: `WorkspaceMembership`) and declare their own copy of those event records (same alias and JSON; the role travels as its name).

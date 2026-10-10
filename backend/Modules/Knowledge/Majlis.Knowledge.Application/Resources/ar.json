@@ -1,0 +1,11 @@
+{
+  "Knowledge:Document:NotWorkspaceMember": "لست عضواً في مساحة العمل هذه.",
+  "Knowledge:Document:FileTooLarge": "حجم الملف يتجاوز الحد المسموح ({0} ميجابايت).",
+  "Knowledge:Document:TypeNotSupported": "نوع الملف غير مدعوم. الأنواع المقبولة: PDF وWord وExcel وPowerPoint ونص وMarkdown وصور PNG/JPG.",
+  "Knowledge:Document:FileNotUploaded": "لم يصل الملف إلى التخزين بعد. أعد الرفع ثم أكّد.",
+  "Knowledge:Document:VersionNotPending": "هذه النسخة مؤكدة من قبل.",
+  "Knowledge:Document:Deleted": "حُذف هذا المستند.",
+  "Knowledge:Ingestion:Unsupported": "تعذّر استخراج النص من هذا النوع من الملفات.",
+  "Knowledge:Ingestion:Empty": "لم يُعثر على نص في الملف.",
+  "Knowledge:Ingestion:Failed": "فشلت الفهرسة. حاول مرة أخرى أو تواصل مع المشرف."
+}

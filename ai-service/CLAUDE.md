@@ -23,18 +23,24 @@
 |---|---|
 | `settings.py`, `observability.py`, `api/errors.py` | env configuration, JSON logs, backend error shape with ar/en messages |
 | `security/tokens.py`, `api/deps.py` | RS256 access tokens validated against the Auth host JWKS (`aud = ai-api`); tenant and user only from the token |
-| `llm/provider.py`, `llm/adapters/azure_openai.py` | provider interface + Azure OpenAI Responses API streaming adapter (the only module importing `azure`) |
-| `llm/prompts/agent.v1.md` | the shared-room agent prompt (no knowledge base yet: says so instead of guessing) |
-| `sessions/` | `POST /internal/sessions/{id}/turns` → background `TurnRunner`: coalesced deltas, snapshot, heartbeat, cancel, one result |
-| `messaging/bus.py` | results to RabbitMQ as plain camelCase JSON on exchange `majlis.{alias}` with the alias in the AMQP `type` property (ADR-0009) |
+| `llm/provider.py`, `llm/adapters/azure_openai.py` | provider interface (chat streaming + embeddings) and the Azure OpenAI adapter (Responses API, embeddings) |
+| `llm/prompts/agent.v2.md` | the shared-room agent prompt: answers only from the `<source id="S#">` blocks, cites `[S#]`, says when nothing matches |
+| `sessions/` | `POST /internal/sessions/{id}/turns` → background `TurnRunner`: progress `Session.Progress.Searching`, retrieval, coalesced deltas, snapshot, heartbeat, cancel, one result with resolved citations |
+| `rag/ports.py`, `rag/models.py` | `BlobStore`, `DocumentExtractor`, `Embedder`, `SearchIndex` ports and the chunk/hit shapes |
+| `rag/adapters/` | `azure_blob.py` (Azure Blob / Azurite), `extractors.py` (Document Intelligence layout + Markdown; `SimpleExtractor` for digital PDF/DOCX/TXT/MD without a service), `azure_search.py` (hybrid + semantic ranker, Arabic/English analyzers, security filter), `local_index.py` (**development only**: a Redis-backed index selected by `SEARCH_BACKEND=local`) |
+| `rag/ingestion/` | `normalize.py` (Arabic search copy, language detection), `chunker.py` (headings → paragraphs, 400–800 tokens, 12 % overlap, whole table rows and numbered articles, heading paths), `pipeline.py` (download → extract → chunk → embed → upsert → report; idempotent on version + SHA-256; older versions removed) |
+| `rag/retrieval/` | `search.py` (embed, hybrid search trimmed to tenant + scope groups, threshold, ≤ 3 chunks per document), `context.py` (token budget, `<source>` blocks, `[S#]` → citation) |
+| `workers/ingest_worker.py` | consumes `majlis.document-uploaded` / `majlis.document-deleted` (queue `ai-service.{alias}`) inside the API process; publishes `DocumentIndexed` / `DocumentIndexingFailed` |
+| `messaging/bus.py`, `messaging/contracts.py` | plain camelCase JSON on exchange `majlis.{alias}` with the alias in the AMQP `type` property (ADR-0009); Knowledge contracts |
 
-Not built yet: RAG (ingestion, search, citations), tools and approvals, conversations/usage in SQL, rate limits and quotas, Prompt Shields, evaluation suite.
+Not built yet: query rewriting with the fast model, `turn.retrieval` events, `POST /ai-api/search`, tools and approvals, conversations/usage in SQL, rate limits and quotas, Prompt Shields, evaluation suite, a separate worker container. The Document Intelligence and Azure AI Search adapters are written against the SDKs but have not run against real resources yet (no Azure credentials in this environment); the local stack uses Azurite, the stub model and the dev index.
 
 **Testing note:** the OpenAI SDK 3.x uses `httpx2`, not `httpx`, so `respx` cannot intercept it. Adapter tests pass an `openai.DefaultAsyncHttpx2Client(transport=httpx2.MockTransport(...))`.
 
 ## Majlis-specific rules
 
 - **Adapters (ADR-0006).** Business code depends only on these interfaces; implement the `cloud` version now, the `on-prem` version only when an on-prem customer is confirmed: `LlmProvider` (Azure OpenAI Responses API / OpenAI-compatible Chat Completions), `Embedder`, `SearchIndex` (Azure AI Search / OpenSearch + re-ranker), `DocumentExtractor`, `Transcriber`, `SafetyGuard`, `BlobStore`. The skill's Azure rules apply to the `cloud` implementations. Azure SDK imports are allowed only inside adapter modules.
+- **Retrieval scope (AI-RAG-004/008).** The tenant comes only from the validated token. The scope groups of a turn are `ws:{workspaceId}` and `room:{roomId}` from the Rooms request (Rooms checked the driver is a participant); every chunk stores `acl_groups` and every query filters on them. Documents: `ws:` for workspace documents, `room:` for room-only ones.
 - **Shared sessions** are started by Rooms through `POST /internal/sessions/{sessionId}/turns` (internal only, not routed by the BFF; body `startAiTurnRequest`, the driver's `Authorization` header forwarded; answer 202 and run the turn in the background). Token deltas go to Redis pub/sub `majlis:session:{sessionId}:stream` with the running text in the hash `majlis:turn:{turnId}:text` (`text`, `chunk`); results (`TurnCompleted`, `TurnStopped`, `TurnFailed`) go to RabbitMQ as plain JSON (exchange `majlis.turn-completed` etc., durable fanout, AMQP `type` = alias) for Rooms to sequence; check `majlis:turn:{turnId}:cancel` between deltas; refresh `majlis:turn:{turnId}:hb` every 5 s. Every shape is in `docs/architecture/events.schema.json`.
 
 - **The agent session is shared.** A session belongs to a room, not a user. Each turn records who sent it; the tool loop runs with the token of the person **currently in control** of the session, so their permissions apply.
@@ -47,4 +53,4 @@ Not built yet: RAG (ingestion, search, citations), tools and approvals, conversa
 ```
 cd ai-service && uv run ruff check && uv run ruff format --check && uv run mypy --strict src && uv run pytest
 ```
-Run locally: `uv run uvicorn ai_service.main:create_app --factory --port 8000` (variables in `.env.example`), or `backend/scripts/run-local.sh`, which starts it with the backend.
+Run locally: `uv run uvicorn ai_service.main:create_app --factory --port 8000` (variables in `.env.example`: Azurite connection string, `SEARCH_BACKEND=local`), or `backend/scripts/run-local.sh`, which starts it with the backend. RAG is enabled only when storage, an index backend and the embedding deployment are configured (`Settings.knowledge_configured`); otherwise turns run ungrounded and a warning is logged.

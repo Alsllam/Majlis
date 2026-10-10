@@ -10,6 +10,8 @@
     <ProjectReference Include="..\Majlis.Framework.EntityFrameworkCore\Majlis.Framework.EntityFrameworkCore.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Azure SDKs are referenced only from the Adapters namespace (ADR-0006; architecture test). -->
+    <PackageReference Include="Azure.Storage.Blobs" />
     <PackageReference Include="FluentValidation" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />

@@ -16,6 +16,11 @@ dependencies = [
     "tenacity>=9.2",
     "httpx>=0.28",
     "azure-identity>=1.25",
+    "azure-search-documents>=12.0.0",
+    "azure-storage-blob>=12.31.0",
+    "azure-ai-documentintelligence>=1.0.2",
+    "pypdf>=6.20.0",
+    "python-docx>=1.2.0",
 ]
 
 [dependency-groups]
@@ -41,7 +46,8 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "SIM", "ASYNC", "S", "RUF", "PL", "PT", "TRY", "LOG"]
-ignore = ["PLR0913", "TRY003", "PLR2004"]
+# RUF001-003: Arabic text (letters, Arabic-Indic digits, ›) is intentional in an Arabic-first product.
+ignore = ["PLR0913", "TRY003", "PLR2004", "RUF001", "RUF002", "RUF003"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "S105", "S106", "PLR2004"]

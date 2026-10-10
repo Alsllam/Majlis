@@ -36,5 +36,17 @@ services:
       interval: 10s
       retries: 12
 
+  # Local Blob Storage for the cloud adapter (documents). Well-known dev account; never used outside dev.
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    command: azurite-blob --blobHost 0.0.0.0 --blobPort 10000 --skipApiVersionCheck --loose
+    ports: ["10000:10000"]
+    volumes: [azurite-data:/data]
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 10000 || exit 1"]
+      interval: 5s
+      retries: 12
+
 volumes:
   sqlserver-data:
+  azurite-data:

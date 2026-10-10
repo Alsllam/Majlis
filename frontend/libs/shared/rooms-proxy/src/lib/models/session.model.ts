@@ -134,13 +134,14 @@ export interface TurnStartedData {
   language: 'ar' | 'en';
 }
 
+/** `CitationContract` in the backend: `[S#]` label → document, version, page and the cited passage. */
 export interface CitationDto {
-  marker: string;
+  label: string;
   documentId: string;
-  versionId?: string;
-  title?: string;
-  page?: number;
-  passage?: string;
+  versionId: string;
+  title: string;
+  page: number | null;
+  passage: string;
 }
 
 export interface TurnCompletedData {

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>Majlis.Knowledge.Host</RootNamespace>
+    <UserSecretsId>majlis-knowledge-host</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Knowledge\Majlis.Knowledge.Application\Majlis.Knowledge.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Wolverine compiles handler code at startup (TypeLoadMode.Dynamic). Production will pre-generate it (TypeLoadMode.Static) and drop this. -->
+    <PackageReference Include="WolverineFx.RuntimeCompilation" />
+  </ItemGroup>
+</Project>

@@ -24,6 +24,9 @@
     },
     "ai": {
       "url": "http://localhost:7000/ai-api"
+    },
+    "knowledge": {
+      "url": "http://localhost:7000/api/knowledge"
     }
   },
   "realtime": {
@@ -43,7 +46,10 @@
       "Permissions.Workspaces.CreateWorkspace",
       "Permissions.Rooms.ViewRoom",
       "Permissions.Rooms.CreateRoom",
-      "Permissions.Rooms.DriveSession"
+      "Permissions.Rooms.DriveSession",
+      "Permissions.Knowledge.ViewDocument",
+      "Permissions.Knowledge.UploadDocument",
+      "Permissions.Knowledge.DeleteDocument"
     ]
   }
 }

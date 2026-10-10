@@ -31,8 +31,8 @@
             @if (item.citations.length) {
               <div class="sources">
                 <span class="label">{{ 'Session.Sources' | translate }}:</span>
-                @for (c of item.citations; track c.marker) {
-                  <span class="cite" [attr.title]="c.passage">[{{ c.marker }}] {{ c.title }}@if (c.page) { · {{ c.page }}}</span>
+                @for (c of item.citations; track c.label) {
+                  <a class="cite" [routerLink]="['/documents', c.documentId]" [queryParams]="{ page: c.page, passage: c.passage }" [attr.title]="c.passage">[{{ c.label }}] {{ c.title }}@if (c.page) { · {{ c.page | enar }}}</a>
                 }
               </div>
             }

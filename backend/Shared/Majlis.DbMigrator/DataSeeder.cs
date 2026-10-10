@@ -7,6 +7,7 @@ using Majlis.Rooms.EntityFrameworkCore;
 using Majlis.Workspaces.Domain.Entities;
 using Majlis.Workspaces.Domain.Enums;
 using Majlis.Workspaces.EntityFrameworkCore;
+using Majlis.Knowledge.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -21,6 +22,7 @@ public sealed partial class DataSeeder(
     MajlisIdentityDbContext identityDb,
     RoomsDbContext roomsDb,
     WorkspacesDbContext workspacesDb,
+    KnowledgeDbContext knowledgeDb,
     UserManager<MajlisUser> users,
     RoleManager<MajlisRole> roles,
     IOpenIddictApplicationManager applications,
@@ -217,6 +219,14 @@ public sealed partial class DataSeeder(
         }
 
         await roomsDb.SaveChangesAsync();
+
+        var knownInKnowledge = await knowledgeDb.WorkspaceMemberships.IgnoreQueryFilters().Where(m => m.WorkspaceId == Seed.DemoWorkspaceId).Select(m => m.UserId).ToListAsync();
+        foreach (var member in members.Where(m => !knownInKnowledge.Contains(m.UserId)))
+        {
+            knowledgeDb.WorkspaceMemberships.Add(new Majlis.Knowledge.Domain.Entities.WorkspaceMembership(Seed.TenantId, Seed.DemoWorkspaceId, member.UserId, member.DisplayName, member.Role.ToString()));
+        }
+
+        await knowledgeDb.SaveChangesAsync();
     }
 
     private async Task SeedDemoRoomAsync(List<MajlisUser> seededUsers)
