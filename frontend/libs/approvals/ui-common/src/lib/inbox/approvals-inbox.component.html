@@ -1,0 +1,43 @@
+<majlis-page-header title="Approvals.Title" subtitle="Approvals.Subtitle" />
+
+<nav class="tabs" role="tablist">
+  @for (t of tabs; track t) {
+    <button type="button" role="tab" class="tab" [class.active]="tab() === t" [attr.aria-selected]="tab() === t" (click)="select(t)">{{ 'Approvals.Tabs.' + t | translate }}</button>
+  }
+</nav>
+
+@if (items() === null) {
+  <p class="text-secondary">{{ 'General.Loading' | translate }}</p>
+} @else if (items()?.length === 0) {
+  <majlis-empty-state title="Approvals.EmptyTitle" text="Approvals.EmptyText" />
+} @else {
+  <div class="list">
+    @for (r of items(); track r.id) {
+      <article class="card-surface request" [attr.data-request-id]="r.id">
+        <header>
+          <span class="tool">{{ 'Approvals.Tools.' + toolKey(r.tool) | translate }}</span>
+          <span class="status-tag" [class]="'status-tag ' + stateClass(r.status)">{{ 'Approvals.Statuses.' + r.status | translate }}</span>
+          <span class="status-tag status-tag-neutral">{{ 'Approvals.Risk.' + r.risk | translate }}</span>
+          <time class="num">{{ r.creationTime | date: 'medium' : undefined : lang() }}</time>
+        </header>
+        <p class="summary">{{ r.summary }}</p>
+        @if (r.reason) { <p class="reason">{{ r.reason }}</p> }
+        <footer>
+          <span class="who">
+            {{ 'Approvals.RequestedBy' | translate: { name: r.requestedBy.displayName } }}
+            · <a [routerLink]="['/rooms', r.roomId]">{{ 'Approvals.OpenRoom' | translate }}</a>
+            @if (r.decidedBy) { · {{ (r.status === 'Rejected' ? 'Approvals.RejectedBy' : 'Approvals.ApprovedBy') | translate: { name: r.decidedBy.displayName } }} }
+            @if (r.decisionNote) { «{{ r.decisionNote }}» }
+            @if (r.resultSummary) { · {{ r.resultSummary }} }
+          </span>
+          @if (r.status === 'Pending' && r.canDecide) {
+            <span class="actions" *majlisPermission="permissions.approveAction">
+              <button type="button" class="btn btn-sm btn-primary" (click)="approve(r)" [disabled]="busyId() === r.id">{{ 'Approvals.Approve' | translate }}</button>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="reject(r)" [disabled]="busyId() === r.id">{{ 'Approvals.Reject' | translate }}</button>
+            </span>
+          }
+        </footer>
+      </article>
+    }
+  </div>
+}

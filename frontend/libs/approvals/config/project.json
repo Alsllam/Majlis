@@ -1,0 +1,21 @@
+{
+  "name": "approvals-config",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/approvals/config/src",
+  "prefix": "majlis",
+  "projectType": "library",
+  "tags": ["type:config"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/approvals/config/jest.config.cts",
+        "tsConfig": "libs/approvals/config/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

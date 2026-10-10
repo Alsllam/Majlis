@@ -1,0 +1,14 @@
+.tabs { display: flex; gap: var(--space-1); margin-bottom: var(--space-4); border-bottom: 1px solid var(--border-subtle); }
+.tab { background: none; border: 0; border-bottom: 2px solid transparent; padding: var(--space-2) var(--space-3); color: var(--text-secondary); font-weight: var(--fw-medium);
+  &.active { color: var(--brand-text); border-bottom-color: var(--brand-solid); }
+  &:hover { color: var(--text-primary); } }
+.list { display: grid; gap: var(--space-3); }
+.request { padding: var(--space-3); display: grid; gap: var(--space-2); border-inline-start: 3px solid var(--accent-solid); }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-size: var(--fs-xs); color: var(--text-muted); }
+.tool { font-weight: var(--fw-medium); color: var(--text-secondary); }
+time { margin-inline-start: auto; }
+p { margin: 0; }
+.summary { font-weight: var(--fw-medium); }
+.reason { font-size: var(--fs-sm); color: var(--text-secondary); }
+footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); font-size: var(--fs-xs); color: var(--text-muted); }
+.actions { display: flex; gap: var(--space-1); }

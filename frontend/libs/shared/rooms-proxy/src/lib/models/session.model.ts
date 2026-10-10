@@ -37,7 +37,11 @@ export type SessionEventType =
   | 'turn.started'
   | 'turn.completed'
   | 'turn.stopped'
-  | 'turn.failed';
+  | 'turn.failed'
+  | 'approval.requested'
+  | 'approval.decided'
+  | 'approval.executed'
+  | 'approval.expired';
 
 export interface SessionEventScopeDto {
   tenantId: string;
@@ -166,4 +170,35 @@ export interface ControlChangedData {
   kind: 'start' | 'claim' | 'request-accepted' | 'handoff' | 'takeover' | 'release' | 'timeout';
   epoch: number;
   note?: string | null;
+}
+
+/** Approval events written by Rooms from the Approvals module (FR-APR-004/007); `requestId` ties them together. */
+export interface ApprovalRequestedData {
+  requestId: string;
+  tool: string;
+  summary: string;
+  reason: string | null;
+  risk: 'Low' | 'Medium' | 'High';
+  args: Record<string, unknown>;
+  requestedBy: SessionActorDto;
+  expiresAt: string;
+  turnId: string | null;
+}
+
+export interface ApprovalDecidedData {
+  requestId: string;
+  tool: string;
+  decision: 'Approved' | 'Rejected' | 'Expired';
+  decidedBy: SessionActorDto | null;
+  note: string | null;
+  edited: boolean;
+}
+
+export interface ApprovalExecutedData {
+  requestId: string;
+  tool: string;
+  succeeded: boolean;
+  resultSummary: string | null;
+  entityId: string | null;
+  reasonKey: string | null;
 }

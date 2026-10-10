@@ -18,7 +18,8 @@
     "Retry": "Retry",
     "Edit": "Edit",
     "Remove": "Remove",
-    "Actions": "Actions"
+    "Actions": "Actions",
+    "Reason": "Reason"
   },
   "Language": {
     "ar": "العربية",
@@ -32,7 +33,9 @@
   "Menu": {
     "Rooms": "Rooms",
     "Workspaces": "Workspaces",
-    "Documents": "Documents"
+    "Documents": "Documents",
+    "Approvals": "Approvals",
+    "Tasks": "Tasks"
   },
   "Errors": {
     "Network": "The server could not be reached. Check your connection and try again.",
@@ -98,7 +101,8 @@
       "Cancelled": "The answer was cancelled"
     },
     "Progress": {
-      "Searching": "Searching the team's documents…"
+      "Searching": "Searching the team's documents…",
+      "RequestingApproval": "Requesting approval for an action…"
     }
   },
   "Control": {
@@ -238,6 +242,99 @@
       "Knowledge:Ingestion:Failed": "Indexing failed",
       "General:Errors:AiBusy": "The AI service is busy",
       "General:Errors:AiNotConfigured": "The AI service is not configured"
+    }
+  },
+  "Approvals": {
+    "Title": "Approvals",
+    "Subtitle": "Actions the agent proposed; nothing runs until a person approves",
+    "Proposed": "Proposed by the agent",
+    "Approve": "Approve",
+    "Reject": "Reject",
+    "RejectReason": "Reason for rejecting",
+    "RequestedBy": "Requested by {{name}}",
+    "ApprovedBy": "Approved by {{name}}",
+    "RejectedBy": "Rejected by {{name}}",
+    "WaitingForApprover": "Waiting for a workspace owner or admin",
+    "Executing": "Running…",
+    "Done": "Done",
+    "FailedText": "Could not run",
+    "ExpiredText": "The request expired without a decision",
+    "OpenRoom": "Open room",
+    "ApprovedToast": "Approved; the action runs now",
+    "RejectedToast": "Action rejected",
+    "EmptyTitle": "No requests",
+    "EmptyText": "When the agent proposes an action in a room, it shows up here for the people who can approve it.",
+    "Tabs": {
+      "forMe": "For me",
+      "pending": "All pending",
+      "all": "History"
+    },
+    "States": {
+      "pending": "Waiting for approval",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "expired": "Expired",
+      "executed": "Done",
+      "failed": "Failed"
+    },
+    "Statuses": {
+      "Pending": "Waiting for approval",
+      "Approved": "Approved",
+      "Rejected": "Rejected",
+      "Expired": "Expired",
+      "Executed": "Done",
+      "Failed": "Failed"
+    },
+    "Risk": {
+      "Low": "Low risk",
+      "Medium": "Medium risk",
+      "High": "High risk"
+    },
+    "Tools": {
+      "create_task": "Create task",
+      "update_task": "Update task",
+      "draft_document": "Draft document",
+      "other": "Action"
+    },
+    "Args": {
+      "title": "Title",
+      "description": "Description",
+      "assigneeName": "Assignee",
+      "dueDate": "Due date",
+      "priority": "Priority"
+    },
+    "Reasons": {
+      "Tasks:Task:NotWorkspaceMember": "The requester is no longer a contributing member",
+      "General:Fields:Required": "A required field is missing"
+    }
+  },
+  "Tasks": {
+    "Title": "Tasks",
+    "Subtitle": "The team's tasks, created by members or by the agent after approval",
+    "Task": "Task",
+    "Assignee": "Assignee",
+    "Priority": "Priority",
+    "Due": "Due",
+    "Status": "Status",
+    "AllStatuses": "All statuses",
+    "NewPlaceholder": "New task…",
+    "Add": "Add",
+    "Created": "Task added",
+    "ByAgent": "By the agent",
+    "OpenRoom": "Room",
+    "EmptyTitle": "No tasks",
+    "EmptyText": "Add a task here, or ask the agent in a room to create one and approve its proposal.",
+    "Statuses": {
+      "ToDo": "To do",
+      "InProgress": "In progress",
+      "Done": "Done",
+      "Cancelled": "Cancelled"
+    },
+    "Priorities": {
+      "Low": "Low",
+      "Normal": "Normal",
+      "High": "High",
+      "Urgent": "Urgent"
     }
   }
 }

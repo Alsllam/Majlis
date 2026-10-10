@@ -18,7 +18,8 @@
     "Retry": "إعادة المحاولة",
     "Edit": "تعديل",
     "Remove": "إزالة",
-    "Actions": "إجراءات"
+    "Actions": "إجراءات",
+    "Reason": "السبب"
   },
   "Language": {
     "ar": "العربية",
@@ -32,7 +33,9 @@
   "Menu": {
     "Rooms": "الغرف",
     "Workspaces": "مساحات العمل",
-    "Documents": "المستندات"
+    "Documents": "المستندات",
+    "Approvals": "الموافقات",
+    "Tasks": "المهام"
   },
   "Errors": {
     "Network": "تعذّر الوصول إلى الخادم. تحقق من الاتصال ثم أعد المحاولة.",
@@ -98,7 +101,8 @@
       "Cancelled": "أُلغيت الإجابة"
     },
     "Progress": {
-      "Searching": "يبحث في مستندات الفريق…"
+      "Searching": "يبحث في مستندات الفريق…",
+      "RequestingApproval": "يطلب الموافقة على إجراء…"
     }
   },
   "Control": {
@@ -238,6 +242,99 @@
       "Knowledge:Ingestion:Failed": "فشلت الفهرسة",
       "General:Errors:AiBusy": "خدمة الذكاء الاصطناعي مشغولة",
       "General:Errors:AiNotConfigured": "خدمة الذكاء الاصطناعي غير مهيأة"
+    }
+  },
+  "Approvals": {
+    "Title": "الموافقات",
+    "Subtitle": "إجراءات اقترحها الوكيل ولا تُنفَّذ إلا بموافقة شخص",
+    "Proposed": "اقتراح من الوكيل",
+    "Approve": "موافقة",
+    "Reject": "رفض",
+    "RejectReason": "سبب الرفض",
+    "RequestedBy": "طلبها {{name}}",
+    "ApprovedBy": "وافق عليها {{name}}",
+    "RejectedBy": "رفضها {{name}}",
+    "WaitingForApprover": "بانتظار موافقة مالك أو مدير المساحة",
+    "Executing": "جارٍ التنفيذ…",
+    "Done": "نُفِّذت",
+    "FailedText": "تعذّر التنفيذ",
+    "ExpiredText": "انتهت صلاحية الطلب دون قرار",
+    "OpenRoom": "فتح الغرفة",
+    "ApprovedToast": "تمت الموافقة؛ سيُنفَّذ الإجراء الآن",
+    "RejectedToast": "رُفض الإجراء",
+    "EmptyTitle": "لا توجد طلبات",
+    "EmptyText": "عندما يقترح الوكيل إجراءً في غرفة، يظهر هنا لمن يملك صلاحية الموافقة.",
+    "Tabs": {
+      "forMe": "بانتظاري",
+      "pending": "كل المعلّقة",
+      "all": "السجل"
+    },
+    "States": {
+      "pending": "بانتظار الموافقة",
+      "approved": "تمت الموافقة",
+      "rejected": "مرفوض",
+      "expired": "منتهٍ",
+      "executed": "نُفِّذ",
+      "failed": "فشل"
+    },
+    "Statuses": {
+      "Pending": "بانتظار الموافقة",
+      "Approved": "تمت الموافقة",
+      "Rejected": "مرفوض",
+      "Expired": "منتهٍ",
+      "Executed": "نُفِّذ",
+      "Failed": "فشل"
+    },
+    "Risk": {
+      "Low": "خطورة منخفضة",
+      "Medium": "خطورة متوسطة",
+      "High": "خطورة عالية"
+    },
+    "Tools": {
+      "create_task": "إنشاء مهمة",
+      "update_task": "تعديل مهمة",
+      "draft_document": "صياغة مستند",
+      "other": "إجراء"
+    },
+    "Args": {
+      "title": "العنوان",
+      "description": "الوصف",
+      "assigneeName": "المسؤول",
+      "dueDate": "تاريخ الاستحقاق",
+      "priority": "الأولوية"
+    },
+    "Reasons": {
+      "Tasks:Task:NotWorkspaceMember": "الطالب لم يعد عضواً مساهماً في المساحة",
+      "General:Fields:Required": "حقل مطلوب ناقص"
+    }
+  },
+  "Tasks": {
+    "Title": "المهام",
+    "Subtitle": "مهام الفريق، أنشأها الأعضاء أو الوكيل بعد الموافقة",
+    "Task": "المهمة",
+    "Assignee": "المسؤول",
+    "Priority": "الأولوية",
+    "Due": "الاستحقاق",
+    "Status": "الحالة",
+    "AllStatuses": "كل الحالات",
+    "NewPlaceholder": "مهمة جديدة…",
+    "Add": "إضافة",
+    "Created": "أُضيفت المهمة",
+    "ByAgent": "من الوكيل",
+    "OpenRoom": "الغرفة",
+    "EmptyTitle": "لا توجد مهام",
+    "EmptyText": "أضف مهمة هنا، أو اطلب من الوكيل في غرفة إنشاءها ووافق على اقتراحه.",
+    "Statuses": {
+      "ToDo": "للتنفيذ",
+      "InProgress": "قيد التنفيذ",
+      "Done": "منجزة",
+      "Cancelled": "ملغاة"
+    },
+    "Priorities": {
+      "Low": "منخفضة",
+      "Normal": "عادية",
+      "High": "عالية",
+      "Urgent": "عاجلة"
     }
   }
 }

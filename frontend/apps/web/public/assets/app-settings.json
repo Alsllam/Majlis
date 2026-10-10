@@ -27,6 +27,12 @@
     },
     "knowledge": {
       "url": "http://localhost:7000/api/knowledge"
+    },
+    "approvals": {
+      "url": "http://localhost:7000/api/approvals"
+    },
+    "tasks": {
+      "url": "http://localhost:7000/api/tasks"
     }
   },
   "realtime": {
@@ -49,7 +55,13 @@
       "Permissions.Rooms.DriveSession",
       "Permissions.Knowledge.ViewDocument",
       "Permissions.Knowledge.UploadDocument",
-      "Permissions.Knowledge.DeleteDocument"
+      "Permissions.Knowledge.DeleteDocument",
+      "Permissions.Approvals.ViewApproval",
+      "Permissions.Approvals.RequestAction",
+      "Permissions.Approvals.ApproveAction",
+      "Permissions.Tasks.ViewTask",
+      "Permissions.Tasks.CreateTask",
+      "Permissions.Tasks.UpdateTask"
     ]
   }
 }

@@ -9,7 +9,7 @@ Prerequisites: .NET 10 SDK, Docker.
 ```bash
 cp .env.example .env            # at the repo root; fill in every value (local only, git-ignored)
 docker compose up -d             # SQL Server, Redis, RabbitMQ
-backend/scripts/run-local.sh     # migrations + seed, then Auth (7001), Workspaces (7010), Rooms (7020), Knowledge (7040), Realtime (7002), BFF (7000)
+backend/scripts/run-local.sh     # migrations + seed, then Auth (7001), Workspaces (7010), Rooms (7020), Knowledge (7040), Approvals (7030), Tasks (7050), Realtime (7002), BFF (7000), ai-service (8000)
 backend/scripts/stop-local.sh
 ```
 
@@ -23,8 +23,10 @@ Logs: `backend/.local/logs/*.log`. Everything is reached through the BFF at `htt
 | `/api/workspaces/workspaces/*` | Workspaces |
 | `/api/rooms/rooms/*`, `/api/rooms/sessions/*` | Rooms |
 | `/api/knowledge/documents/*` | Knowledge (uploads go straight to blob storage through pre-signed urls) |
+| `/api/approvals/requests/*` | Approvals (ai-service creates requests with the driver's token; people approve or reject) |
+| `/api/tasks/tasks/*` | Tasks |
 | `/hubs/session` | Realtime (SignalR) |
-| `/ai-api/*` | ai-service (next PR) |
+| `/ai-api/*` | ai-service |
 
 Seeded demo data (only when `MAJLIS_SEED_PASSWORD` is set): tenant "جهة تجريبية", users `sara@` (TenantAdmin), `khalid@`, `noura@` `demo.majlis.local`, all with that password, and the room "غرفة العقود" with all three as contributors. The web client `majlis-web` accepts redirects to `http://localhost:4200`.
 

@@ -73,7 +73,7 @@ Every module has the four projects from the skill (`Majlis.{Module}.Domain`, `.A
 - **Owns:** ApprovalPolicy, ApprovalRequest (tool, args, preview/diff, risk, requester, origin session/turn, expiry), ApprovalDecision (approve/reject/edit-then-approve).
 - **Publishes:** `ApprovalRequested`, `ApprovalDecided`, `ActionApproved {tool, args, approvalRequestId, requestedBy, approvedBy}`, `ActionRejected`, `ApprovalExpired`.
 - **Consumes:** `ActionExecuted`, `ActionExecutionFailed` (from the owning modules), `MemberRemoved` (re-evaluate pending approvals).
-- **Notes:** the only door for agent-originated writes. The tool → owning module map is configuration (`create_task → Tasks`, `draft_document → Knowledge`, …). Policy evaluation (who may approve, how many approvals, self-approval) is a domain service `ApprovalPolicyManager`. Expiry runs as a Hangfire job.
+- **Notes:** the only door for agent-originated writes. The tool → owning module map is configuration (`create_task → Tasks`, `draft_document → Knowledge`, …). Policy evaluation (who may approve, how many approvals, self-approval) is a domain service `ApprovalPolicyManager`. Expiry runs as a Hangfire job. *(Built 2026-10-10: requests, the default policy (low risk → any contributor; medium/high → an owner or admin other than the requester), edit-then-approve, reject with reason, expiry (published as `ApprovalDecided {decision: Expired}` rather than a separate `ApprovalExpired`), `ApprovalExecuted` from `ActionExecuted/Failed`; ai-service creates requests over HTTP with the driver's token. Per-workspace policies, several approvers, `MemberRemoved` re-evaluation and the Hangfire job follow; until then an in-host sweeper expires requests.)*
 
 ### Knowledge — `knowledge` · 7040
 - **Owns:** Folder (ACL groups), Document, DocumentVersion (blob path, SHA-256, ingestion status), agent Drafts (Document with `Origin = Agent`, status Draft → Approved). (The glossary is owned by Workspaces.)
@@ -85,6 +85,7 @@ Every module has the four projects from the skill (`Majlis.{Module}.Domain`, `.A
 - **Owns:** Task (assignee, due date, priority, status, origin, source session/turn, `ApprovalRequestId`).
 - **Publishes:** `TaskCreated`, `TaskAssigned`, `TaskStatusChanged`, `TaskDue`, `ActionExecuted`.
 - **Consumes:** `ActionApproved` for `create_task` / `update_task`, `MemberRemoved` (unassign).
+- *(Built 2026-10-10: tasks with list/create/update/status, `create_task` executed once per `ApprovalRequestId` with `ActionExecuted` / `ActionExecutionFailed`; the `Task*` events, `update_task` and unassign on `MemberRemoved` follow.)*
 
 ### Meetings — `meetings` · 7060
 - **Owns:** Meeting, Transcript (segments), Minutes, ActionItem.

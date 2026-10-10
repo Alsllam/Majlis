@@ -1,9 +1,14 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { APPROVALS_PERMISSIONS } from '@majlis/approvals-config';
+import { ApprovalsService } from '@majlis/approvals-proxy';
 import { AuthService, LocalizationService, PermissionService, isApiError } from '@majlis/core';
 import { ROOMS_PERMISSIONS } from '@majlis/rooms-config';
 import {
+  ApprovalDecidedData,
+  ApprovalExecutedData,
+  ApprovalRequestedData,
   CitationDto,
   ControlChangedData,
   RoomDto,
@@ -46,7 +51,31 @@ export interface NoticeItem {
   params: Record<string, string>;
 }
 
-export type TimelineItem = TurnItem | NoticeItem;
+export type ApprovalState = 'pending' | 'approved' | 'rejected' | 'expired' | 'executed' | 'failed';
+
+/** One approval card: the request plus every later outcome, merged by `requestId` (FR-APR-004). */
+export interface ApprovalItem {
+  kind: 'approval';
+  seq: number;
+  requestId: string;
+  turnId: string | null;
+  tool: string;
+  summary: string;
+  reason: string | null;
+  risk: 'Low' | 'Medium' | 'High';
+  args: Record<string, unknown>;
+  requestedBy: { userId: string; displayName: string };
+  at: string;
+  expiresAt: string;
+  state: ApprovalState;
+  decidedBy: { userId: string; displayName: string } | null;
+  note: string | null;
+  resultSummary: string | null;
+  resultEntityId: string | null;
+  reasonKey: string | null;
+}
+
+export type TimelineItem = TurnItem | NoticeItem | ApprovalItem;
 
 /** Known `turn.failed` reasons (the backend sends localization keys such as `General:Errors:AiBusy`). */
 const KNOWN_REASONS = new Set(['AiUnavailable', 'AiBusy', 'ModelError', 'Cancelled']);
@@ -76,6 +105,7 @@ const CONTROL_EVENTS = new Set([
 export class RoomSessionFacade {
   private readonly rooms = inject(RoomsService);
   private readonly sessions = inject(SessionsService);
+  private readonly approvals = inject(ApprovalsService);
   private readonly realtime = inject(RealtimeConnectionService);
   private readonly auth = inject(AuthService);
   private readonly permissions = inject(PermissionService);
@@ -106,6 +136,9 @@ export class RoomSessionFacade {
   });
   readonly canDrive = computed(() => this.permissions.isGranted(ROOMS_PERMISSIONS.driveSession));
   readonly canTakeOver = computed(() => this.permissions.isGranted(ROOMS_PERMISSIONS.takeOverSession));
+  readonly canApprove = computed(() => this.permissions.isGranted(APPROVALS_PERMISSIONS.approveAction));
+  /** Cards still waiting for a person; the backend decides who may act (FR-APR-005), the UI shows the buttons to approvers. */
+  readonly pendingApprovals = computed(() => this.timeline().filter((i): i is ApprovalItem => i.kind === 'approval' && i.state === 'pending'));
   readonly canInstruct = computed(() => this.isDriver() && this.state()?.status === 'Active' && !this.activeTurn());
   readonly myRequestPending = computed(() => this.state()?.pendingRequests.some((r) => r.userId === this.me()?.id) ?? false);
   readonly handOffToMe = computed(() => this.state()?.pendingHandOffTo?.userId === this.me()?.id);
@@ -178,6 +211,10 @@ export class RoomSessionFacade {
   offerHandOff = (toUserId: string, note: string | null) =>
     this.transition((id, epoch) => this.sessions.offerHandOff({ sessionId: id, toUserId, epoch, note }));
   resolveHandOff = (accept: boolean) => this.transition((id) => this.sessions.resolveHandOff({ sessionId: id, accept }));
+
+  /** Decisions are plain HTTP commands; the card changes when `approval.decided` comes back through the timeline. */
+  approve = (requestId: string, note: string | null = null) => this.command(() => firstValueFrom(this.approvals.approve({ id: requestId, note })));
+  reject = (requestId: string, reason: string) => this.command(() => firstValueFrom(this.approvals.reject({ id: requestId, reason })));
 
   private async transition(call: (sessionId: string, epoch: number) => import('rxjs').Observable<SessionStateDto>): Promise<void> {
     const state = this.state();
@@ -320,6 +357,51 @@ export class RoomSessionFacade {
       case 'session.ended':
         this.put({ kind: 'notice', seq: event.seq, at: event.at, key: 'Session.Ended', params: {} });
         return;
+      case 'approval.requested': {
+        const data = event.data as unknown as ApprovalRequestedData;
+        this.put({
+          kind: 'approval',
+          seq: event.seq,
+          requestId: data.requestId,
+          turnId: data.turnId,
+          tool: data.tool,
+          summary: data.summary,
+          reason: data.reason,
+          risk: data.risk,
+          args: data.args ?? {},
+          requestedBy: data.requestedBy,
+          at: event.at,
+          expiresAt: data.expiresAt,
+          state: 'pending',
+          decidedBy: null,
+          note: null,
+          resultSummary: null,
+          resultEntityId: null,
+          reasonKey: null,
+        });
+        return;
+      }
+      case 'approval.decided': {
+        const data = event.data as unknown as ApprovalDecidedData;
+        this.patchApproval(data.requestId, (a) => ({ ...a, state: data.decision === 'Approved' ? 'approved' : 'rejected', decidedBy: data.decidedBy, note: data.note }));
+        return;
+      }
+      case 'approval.expired': {
+        const data = event.data as unknown as ApprovalDecidedData;
+        this.patchApproval(data.requestId, (a) => ({ ...a, state: 'expired' }));
+        return;
+      }
+      case 'approval.executed': {
+        const data = event.data as unknown as ApprovalExecutedData;
+        this.patchApproval(data.requestId, (a) => ({
+          ...a,
+          state: data.succeeded ? 'executed' : 'failed',
+          resultSummary: data.resultSummary,
+          resultEntityId: data.entityId,
+          reasonKey: data.reasonKey,
+        }));
+        return;
+      }
       default:
         return;
     }
@@ -339,6 +421,19 @@ export class RoomSessionFacade {
 
   private put(item: TimelineItem): void {
     this.items.update((map) => new Map(map).set(item.seq, item));
+  }
+
+  private patchApproval(requestId: string, patch: (item: ApprovalItem) => ApprovalItem): void {
+    this.items.update((map) => {
+      for (const [seq, item] of map) {
+        if (item.kind === 'approval' && item.requestId === requestId) {
+          const next = new Map(map);
+          next.set(seq, patch(item));
+          return next;
+        }
+      }
+      return map;
+    });
   }
 
   private patchTurn(turnId: string | null, patch: (turn: TurnItem) => TurnItem): void {

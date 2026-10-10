@@ -23,7 +23,8 @@
         "type": {
           "enum": [
             "session.started", "session.ended", "control.changed", "control.requested", "control.request.resolved",
-            "handoff.offered", "handoff.resolved", "turn.started", "turn.completed", "turn.stopped", "turn.failed"
+            "handoff.offered", "handoff.resolved", "turn.started", "turn.completed", "turn.stopped", "turn.failed",
+            "approval.requested", "approval.decided", "approval.executed", "approval.expired"
           ]
         },
         "scope": {
@@ -213,6 +214,114 @@
         "tenantId": { "$ref": "#/$defs/uuid" },
         "documentId": { "$ref": "#/$defs/uuid" },
         "versionId": { "$ref": "#/$defs/uuid" },
+        "reasonKey": { "type": "string" },
+        "detail": { "type": ["string", "null"] }
+      }
+    },
+    "approvalRequested": {
+      "description": "Approvals → Rooms (exchange majlis.approval-requested): a mutating agent tool waits for a person; Rooms appends approval.requested {requestId, tool, summary, reason, risk, args, requestedBy, expiresAt, turnId} to the session timeline. Created by ai-service with the driver's token through POST /api/approvals/requests.",
+      "type": "object",
+      "required": ["tenantId", "workspaceId", "roomId", "sessionId", "requestId", "tool", "summary", "risk", "argsJson", "requestedByUserId", "requestedByDisplayName", "expiresAt"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "workspaceId": { "$ref": "#/$defs/uuid" },
+        "roomId": { "$ref": "#/$defs/uuid" },
+        "sessionId": { "$ref": "#/$defs/uuid" },
+        "turnId": { "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }] },
+        "requestId": { "$ref": "#/$defs/uuid" },
+        "tool": { "type": "string", "enum": ["create_task", "update_task", "draft_document"] },
+        "summary": { "type": "string" },
+        "reason": { "type": ["string", "null"] },
+        "risk": { "type": "string", "enum": ["Low", "Medium", "High"] },
+        "argsJson": { "type": "string", "description": "The tool arguments as the agent proposed them (JSON object)." },
+        "requestedByUserId": { "$ref": "#/$defs/uuid" },
+        "requestedByDisplayName": { "type": "string" },
+        "expiresAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "approvalDecided": {
+      "description": "Approvals → Rooms (exchange majlis.approval-decided): Rooms appends approval.decided {requestId, tool, decision, decidedBy, note, edited} or approval.expired when decision = Expired.",
+      "type": "object",
+      "required": ["tenantId", "sessionId", "requestId", "tool", "decision"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "sessionId": { "$ref": "#/$defs/uuid" },
+        "requestId": { "$ref": "#/$defs/uuid" },
+        "tool": { "type": "string" },
+        "decision": { "type": "string", "enum": ["Approved", "Rejected", "Expired"] },
+        "decidedByUserId": { "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }] },
+        "decidedByDisplayName": { "type": ["string", "null"] },
+        "note": { "type": ["string", "null"], "description": "The approver's note, or the rejection reason." },
+        "editedArgsJson": { "type": ["string", "null"], "description": "Set when the approver edited the arguments before approving (FR-APR-003)." }
+      }
+    },
+    "approvalExecuted": {
+      "description": "Approvals → Rooms (exchange majlis.approval-executed): the owning module ran (or failed to run) the approved action; Rooms appends approval.executed {requestId, tool, succeeded, resultSummary, entityId, reasonKey}.",
+      "type": "object",
+      "required": ["tenantId", "sessionId", "requestId", "tool", "succeeded"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "sessionId": { "$ref": "#/$defs/uuid" },
+        "requestId": { "$ref": "#/$defs/uuid" },
+        "tool": { "type": "string" },
+        "succeeded": { "type": "boolean" },
+        "resultSummary": { "type": ["string", "null"] },
+        "entityId": { "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }] },
+        "reasonKey": { "type": ["string", "null"], "description": "Localization key when succeeded = false." }
+      }
+    },
+    "actionApproved": {
+      "description": "Approvals → the owning module (exchange majlis.action-approved): run the tool with the effective arguments (edited ones win). Idempotent on requestId.",
+      "type": "object",
+      "required": ["tenantId", "workspaceId", "roomId", "sessionId", "requestId", "tool", "argsJson", "requestedByUserId", "requestedByDisplayName", "approvedByUserId", "approvedByDisplayName"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "workspaceId": { "$ref": "#/$defs/uuid" },
+        "roomId": { "$ref": "#/$defs/uuid" },
+        "sessionId": { "$ref": "#/$defs/uuid" },
+        "turnId": { "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }] },
+        "requestId": { "$ref": "#/$defs/uuid" },
+        "tool": { "type": "string" },
+        "argsJson": { "type": "string" },
+        "requestedByUserId": { "$ref": "#/$defs/uuid" },
+        "requestedByDisplayName": { "type": "string" },
+        "approvedByUserId": { "$ref": "#/$defs/uuid" },
+        "approvedByDisplayName": { "type": "string" }
+      }
+    },
+    "actionRejected": {
+      "description": "Approvals → interested modules (exchange majlis.action-rejected).",
+      "type": "object",
+      "required": ["tenantId", "sessionId", "requestId", "tool", "rejectedByUserId"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "sessionId": { "$ref": "#/$defs/uuid" },
+        "requestId": { "$ref": "#/$defs/uuid" },
+        "tool": { "type": "string" },
+        "rejectedByUserId": { "$ref": "#/$defs/uuid" },
+        "reason": { "type": ["string", "null"] }
+      }
+    },
+    "actionExecuted": {
+      "description": "Owning module → Approvals (exchange majlis.action-executed): the approved action ran; entityId is the created or changed record.",
+      "type": "object",
+      "required": ["tenantId", "requestId", "tool"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "requestId": { "$ref": "#/$defs/uuid" },
+        "tool": { "type": "string" },
+        "entityId": { "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }] },
+        "resultSummary": { "type": ["string", "null"] }
+      }
+    },
+    "actionExecutionFailed": {
+      "description": "Owning module → Approvals (exchange majlis.action-execution-failed); reasonKey is a localization key.",
+      "type": "object",
+      "required": ["tenantId", "requestId", "tool", "reasonKey"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "requestId": { "$ref": "#/$defs/uuid" },
+        "tool": { "type": "string" },
         "reasonKey": { "type": "string" },
         "detail": { "type": ["string", "null"] }
       }

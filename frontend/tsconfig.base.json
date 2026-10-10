@@ -31,6 +31,12 @@
       "@majlis/identity-proxy": ["./libs/shared/identity-proxy/src/index.ts"],
       "@majlis/workspaces-config": ["./libs/workspaces/config/src/index.ts"],
       "@majlis/workspaces-ui-common": ["./libs/workspaces/ui-common/src/index.ts"],
+      "@majlis/approvals-proxy": ["./libs/shared/approvals-proxy/src/index.ts"],
+      "@majlis/approvals-config": ["./libs/approvals/config/src/index.ts"],
+      "@majlis/approvals-ui-common": ["./libs/approvals/ui-common/src/index.ts"],
+      "@majlis/tasks-proxy": ["./libs/shared/tasks-proxy/src/index.ts"],
+      "@majlis/tasks-config": ["./libs/tasks/config/src/index.ts"],
+      "@majlis/tasks-ui-common": ["./libs/tasks/ui-common/src/index.ts"],
       "@majlis/knowledge-proxy": ["./libs/shared/knowledge-proxy/src/index.ts"],
       "@majlis/knowledge-config": ["./libs/knowledge/config/src/index.ts"],
       "@majlis/knowledge-ui-common": ["./libs/knowledge/ui-common/src/index.ts"]

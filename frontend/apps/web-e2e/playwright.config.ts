@@ -10,6 +10,8 @@ const baseURL = process.env['BASE_URL'] || 'http://localhost:4200';
  */
 export default defineConfig({
   ...nxE2EPreset(__filename, { testDir: './src' }),
+  // The scenarios share one seeded room and its single agent session, so they run one at a time.
+  workers: 1,
   use: {
     baseURL,
     trace: 'on-first-retry',

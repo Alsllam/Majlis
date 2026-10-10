@@ -1,23 +1,28 @@
 import { DatePipe } from '@angular/common';
-import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, inject, input, viewChild } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, inject, input, output, viewChild } from '@angular/core';
 import { LocalizationService } from '@majlis/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { EnArPipe } from '@majlis/core';
 import { AvatarComponent } from '@majlis/shared-ui-common';
+import { ApprovalCardComponent } from './approval-card.component';
 import { TimelineItem } from './room-session.facade';
 
-/** Turns and control notices in seq order. Agent text is labelled AI-generated and carries its citations. */
+/** Turns, control notices and approval cards in seq order. Agent text is labelled AI-generated and carries its citations. */
 @Component({
   selector: 'majlis-session-timeline',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, DatePipe, AvatarComponent, RouterLink, EnArPipe],
+  imports: [TranslatePipe, DatePipe, AvatarComponent, RouterLink, EnArPipe, ApprovalCardComponent],
   templateUrl: './session-timeline.component.html',
   styleUrl: './session-timeline.component.scss',
 })
 export class SessionTimelineComponent implements AfterViewChecked {
   readonly items = input.required<TimelineItem[]>();
   readonly meId = input.required<string>();
+  readonly canApprove = input(false);
+  readonly busy = input(false);
+  readonly approve = output<string>();
+  readonly reject = output<string>();
   protected readonly lang = inject(LocalizationService).lang;
   private readonly scroller = viewChild.required<ElementRef<HTMLElement>>('scroller');
   private lastCount = -1;

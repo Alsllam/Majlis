@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, effect, inject, input } from '@angu
 import { RouterLink } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TranslatePipe } from '@ngx-translate/core';
-import { AvatarComponent, BusyButtonDirective, EmptyStateComponent } from '@majlis/shared-ui-common';
+import { AvatarComponent, BusyButtonDirective, EmptyStateComponent, ReasonModalComponent } from '@majlis/shared-ui-common';
 import { HandOffModalComponent } from './hand-off-modal.component';
 import { RoomSessionFacade } from './room-session.facade';
 import { SessionComposerComponent } from './session-composer.component';
@@ -24,6 +24,21 @@ export class RoomComponent {
 
   constructor() {
     effect(() => void this.facade.open(this.roomId()));
+  }
+
+  /** FR-APR-002: a rejection always carries a reason, so the agent and the room know why. */
+  protected rejectApproval(requestId: string): void {
+    const ref = this.modal.open(ReasonModalComponent, { centered: true });
+    const modal = ref.componentInstance as ReasonModalComponent;
+    modal.title = 'Approvals.Reject';
+    modal.label = 'Approvals.RejectReason';
+    modal.submitLabel = 'Approvals.Reject';
+    modal.required = true;
+    ref.closed.subscribe((reason: string | null) => {
+      if (reason) {
+        void this.facade.reject(requestId, reason);
+      }
+    });
   }
 
   protected handOff(): void {

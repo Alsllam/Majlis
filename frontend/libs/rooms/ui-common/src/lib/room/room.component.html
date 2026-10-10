@@ -83,7 +83,13 @@
           }
         </majlis-empty-state>
       } @else {
-        <majlis-session-timeline [items]="facade.timeline()" [meId]="facade.me()?.id ?? ''" />
+        <majlis-session-timeline
+          [items]="facade.timeline()"
+          [meId]="facade.me()?.id ?? ''"
+          [canApprove]="facade.canApprove()"
+          [busy]="facade.busy()"
+          (approve)="facade.approve($event)"
+          (reject)="rejectApproval($event)" />
         @if (state.status === 'Active') {
           <majlis-session-composer
             [canInstruct]="facade.canInstruct()"

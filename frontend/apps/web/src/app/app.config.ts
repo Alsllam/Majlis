@@ -1,8 +1,10 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
+import { provideApprovalsConfig } from '@majlis/approvals-config';
 import { provideMajlisCore } from '@majlis/core';
 import { provideKnowledgeConfig } from '@majlis/knowledge-config';
 import { provideRoomsConfig } from '@majlis/rooms-config';
+import { provideTasksConfig } from '@majlis/tasks-config';
 import { provideThemeShared } from '@majlis/theme-shared';
 import { provideWorkspacesConfig } from '@majlis/workspaces-config';
 import { appRoutes } from './app.routes';
@@ -18,5 +20,7 @@ export const appConfig: ApplicationConfig = {
     provideWorkspacesConfig(),
     provideRoomsConfig(),
     provideKnowledgeConfig(),
+    provideApprovalsConfig(),
+    provideTasksConfig(),
   ],
 };

@@ -2,6 +2,8 @@
   @for (item of items(); track item.seq) {
     @if (item.kind === 'notice') {
       <div class="notice"><span>{{ item.key | translate: item.params }}</span><time class="num">{{ item.at | date: 'shortTime' : undefined : lang() }}</time></div>
+    } @else if (item.kind === 'approval') {
+      <majlis-approval-card [item]="item" [canApprove]="canApprove()" [busy]="busy()" (approve)="approve.emit($event)" (reject)="reject.emit($event)" />
     } @else {
       <article class="turn">
         <div class="msg user" [class.me]="item.instructedBy.userId === meId()" [attr.lang]="item.language" [attr.dir]="item.language === 'ar' ? 'rtl' : 'ltr'">
