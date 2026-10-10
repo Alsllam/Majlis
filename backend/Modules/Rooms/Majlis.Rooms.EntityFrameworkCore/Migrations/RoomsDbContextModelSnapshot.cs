@@ -352,6 +352,42 @@ namespace Majlis.Rooms.EntityFrameworkCore.Migrations
                     b.ToTable("Turns", "rooms");
                 });
 
+            modelBuilder.Entity("Majlis.Rooms.Domain.Entities.WorkspaceMembership", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("WorkspaceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("WorkspaceId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("WorkspaceMemberships", "rooms");
+                });
+
             modelBuilder.Entity("Majlis.Rooms.Domain.Entities.ControlRequest", b =>
                 {
                     b.HasOne("Majlis.Rooms.Domain.Entities.AgentSession", null)

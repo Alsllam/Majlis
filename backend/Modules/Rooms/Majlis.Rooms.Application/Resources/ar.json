@@ -12,5 +12,7 @@
   "Rooms:Session:TurnInProgress": "الوكيل ما زال يعمل على التعليمة السابقة. أوقفه أولاً أو انتظر.",
   "Rooms:Session:TurnNotRunning": "لا يعمل الوكيل على هذه التعليمة الآن.",
   "Rooms:Session:HandOffToSelf": "لا يمكنك تسليم التحكم لنفسك.",
-  "Rooms:Turn:AiUnavailable": "توقف الوكيل عن الاستجابة. أعد المحاولة."
+  "Rooms:Turn:AiUnavailable": "توقف الوكيل عن الاستجابة. أعد المحاولة.",
+  "Rooms:Room:NotWorkspaceMember": "لست عضواً في مساحة العمل هذه، فلا يمكنك إنشاء غرفة فيها.",
+  "Rooms:Room:UserNotWorkspaceMember": "هذا المستخدم ليس عضواً في مساحة العمل، أضفه إليها أولاً."
 }

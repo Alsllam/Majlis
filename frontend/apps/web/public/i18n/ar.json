@@ -15,7 +15,10 @@
     "Decline": "رفض",
     "Send": "إرسال",
     "Stop": "إيقاف",
-    "Retry": "إعادة المحاولة"
+    "Retry": "إعادة المحاولة",
+    "Edit": "تعديل",
+    "Remove": "إزالة",
+    "Actions": "إجراءات"
   },
   "Language": {
     "ar": "العربية",
@@ -27,7 +30,8 @@
     "dim": "خافت"
   },
   "Menu": {
-    "Rooms": "الغرف"
+    "Rooms": "الغرف",
+    "Workspaces": "مساحات العمل"
   },
   "Errors": {
     "Network": "تعذّر الوصول إلى الخادم. تحقق من الاتصال ثم أعد المحاولة.",
@@ -54,7 +58,11 @@
     "Created": "أُنشئت الغرفة",
     "Open": "فتح الغرفة",
     "NameRequired": "اسم الغرفة مطلوب",
-    "Back": "كل الغرف"
+    "Back": "كل الغرف",
+    "Workspace": "مساحة العمل",
+    "WorkspaceRequired": "اختر مساحة العمل",
+    "NoWorkspaceTitle": "لا تنتمي إلى أي مساحة عمل",
+    "NoWorkspaceText": "أنشئ مساحة عمل أو اطلب إضافتك إلى واحدة قبل إنشاء الغرف."
   },
   "Session": {
     "Start": "بدء جلسة",
@@ -125,5 +133,58 @@
     "active": "نشط",
     "typing:comment": "يكتب تعليقًا",
     "typing:suggestion": "يكتب اقتراحًا"
+  },
+  "Workspaces": {
+    "Title": "مساحات العمل",
+    "Subtitle": "فرق عملك، وغرفها، ومعرفتها",
+    "Create": "مساحة عمل جديدة",
+    "Edit": "تعديل مساحة العمل",
+    "Name": "الاسم",
+    "NameRequired": "اسم مساحة العمل مطلوب",
+    "Description": "الوصف",
+    "Icon": "الأيقونة",
+    "Color": "اللون",
+    "Colors": {
+      "brand": "الأخضر المائل للزرقة",
+      "accent": "النحاسي",
+      "success": "الأخضر",
+      "warning": "البرتقالي",
+      "danger": "الأحمر",
+      "info": "الأزرق",
+      "neutral": "الرمادي"
+    },
+    "Members": "{{count}} عضو",
+    "MembersTitle": "الأعضاء",
+    "Member": "العضو",
+    "AddMember": "إضافة عضو",
+    "SearchUsers": "ابحث بالاسم أو البريد",
+    "NoUsers": "لا توجد نتائج",
+    "AlreadyMember": "عضو بالفعل",
+    "RoleLabel": "الدور",
+    "Role": {
+      "Owner": "مالك",
+      "Admin": "مشرف",
+      "Contributor": "مساهم",
+      "Viewer": "مشاهد"
+    },
+    "InstructionsTitle": "تعليمات الوكيل",
+    "InstructionsHint": "تُضاف إلى سياق كل جلسة في مساحة العمل: أسلوب الكتابة، المصطلحات، النبرة.",
+    "InstructionsPlaceholder": "مثال: استخدم العربية الفصحى، واذكر رقم المادة عند الاستشهاد باللوائح…",
+    "Archive": "أرشفة",
+    "Restore": "إعادة التفعيل",
+    "Archived": "مؤرشفة",
+    "ArchivedDone": "أُرشفت مساحة العمل",
+    "Restored": "أُعيد تفعيل مساحة العمل",
+    "ShowArchived": "إظهار المؤرشفة",
+    "HideArchived": "إخفاء المؤرشفة",
+    "EmptyTitle": "لا توجد مساحات عمل بعد",
+    "EmptyText": "أنشئ مساحة عمل لفريقك، ثم أضف الأعضاء وافتح الغرف.",
+    "Created": "أُنشئت مساحة العمل",
+    "Saved": "تم الحفظ",
+    "MemberAdded": "أُضيف العضو",
+    "MemberRemoved": "أُزيل العضو",
+    "RoleChanged": "تغيّر الدور",
+    "Back": "كل مساحات العمل",
+    "OpenRooms": "الغرف"
   }
 }

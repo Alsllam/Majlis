@@ -11,6 +11,7 @@ public class ArchitectureTests
         typeof(Majlis.Framework.Domain.Entities.Entity<>).Assembly,
         typeof(Majlis.Rooms.Domain.Entities.Room).Assembly,
         typeof(Majlis.Identity.Domain.Entities.Tenant).Assembly,
+        typeof(Majlis.Workspaces.Domain.Entities.Workspace).Assembly,
     ];
 
     private static readonly Assembly[] AllMajlis =
@@ -22,6 +23,8 @@ public class ArchitectureTests
         typeof(Majlis.Rooms.Application.RoomsApplicationModule).Assembly,
         typeof(Majlis.Identity.EntityFrameworkCore.MajlisIdentityDbContext).Assembly,
         typeof(Majlis.Identity.Application.IdentityApplicationModule).Assembly,
+        typeof(Majlis.Workspaces.EntityFrameworkCore.WorkspacesDbContext).Assembly,
+        typeof(Majlis.Workspaces.Application.WorkspacesApplicationModule).Assembly,
     ];
 
     public static TheoryData<string> DomainNames => new(Domains.Select(a => a.GetName().Name!));
@@ -55,7 +58,7 @@ public class ArchitectureTests
     public void Identity_ShouldNotReferenceOtherModules_WhenCompiled()
     {
         var identity = AllMajlis.Where(a => a.GetName().Name!.StartsWith("Majlis.Identity.", StringComparison.Ordinal)).ToArray();
-        var result = Types.InAssemblies(identity).ShouldNot().HaveDependencyOn("Majlis.Rooms").GetResult();
+        var result = Types.InAssemblies(identity).ShouldNot().HaveDependencyOnAny("Majlis.Rooms", "Majlis.Workspaces").GetResult();
 
         Assert.True(result.IsSuccessful, Failing(result));
     }

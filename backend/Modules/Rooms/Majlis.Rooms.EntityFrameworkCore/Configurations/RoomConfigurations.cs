@@ -96,3 +96,17 @@ public sealed class SessionEventConfiguration : DefaultEntityTypeConfiguration<S
         builder.HasIndex(e => new { e.SessionId, e.Seq }).IsUnique();
     }
 }
+
+public sealed class WorkspaceMembershipConfiguration : DefaultEntityTypeConfiguration<WorkspaceMembership, Guid>
+{
+    public override void Configure(EntityTypeBuilder<WorkspaceMembership> builder)
+    {
+        base.Configure(builder);
+        builder.ToTable("WorkspaceMemberships");
+        builder.Property(m => m.DisplayName).HasMaxLength(RoomsFieldDefinitions.MaxDisplayNameLength).IsRequired();
+        builder.Property(m => m.Role).HasMaxLength(32).IsRequired();
+        builder.HasIndex(m => new { m.WorkspaceId, m.UserId }).IsUnique();
+        builder.HasIndex(m => m.UserId);
+        builder.Ignore(m => m.CanContribute);
+    }
+}

@@ -18,6 +18,7 @@ namespace Majlis.Rooms.Application.Rooms;
 public class RoomsAppService(
     IRepository<Room, Guid> rooms,
     IReadOnlyRepository<AgentSession, Guid> sessions,
+    IReadOnlyRepository<WorkspaceMembership, Guid> memberships,
     ICurrentUser currentUser,
     IValidator<CreateRoomDto> createValidator,
     IValidator<AddRoomParticipantDto> addParticipantValidator) : ApplicationService, IRoomsAppService
@@ -74,6 +75,12 @@ public class RoomsAppService(
     public async Task<Guid> CreateAsync(CreateRoomDto input, CancellationToken cancellationToken = default)
     {
         await ValidateAsync(createValidator, input, cancellationToken);
+        var creator = await memberships.Query()
+            .FirstOrDefaultAsync(m => m.WorkspaceId == input.WorkspaceId && m.UserId == currentUser.GetRequiredId(), cancellationToken);
+        if (creator is null || !creator.CanContribute)
+        {
+            throw new ForbiddenException(RoomsErrors.NotWorkspaceMember);
+        }
 
         var room = new Room(Guid.NewGuid(), currentUser.GetRequiredTenantId(), input.WorkspaceId, input.Name.Trim(), input.Purpose?.Trim(), input.Visibility);
         room.AddParticipant(currentUser.GetRequiredId(), currentUser.DisplayName ?? string.Empty, ParticipantRole.Contributor);
@@ -91,7 +98,10 @@ public class RoomsAppService(
         var room = await rooms.QueryTracked().Include(r => r.Participants).FirstOrDefaultAsync(r => r.Id == input.RoomId, cancellationToken)
             ?? throw new EntityNotFoundException();
         room.EnsureParticipant(currentUser.GetRequiredId());
-        room.AddParticipant(input.UserId, input.DisplayName.Trim(), input.Role);
+        var member = await memberships.Query()
+            .FirstOrDefaultAsync(m => m.WorkspaceId == room.WorkspaceId && m.UserId == input.UserId, cancellationToken)
+            ?? throw new CustomValidationException(RoomsErrors.UserNotWorkspaceMember);
+        room.AddParticipant(input.UserId, member.DisplayName, member.CanContribute ? input.Role : ParticipantRole.Observer);
         await rooms.UpdateAsync(room, autoSave: true, cancellationToken);
     }
 }

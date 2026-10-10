@@ -26,7 +26,11 @@
       "@majlis/shared-realtime": ["./libs/shared/realtime/src/index.ts"],
       "@majlis/rooms-proxy": ["./libs/shared/rooms-proxy/src/index.ts"],
       "@majlis/rooms-config": ["./libs/rooms/config/src/index.ts"],
-      "@majlis/rooms-ui-common": ["./libs/rooms/ui-common/src/index.ts"]
+      "@majlis/rooms-ui-common": ["./libs/rooms/ui-common/src/index.ts"],
+      "@majlis/workspaces-proxy": ["./libs/shared/workspaces-proxy/src/index.ts"],
+      "@majlis/identity-proxy": ["./libs/shared/identity-proxy/src/index.ts"],
+      "@majlis/workspaces-config": ["./libs/workspaces/config/src/index.ts"],
+      "@majlis/workspaces-ui-common": ["./libs/workspaces/ui-common/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

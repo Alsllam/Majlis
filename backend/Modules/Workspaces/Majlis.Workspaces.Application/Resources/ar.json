@@ -1,0 +1,9 @@
+{
+  "Workspaces:Workspace:NotMember": "لست عضواً في مساحة العمل هذه.",
+  "Workspaces:Workspace:NotManager": "إدارة مساحة العمل متاحة للمالك والمشرف فقط.",
+  "Workspaces:Workspace:Archived": "مساحة العمل مؤرشفة؛ أعد تفعيلها أولاً.",
+  "Workspaces:Workspace:LastOwner": "لا يمكن إزالة المالك الأخير لمساحة العمل أو تغيير دوره.",
+  "Workspaces:Workspace:MemberNotFound": "العضو غير موجود في مساحة العمل.",
+  "Workspaces:Workspace:OnlyOwnerChangesOwner": "تعيين المالكين أو تغييرهم متاح للمالك فقط.",
+  "Workspaces:Workspace:ColorInvalid": "لون مساحة العمل غير معروف."
+}

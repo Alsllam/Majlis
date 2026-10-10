@@ -4,6 +4,7 @@ using Majlis.Framework.Domain.Security;
 using Majlis.Identity.Domain.Entities;
 using Majlis.Identity.EntityFrameworkCore;
 using Majlis.Rooms.EntityFrameworkCore;
+using Majlis.Workspaces.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -25,6 +26,8 @@ builder.Services.AddDbContext<MajlisIdentityDbContext>(o =>
 });
 builder.Services.AddDbContext<RoomsDbContext>(o =>
     o.UseSqlServer(connectionString, sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", RoomsDbContext.SchemaName)));
+builder.Services.AddDbContext<WorkspacesDbContext>(o =>
+    o.UseSqlServer(connectionString, sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", WorkspacesDbContext.SchemaName)));
 builder.Services.AddIdentityCore<MajlisUser>(o => o.User.RequireUniqueEmail = true)
     .AddRoles<MajlisRole>()
     .AddEntityFrameworkStores<MajlisIdentityDbContext>();
@@ -35,6 +38,7 @@ using var host = builder.Build();
 using var scope = host.Services.CreateScope();
 
 await scope.ServiceProvider.GetRequiredService<MajlisIdentityDbContext>().Database.MigrateAsync();
+await scope.ServiceProvider.GetRequiredService<WorkspacesDbContext>().Database.MigrateAsync();
 await scope.ServiceProvider.GetRequiredService<RoomsDbContext>().Database.MigrateAsync();
 Console.WriteLine("Migrations applied");
 

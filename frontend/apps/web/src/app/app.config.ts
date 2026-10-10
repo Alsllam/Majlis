@@ -3,6 +3,7 @@ import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from 
 import { provideMajlisCore } from '@majlis/core';
 import { provideRoomsConfig } from '@majlis/rooms-config';
 import { provideThemeShared } from '@majlis/theme-shared';
+import { provideWorkspacesConfig } from '@majlis/workspaces-config';
 import { appRoutes } from './app.routes';
 
 /** `provide*` calls only (skill §2). */
@@ -13,6 +14,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(appRoutes, withComponentInputBinding(), withInMemoryScrolling({ scrollPositionRestoration: 'top' })),
     provideMajlisCore(),
     provideThemeShared(),
+    provideWorkspacesConfig(),
     provideRoomsConfig(),
   ],
 };

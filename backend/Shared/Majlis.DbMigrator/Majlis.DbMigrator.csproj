@@ -7,6 +7,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Modules\Identity\Majlis.Identity.EntityFrameworkCore\Majlis.Identity.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\Modules\Rooms\Majlis.Rooms.EntityFrameworkCore\Majlis.Rooms.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\Modules\Workspaces\Majlis.Workspaces.EntityFrameworkCore\Majlis.Workspaces.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Majlis.Framework.Application\Majlis.Framework.Application.csproj" />
   </ItemGroup>
   <ItemGroup>

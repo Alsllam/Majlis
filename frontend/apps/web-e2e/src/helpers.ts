@@ -30,3 +30,26 @@ export async function setTheme(page: Page, theme: 'light' | 'dark' | 'dim'): Pro
     document.documentElement.dataset['bsTheme'] = t === 'light' ? 'light' : 'dark';
   }, theme);
 }
+
+/**
+ * Makes the user the driver of the room on screen whatever its current state: starts a session, claims free
+ * control, or takes over (tenant admins). Polls because the room loads and the hub joins asynchronously.
+ */
+export async function ensureDriving(page: Page): Promise<void> {
+  const driving = page.getByText('أنت تقود');
+  const buttons = ['بدء جلسة', 'أخذ التحكم', 'الاستحواذ'].map((name) => page.getByRole('button', { name }));
+  for (let i = 0; i < 40; i++) {
+    if (await driving.isVisible()) {
+      return;
+    }
+    for (const button of buttons) {
+      if (await button.isVisible()) {
+        await button.click();
+        break;
+      }
+    }
+    // eslint-disable-next-line playwright/no-wait-for-timeout -- polling the live room state, not a fixed sleep
+    await page.waitForTimeout(500);
+  }
+  await expect(driving).toBeVisible();
+}

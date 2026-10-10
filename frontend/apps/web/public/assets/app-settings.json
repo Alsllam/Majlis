@@ -1,5 +1,9 @@
 {
-  "application": { "name": "Majlis", "baseUrl": "http://localhost:7000", "defaultLanguage": "ar" },
+  "application": {
+    "name": "Majlis",
+    "baseUrl": "http://localhost:7000",
+    "defaultLanguage": "ar"
+  },
   "oAuthConfig": {
     "issuer": "http://localhost:7000/",
     "clientId": "majlis-web",
@@ -9,13 +13,37 @@
     "strictDiscoveryDocumentValidation": false
   },
   "apis": {
-    "rooms": { "url": "http://localhost:7000/api/rooms" },
-    "ai": { "url": "http://localhost:7000/ai-api" }
+    "identity": {
+      "url": "http://localhost:7000/api/identity"
+    },
+    "workspaces": {
+      "url": "http://localhost:7000/api/workspaces"
+    },
+    "rooms": {
+      "url": "http://localhost:7000/api/rooms"
+    },
+    "ai": {
+      "url": "http://localhost:7000/ai-api"
+    }
   },
-  "realtime": { "hubUrl": "http://localhost:7000/hubs/session", "ticketUrl": "http://localhost:7000/api/realtime/ticket" },
+  "realtime": {
+    "hubUrl": "http://localhost:7000/hubs/session",
+    "ticketUrl": "http://localhost:7000/api/realtime/ticket"
+  },
   "rolePermissions": {
-    "TenantOwner": ["*"],
-    "TenantAdmin": ["*"],
-    "Member": ["Permissions.Rooms.ViewRoom", "Permissions.Rooms.CreateRoom", "Permissions.Rooms.DriveSession"]
+    "TenantOwner": [
+      "*"
+    ],
+    "TenantAdmin": [
+      "*"
+    ],
+    "Member": [
+      "Permissions.Identity.ViewUsers",
+      "Permissions.Workspaces.ViewWorkspace",
+      "Permissions.Workspaces.CreateWorkspace",
+      "Permissions.Rooms.ViewRoom",
+      "Permissions.Rooms.CreateRoom",
+      "Permissions.Rooms.DriveSession"
+    ]
   }
 }

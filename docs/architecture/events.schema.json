@@ -139,6 +139,32 @@
       "type": "object",
       "required": ["sessionId", "turnId", "reasonKey"],
       "properties": { "sessionId": { "$ref": "#/$defs/uuid" }, "turnId": { "$ref": "#/$defs/uuid" }, "reasonKey": { "type": "string" }, "partialText": { "type": ["string", "null"] } }
+    },
+    "memberAdded": {
+      "description": "Workspaces → everyone (exchange majlis.member-added): a user joined a workspace or was given a role.",
+      "type": "object",
+      "required": ["tenantId", "workspaceId", "userId", "displayName", "role"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "workspaceId": { "$ref": "#/$defs/uuid" },
+        "userId": { "$ref": "#/$defs/uuid" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["Owner", "Admin", "Contributor", "Viewer"] }
+      }
+    },
+    "memberRoleChanged": {
+      "description": "Workspaces → everyone (exchange majlis.member-role-changed): same shape as memberAdded.",
+      "$ref": "#/$defs/memberAdded"
+    },
+    "memberRemoved": {
+      "description": "Workspaces → everyone (exchange majlis.member-removed); an accessRevoked follows.",
+      "type": "object",
+      "required": ["tenantId", "workspaceId", "userId"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "workspaceId": { "$ref": "#/$defs/uuid" },
+        "userId": { "$ref": "#/$defs/uuid" }
+      }
     }
   },
   "x-redis-keys": {

@@ -26,6 +26,8 @@ public static class RoomsErrors
     public const string TurnInProgress = "Rooms:Session:TurnInProgress";
     public const string TurnNotRunning = "Rooms:Session:TurnNotRunning";
     public const string HandOffToSelf = "Rooms:Session:HandOffToSelf";
+    public const string NotWorkspaceMember = "Rooms:Room:NotWorkspaceMember";
+    public const string UserNotWorkspaceMember = "Rooms:Room:UserNotWorkspaceMember";
 }
 
 public static class RoomsFieldDefinitions

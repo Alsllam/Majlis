@@ -22,8 +22,6 @@ public sealed class AddRoomParticipantValidator : AbstractValidator<AddRoomParti
     {
         RuleFor(x => x.RoomId).NotEmpty().WithMessage("General:Fields:Required");
         RuleFor(x => x.UserId).NotEmpty().WithMessage("General:Fields:Required");
-        RuleFor(x => x.DisplayName).NotEmpty().WithMessage("General:Fields:Required")
-            .MaximumLength(RoomsFieldDefinitions.MaxDisplayNameLength).WithMessage("General:Fields:MaxLength");
         RuleFor(x => x.Role).IsInEnum().WithMessage("General:Fields:Invalid");
     }
 }

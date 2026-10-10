@@ -18,4 +18,5 @@ public class RoomsDbContext(DbContextOptions<RoomsDbContext> options, ICurrentUs
     public DbSet<ControlRequest> ControlRequests => Set<ControlRequest>();
     public DbSet<Turn> Turns => Set<Turn>();
     public DbSet<SessionEvent> SessionEvents => Set<SessionEvent>();
+    public DbSet<WorkspaceMembership> WorkspaceMemberships => Set<WorkspaceMembership>();
 }

@@ -60,13 +60,13 @@ Every module has the four projects from the skill (`Majlis.{Module}.Domain`, `.A
 - **Owns:** Workspace, WorkspaceMember (user or group, role), Invitation, workspace agent instructions and glossary (terms with ar/en forms and definitions).
 - **Publishes:** `WorkspaceCreated`, `WorkspaceArchived`, `MemberAdded`, `MemberRoleChanged`, `MemberRemoved` (+ `AccessRevoked`), `WorkspaceInstructionsChanged`.
 - **Consumes:** `UserDeactivated`, `GroupMembershipChanged` (recompute effective permissions cache).
-- **Notes:** the authority for "may user U do X in workspace W". It writes the effective permission set per user × workspace into Redis, which every module's `PermissionHandler` reads. The `ISecuredEntity` scope across all modules is the workspace.
+- **Notes:** the authority for "may user U do X in workspace W". It writes the effective permission set per user into Redis (`majlis:permissions:{userId}`, the union over the user's active workspaces; 12 h TTL, refreshed on every membership change), which every module's `PermissionChecker` reads; the owning app service then checks the role in the specific workspace. The `ISecuredEntity` scope across all modules is the workspace. *(Built 2026-10-10: workspaces, members, roles, agent instructions, archive. Groups, invitations and the glossary follow.)*
 
 ### Rooms — `rooms` · 7020 (hot path)
 - **Owns:** Room, RoomParticipant, AgentSession (control state, epoch), Turn, ToolCall (reference to approval), Citation, Comment, Suggestion, **SessionEvent log** (the per-session sequencer).
 - **Publishes:** `SessionEventAppended` (every timeline event, for the Realtime host), `TurnRequested`, `TurnStopRequested`, `SessionEnded`, `ControlChanged`, `ParticipantAdded/Removed` (+ `AccessRevoked`), `MentionCreated`.
-- **Consumes:** `TurnProgressed/TurnCompleted/TurnStopped/TurnFailed/ToolProposed/SummaryReady` (from ai-service), `ApprovalRequested/Decided/Executed/Expired` (from Approvals), `DriverPresenceLost/Restored` (from Realtime), `MemberRemoved`.
-- **Calls:** ai-service `POST /internal/sessions/{id}/turns` with the driver's token; Workspaces (membership, cached).
+- **Consumes:** `TurnProgressed/TurnCompleted/TurnStopped/TurnFailed/ToolProposed/SummaryReady` (from ai-service), `ApprovalRequested/Decided/Executed/Expired` (from Approvals), `DriverPresenceLost/Restored` (from Realtime), `MemberAdded/MemberRoleChanged/MemberRemoved` (from Workspaces).
+- **Calls:** ai-service `POST /internal/sessions/{id}/turns` with the driver's token. Workspace membership comes from a local read model (`WorkspaceMembership`, fed by the member events), never from a call on the hot path.
 - **Notes:** single writer of session state. Scale out horizontally — per-session ordering comes from the DB (row version + seq counter on `AgentSession`), not from in-memory state. Uses Wolverine's transactional outbox in the `rooms` schema so events are published only after commit and in order.
 
 ### Approvals — `approvals` · 7030

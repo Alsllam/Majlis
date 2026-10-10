@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Modules\Rooms\Majlis.Rooms.Application\Majlis.Rooms.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Identity\Majlis.Identity.Application\Majlis.Identity.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Workspaces\Majlis.Workspaces.Application\Majlis.Workspaces.Application.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NetArchTest.Rules" />

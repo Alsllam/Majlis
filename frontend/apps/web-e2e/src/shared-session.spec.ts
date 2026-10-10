@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { PASSWORD, USERS, setTheme, signIn } from './helpers';
+import { PASSWORD, USERS, ensureDriving, setTheme, signIn } from './helpers';
 
 // eslint-disable-next-line playwright/no-skipped-test -- needs the local backend; skipped where it is not running
 test.skip(!PASSWORD, 'MAJLIS_SEED_PASSWORD is not set: needs the local backend');
@@ -12,31 +12,20 @@ test.describe('shared agent session', () => {
     await signIn(khalid, USERS.khalid, 'en');
 
     // Rooms list, RTL for Sara and LTR for Khalid.
+    await sara.goto('/rooms');
+    await khalid.goto('/rooms');
     await expect(sara.locator('html')).toHaveAttribute('dir', 'rtl');
     await expect(khalid.locator('html')).toHaveAttribute('dir', 'ltr');
     await expect(sara.getByRole('heading', { name: 'الغرف' })).toBeVisible();
     await sara.screenshot({ path: testInfo.outputPath('rooms-ar-light.png'), fullPage: true });
 
     // Both open the first room.
-    await sara.locator('a.room').first().click();
-    await khalid.locator('a.room').first().click();
+    await sara.locator('a.room', { hasText: 'غرفة العقود' }).first().click();
+    await khalid.locator('a.room', { hasText: 'غرفة العقود' }).first().click();
     await expect(sara.locator('majlis-room h1')).not.toHaveText(/…/);
 
     // Sara drives: start a session when none is active, or take control. The steps adapt to the live backend state.
-    /* eslint-disable playwright/no-conditional-in-test */
-    const start = sara.getByRole('button', { name: 'بدء جلسة' });
-    if (await start.isVisible()) {
-      await start.click();
-    }
-    const claim = sara.getByRole('button', { name: 'أخذ التحكم' });
-    if (await claim.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await claim.click();
-    }
-    const takeOver = sara.getByRole('button', { name: 'الاستحواذ' });
-    if (await takeOver.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await takeOver.click();
-    }
-    /* eslint-enable playwright/no-conditional-in-test */
+    await ensureDriving(sara);
     await expect(sara.getByText('أنت تقود')).toBeVisible();
 
     // Instruction → both timelines show the user turn and the streamed agent text.

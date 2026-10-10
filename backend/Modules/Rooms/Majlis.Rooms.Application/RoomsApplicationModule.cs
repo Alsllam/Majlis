@@ -26,7 +26,10 @@ public static class RoomsApplicationModule
         .Listen<TurnStopped>()
         .Listen<TurnFailed>()
         .Listen<SessionPresenceLost>()
-        .Listen<SessionPresenceRestored>();
+        .Listen<SessionPresenceRestored>()
+        .Listen<MemberAdded>()
+        .Listen<MemberRoleChanged>()
+        .Listen<MemberRemoved>();
 
     public static IServiceCollection AddRoomsApplicationModule(this IServiceCollection services, IConfiguration configuration)
     {

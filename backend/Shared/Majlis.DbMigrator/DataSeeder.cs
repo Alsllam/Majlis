@@ -4,6 +4,9 @@ using Majlis.Identity.EntityFrameworkCore;
 using Majlis.Rooms.Domain.Entities;
 using Majlis.Rooms.Domain.Enums;
 using Majlis.Rooms.EntityFrameworkCore;
+using Majlis.Workspaces.Domain.Entities;
+using Majlis.Workspaces.Domain.Enums;
+using Majlis.Workspaces.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -17,6 +20,7 @@ namespace Majlis.DbMigrator;
 public sealed partial class DataSeeder(
     MajlisIdentityDbContext identityDb,
     RoomsDbContext roomsDb,
+    WorkspacesDbContext workspacesDb,
     UserManager<MajlisUser> users,
     RoleManager<MajlisRole> roles,
     IOpenIddictApplicationManager applications,
@@ -33,6 +37,7 @@ public sealed partial class DataSeeder(
         var seeded = await SeedUsersAsync();
         await SeedScopesAsync();
         await SeedClientsAsync();
+        await SeedDemoWorkspaceAsync(seeded);
         await SeedDemoRoomAsync(seeded);
     }
 
@@ -180,6 +185,38 @@ public sealed partial class DataSeeder(
         {
             await applications.UpdateAsync(existing, descriptor);
         }
+    }
+
+    /// <summary>The demo workspace: the tenant admin owns it, everyone else contributes. Rooms' membership read model is seeded too (no events flow from here).</summary>
+    private async Task SeedDemoWorkspaceAsync(List<MajlisUser> seededUsers)
+    {
+        if (seededUsers.Count == 0)
+        {
+            return;
+        }
+
+        if (!await workspacesDb.Workspaces.IgnoreQueryFilters().AnyAsync(w => w.Id == Seed.DemoWorkspaceId))
+        {
+            var workspace = new Workspace(Seed.DemoWorkspaceId, Seed.TenantId, "الشؤون القانونية", "عقود الموردين واللوائح الداخلية", "⚖️", "brand");
+            var owner = seededUsers.FirstOrDefault(u => u.Email == Seed.Users.FirstOrDefault()?.Email) ?? seededUsers[0];
+            workspace.AddFirstOwner(owner.Id, owner.DisplayName);
+            foreach (var user in seededUsers.Where(u => u.Id != owner.Id))
+            {
+                workspace.AddOrChangeMember(owner.Id, user.Id, user.DisplayName, WorkspaceRole.Contributor);
+            }
+
+            workspacesDb.Workspaces.Add(workspace);
+            await workspacesDb.SaveChangesAsync();
+        }
+
+        var members = await workspacesDb.Members.Where(m => m.WorkspaceId == Seed.DemoWorkspaceId).ToListAsync();
+        var known = await roomsDb.WorkspaceMemberships.IgnoreQueryFilters().Where(m => m.WorkspaceId == Seed.DemoWorkspaceId).Select(m => m.UserId).ToListAsync();
+        foreach (var member in members.Where(m => !known.Contains(m.UserId)))
+        {
+            roomsDb.WorkspaceMemberships.Add(new WorkspaceMembership(Seed.TenantId, Seed.DemoWorkspaceId, member.UserId, member.DisplayName, member.Role.ToString()));
+        }
+
+        await roomsDb.SaveChangesAsync();
     }
 
     private async Task SeedDemoRoomAsync(List<MajlisUser> seededUsers)

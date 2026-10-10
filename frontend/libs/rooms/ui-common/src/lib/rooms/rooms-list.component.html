@@ -1,5 +1,5 @@
 <majlis-page-header title="Rooms.Title" subtitle="Rooms.Subtitle">
-  @if (items()?.length) {
+  @if (canCreate()) {
     <button *majlisPermission="permissions.createRoom" type="button" class="btn btn-primary" (click)="create()">
       + {{ 'Rooms.Create' | translate }}
     </button>
@@ -13,7 +13,11 @@
     }
   </div>
 } @else if (items()?.length === 0) {
-  <majlis-empty-state title="Rooms.EmptyTitle" text="Rooms.EmptyText" />
+  @if (myWorkspaces()?.length === 0) {
+    <majlis-empty-state title="Rooms.NoWorkspaceTitle" text="Rooms.NoWorkspaceText" />
+  } @else {
+    <majlis-empty-state title="Rooms.EmptyTitle" text="Rooms.EmptyText" />
+  }
 } @else {
   <div class="grid">
     @for (room of items(); track room.id; let i = $index) {
@@ -30,6 +34,7 @@
           <p class="purpose">{{ room.purpose }}</p>
         }
         <div class="meta">
+          <span>{{ workspaceName(room.workspaceId) }}</span>
           <span>{{ 'Rooms.Participants' | translate: { count: (room.participantCount | enar) } }}</span>
           <span class="num">{{ room.creationTime | date: 'mediumDate' : undefined : lang() }}</span>
         </div>

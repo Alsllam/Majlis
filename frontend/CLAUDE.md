@@ -42,11 +42,13 @@
 | `libs/shared/charts` | theme name constants only; `ngx-echarts` setup and option builders come with the first dashboard |
 | `libs/shared/realtime` | `RealtimeConnectionService` (one hub connection, ticket per (re)connect, 0/2/5/10/30 s reconnect, `Reauthenticate` every 10 min, state signal), `SessionChannel` (join, reorder buffer by `seq`, 500 ms gap fetch, stream-lane relay, snapshot for late joiners, 15 s heartbeats, idle after 2 min hidden) |
 | `libs/shared/rooms-proxy` | DTOs mirroring `Majlis.Rooms.Application` (enums as strings), `RoomsService`, `SessionsService` (one method per AppService endpoint; driver commands carry `epoch`) |
+| `libs/shared/workspaces-proxy`, `libs/shared/identity-proxy` | `WorkspacesService` (list, get, create, update, instructions, archive/restore, set/remove member) and `UsersService.lookup` (tenant user picker, `/api/identity`) |
+| `libs/workspaces/config` + `ui-common` | `WORKSPACES_PERMISSIONS`, the Workspaces menu entry (home screen); workspaces list (cards with icon, brand color, role) + create/edit modal; workspace page: members table with role changes and removal, add member through the user lookup, agent instructions editor, archive/restore (owner) |
 | `libs/rooms/config` | `ROOMS_PERMISSIONS` (same strings as `RoomsPermissions`), `provideRoomsConfig()` menu entry |
-| `libs/rooms/ui-common` | routes, rooms list (cards) + create modal, the **room screen**: `RoomSessionFacade` (timeline from durable events, streaming text merged by `chunk`, control state with the epoch, 409 → reload, presence) and the timeline / composer / hand-off components |
-| `apps/web-e2e` | Playwright smoke tests against the local stack: two users share one stream, request control, hand off; menu and language switch. They run only with `MAJLIS_SEED_PASSWORD` set (`PLAYWRIGHT_CHROMIUM_PATH` points at a pre-installed Chromium) |
+| `libs/rooms/ui-common` | routes, rooms list (cards, `?workspaceId=` filter) + create modal that picks one of the user's workspaces, the **room screen**: `RoomSessionFacade` (timeline from durable events, streaming text merged by `chunk`, control state with the epoch, 409 → reload, presence) and the timeline / composer / hand-off components |
+| `apps/web-e2e` | Playwright smoke tests against the local stack: two users share one stream, request control, hand off; an owner creates a workspace, adds a member and writes instructions, the member creates a room in it; menu and language switch. They run only with `MAJLIS_SEED_PASSWORD` set (`PLAYWRIGHT_CHROMIUM_PATH` points at a pre-installed Chromium) |
 
-Not built yet: workspaces, knowledge (citations open a document), approvals cards, comments and suggestions, notifications, charts, X6 graphs, list/filter engine, wizard forms, mobile layout polish. Room creation uses the workspace of an existing room until the Workspaces module and its proxy exist.
+Not built yet: workspace home (active rooms, approvals, tasks), groups and invitations, knowledge (citations open a document), approvals cards, comments and suggestions, notifications, charts, X6 graphs, list/filter engine, wizard forms, mobile layout polish.
 
 ## Deviations from the skill
 

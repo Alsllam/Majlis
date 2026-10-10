@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { TranslatePipe } from '@ngx-translate/core';
 import { RoomVisibility, RoomsService } from '@majlis/rooms-proxy';
+import { WorkspaceListDto } from '@majlis/workspaces-proxy';
 import { BusyButtonDirective } from '@majlis/shared-ui-common';
 
 export const MAX_ROOM_NAME_LENGTH = 120;
@@ -18,6 +19,17 @@ export const MAX_ROOM_NAME_LENGTH = 120;
         <button type="button" class="btn-close" [attr.aria-label]="'General.Close' | translate" (click)="modal.dismiss()"></button>
       </div>
       <div class="modal-body d-grid gap-3">
+        <div>
+          <label class="form-label" for="room-workspace">{{ 'Rooms.Workspace' | translate }} <span class="text-danger">*</span></label>
+          <select id="room-workspace" class="form-select" formControlName="workspaceId">
+            @for (w of workspaces; track w.id) {
+              <option [value]="w.id">{{ w.icon }} {{ w.name }}</option>
+            }
+          </select>
+          @if (form.controls.workspaceId.touched && form.controls.workspaceId.invalid) {
+            <div class="form-text text-danger">{{ 'Rooms.WorkspaceRequired' | translate }}</div>
+          }
+        </div>
         <div>
           <label class="form-label" for="room-name">{{ 'Rooms.Name' | translate }} <span class="text-danger">*</span></label>
           <input id="room-name" class="form-control" formControlName="name" [maxlength]="maxName" autocomplete="off" />
@@ -50,13 +62,18 @@ export class RoomCreateModalComponent {
   private readonly fb = inject(FormBuilder);
   protected readonly maxName = MAX_ROOM_NAME_LENGTH;
   protected readonly busy = signal(false);
-  workspaceId = '';
+  workspaces: WorkspaceListDto[] = [];
 
   protected readonly form = this.fb.nonNullable.group({
+    workspaceId: ['', Validators.required],
     name: ['', [Validators.required, Validators.maxLength(MAX_ROOM_NAME_LENGTH)]],
     purpose: [''],
     visibility: ['Private' as RoomVisibility],
   });
+
+  preselect(workspaceId: string): void {
+    this.form.controls.workspaceId.setValue(workspaceId);
+  }
 
   protected submit(): void {
     if (this.form.invalid) {
@@ -66,7 +83,7 @@ export class RoomCreateModalComponent {
     const value = this.form.getRawValue();
     this.busy.set(true);
     this.rooms
-      .create({ workspaceId: this.workspaceId, name: value.name.trim(), purpose: value.purpose.trim() || null, visibility: value.visibility })
+      .create({ workspaceId: value.workspaceId, name: value.name.trim(), purpose: value.purpose.trim() || null, visibility: value.visibility })
       .subscribe({ next: (id) => this.modal.close(id), error: () => this.busy.set(false) });
   }
 }

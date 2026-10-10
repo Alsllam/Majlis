@@ -31,7 +31,6 @@ public sealed record AddRoomParticipantDto
 {
     public Guid RoomId { get; init; }
     public Guid UserId { get; init; }
-    public string DisplayName { get; init; } = string.Empty;
     public ParticipantRole Role { get; init; } = ParticipantRole.Contributor;
 }
 

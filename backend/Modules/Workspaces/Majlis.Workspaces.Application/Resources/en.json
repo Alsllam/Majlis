@@ -1,0 +1,9 @@
+{
+  "Workspaces:Workspace:NotMember": "You are not a member of this workspace.",
+  "Workspaces:Workspace:NotManager": "Only workspace owners and admins can manage it.",
+  "Workspaces:Workspace:Archived": "The workspace is archived; restore it first.",
+  "Workspaces:Workspace:LastOwner": "The last owner of a workspace cannot be removed or demoted.",
+  "Workspaces:Workspace:MemberNotFound": "The member was not found in the workspace.",
+  "Workspaces:Workspace:OnlyOwnerChangesOwner": "Only an owner can assign or change owners.",
+  "Workspaces:Workspace:ColorInvalid": "Unknown workspace color."
+}

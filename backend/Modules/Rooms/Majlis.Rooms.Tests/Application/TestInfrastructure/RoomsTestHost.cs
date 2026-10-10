@@ -41,6 +41,7 @@ public sealed class RoomsTestHost : IDisposable
     public static readonly Guid WorkspaceId = Guid.NewGuid();
     public static readonly (Guid Id, string Name) Sara = (Guid.NewGuid(), "سارة");
     public static readonly (Guid Id, string Name) Khalid = (Guid.NewGuid(), "خالد");
+    public static readonly (Guid Id, string Name) Noura = (Guid.NewGuid(), "نورة");
     public static readonly (Guid Id, string Name) Outsider = (Guid.NewGuid(), "زائر");
 
     private readonly ServiceProvider _provider;
@@ -90,9 +91,29 @@ public sealed class RoomsTestHost : IDisposable
         return service;
     }
 
+    public RoomsAppService Rooms(IServiceScope scope) => scope.ServiceProvider.GetRequiredService<RoomsAppService>();
+
+    /// <summary>Workspace membership read model: Sara and Khalid contribute, Noura only watches; the outsider is no member.</summary>
+    public async Task SeedMembershipsAsync()
+    {
+        using var scope = Scope(Sara);
+        var db = scope.ServiceProvider.GetRequiredService<RoomsDbContext>();
+        if (await db.WorkspaceMemberships.AnyAsync(m => m.WorkspaceId == WorkspaceId))
+        {
+            return;
+        }
+
+        db.WorkspaceMemberships.AddRange(
+            new WorkspaceMembership(TenantId, WorkspaceId, Sara.Id, Sara.Name, "Owner"),
+            new WorkspaceMembership(TenantId, WorkspaceId, Khalid.Id, Khalid.Name, "Contributor"),
+            new WorkspaceMembership(TenantId, WorkspaceId, Noura.Id, Noura.Name, "Viewer"));
+        await db.SaveChangesAsync();
+    }
+
     /// <summary>A room where Sara and Khalid are contributors.</summary>
     public async Task<Guid> SeedRoomAsync()
     {
+        await SeedMembershipsAsync();
         using var scope = Scope(Sara);
         var db = scope.ServiceProvider.GetRequiredService<RoomsDbContext>();
         var room = new Room(Guid.NewGuid(), TenantId, WorkspaceId, "غرفة العقود", null, RoomVisibility.Private);

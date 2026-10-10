@@ -1,0 +1,93 @@
+@let ws = workspace();
+<div class="workspace">
+  <header class="card-surface head" [style.--ws-color]="'var(--' + (ws?.color ?? 'brand') + '-solid, var(--brand-solid))'">
+    <div class="titles">
+      <a routerLink="/workspaces" class="back">‹ {{ 'Workspaces.Back' | translate }}</a>
+      <div class="name-row">
+        <span class="icon" aria-hidden="true">{{ ws?.icon || '▦' }}</span>
+        <h1>{{ ws?.name ?? ('General.Loading' | translate) }}</h1>
+        @if (ws?.isArchived) {
+          <span class="status-tag status-tag-warning">{{ 'Workspaces.Archived' | translate }}</span>
+        }
+      </div>
+      @if (ws?.description) {
+        <p class="desc">{{ ws?.description }}</p>
+      }
+    </div>
+    <div class="actions">
+      <span class="status-tag status-tag-neutral">{{ 'Workspaces.Role.' + (ws?.myRole ?? 'Viewer') | translate }}</span>
+      <button type="button" class="btn btn-sm btn-outline-primary" (click)="openRooms()">{{ 'Workspaces.OpenRooms' | translate }}</button>
+      @if (canManage() && !ws?.isArchived) {
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="edit()">{{ 'General.Edit' | translate }}</button>
+      }
+      @if (isOwner()) {
+        <button type="button" class="btn btn-sm" [class.btn-outline-danger]="!ws?.isArchived" [class.btn-outline-success]="ws?.isArchived" (click)="toggleArchive()" [majlisBusy]="busy()">
+          {{ (ws?.isArchived ? 'Workspaces.Restore' : 'Workspaces.Archive') | translate }}
+        </button>
+      }
+    </div>
+  </header>
+
+  <div class="body">
+    <section class="card-surface members">
+      <div class="section-head">
+        <h2>{{ 'Workspaces.MembersTitle' | translate }}</h2>
+        @if (canManage() && !ws?.isArchived) {
+          <button *majlisPermission="permissions.viewUsers" type="button" class="btn btn-sm btn-primary" (click)="addMember()">+ {{ 'Workspaces.AddMember' | translate }}</button>
+        }
+      </div>
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>{{ 'Workspaces.Member' | translate }}</th>
+            <th>{{ 'Workspaces.RoleLabel' | translate }}</th>
+            @if (canManage() && !ws?.isArchived) {
+              <th class="text-end"><span class="visually-hidden">{{ 'General.Actions' | translate }}</span></th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of ws?.members; track m.userId) {
+            <tr>
+              <td>
+                <span class="who">
+                  <majlis-avatar [name]="m.displayName" style="--avatar-size: 28px" />
+                  <span>{{ m.displayName }} @if (m.userId === meId()) { <span class="me">({{ 'Session.You' | translate }})</span> }</span>
+                </span>
+              </td>
+              <td>
+                @if (canManage() && !ws?.isArchived && m.userId !== meId()) {
+                  <select class="form-select form-select-sm role" [ngModel]="m.role" (ngModelChange)="changeRole(m.userId, m.displayName, $event)" [disabled]="busy() || (m.role === 'Owner' && !isOwner())" [attr.aria-label]="'Workspaces.RoleLabel' | translate">
+                    @for (r of roles; track r) {
+                      <option [value]="r" [disabled]="r === 'Owner' && !isOwner()">{{ 'Workspaces.Role.' + r | translate }}</option>
+                    }
+                  </select>
+                } @else {
+                  <span class="status-tag status-tag-neutral">{{ 'Workspaces.Role.' + m.role | translate }}</span>
+                }
+              </td>
+              @if (canManage() && !ws?.isArchived) {
+                <td class="text-end">
+                  @if (m.userId !== meId() && (m.role !== 'Owner' || isOwner())) {
+                    <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeMember(m.userId)" [disabled]="busy()">{{ 'General.Remove' | translate }}</button>
+                  }
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+
+    <aside class="card-surface instructions">
+      <h2>{{ 'Workspaces.InstructionsTitle' | translate }}</h2>
+      <p class="hint">{{ 'Workspaces.InstructionsHint' | translate }}</p>
+      <textarea class="form-control" rows="10" [ngModel]="instructions()" (ngModelChange)="instructions.set($event)" [disabled]="!canManage() || !!ws?.isArchived" [placeholder]="'Workspaces.InstructionsPlaceholder' | translate" [attr.aria-label]="'Workspaces.InstructionsTitle' | translate"></textarea>
+      @if (canManage() && !ws?.isArchived) {
+        <div class="save-row">
+          <button type="button" class="btn btn-primary btn-sm" (click)="saveInstructions()" [disabled]="!instructionsDirty()" [majlisBusy]="busy()">{{ 'General.Save' | translate }}</button>
+        </div>
+      }
+    </aside>
+  </div>
+</div>

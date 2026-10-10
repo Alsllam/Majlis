@@ -24,3 +24,9 @@ public static class MajlisClients
     public const string Realtime = "majlis-realtime";
     public const string AiService = "majlis-ai-service";
 }
+
+/// <summary>Permission names; identical strings are used by the web and mobile apps.</summary>
+public static class IdentityPermissions
+{
+    public const string ViewUsers = "Permissions.Identity.ViewUsers";
+}

@@ -1,0 +1,41 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div class="modal-header">
+    <h2 class="modal-title fs-5">{{ (workspace ? 'Workspaces.Edit' : 'Workspaces.Create') | translate }}</h2>
+    <button type="button" class="btn-close" [attr.aria-label]="'General.Close' | translate" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body d-grid gap-3">
+    <div>
+      <label class="form-label" for="ws-name">{{ 'Workspaces.Name' | translate }} <span class="text-danger">*</span></label>
+      <input id="ws-name" class="form-control" formControlName="name" [maxlength]="maxName" autocomplete="off" />
+      @if (form.controls.name.touched && form.controls.name.invalid) {
+        <div class="form-text text-danger">{{ 'Workspaces.NameRequired' | translate }}</div>
+      }
+    </div>
+    <div>
+      <label class="form-label" for="ws-desc">{{ 'Workspaces.Description' | translate }}</label>
+      <textarea id="ws-desc" class="form-control" rows="2" formControlName="description"></textarea>
+    </div>
+    <div>
+      <span class="form-label d-block">{{ 'Workspaces.Icon' | translate }}</span>
+      <div class="icons" role="radiogroup">
+        @for (icon of icons; track icon) {
+          <button type="button" class="pick" role="radio" [class.active]="form.controls.icon.value === icon" [attr.aria-checked]="form.controls.icon.value === icon" (click)="form.controls.icon.setValue(icon)">{{ icon }}</button>
+        }
+      </div>
+    </div>
+    <div>
+      <span class="form-label d-block">{{ 'Workspaces.Color' | translate }}</span>
+      <div class="colors" role="radiogroup">
+        @for (color of colors; track color) {
+          <button type="button" class="pick" role="radio" [class.active]="form.controls.color.value === color" [attr.aria-checked]="form.controls.color.value === color" [attr.aria-label]="'Workspaces.Colors.' + color | translate" (click)="form.controls.color.setValue(color)">
+            <span class="swatch" [style.background]="'var(--' + color + '-solid, var(--border-strong))'"></span>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()">{{ 'General.Cancel' | translate }}</button>
+    <button type="submit" class="btn btn-primary" [majlisBusy]="busy()">{{ (workspace ? 'General.Save' : 'General.Create') | translate }}</button>
+  </div>
+</form>

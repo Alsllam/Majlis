@@ -12,5 +12,7 @@
   "Rooms:Session:TurnInProgress": "The agent is still working on the previous instruction. Stop it first or wait.",
   "Rooms:Session:TurnNotRunning": "The agent is not working on this instruction.",
   "Rooms:Session:HandOffToSelf": "You cannot hand control to yourself.",
-  "Rooms:Turn:AiUnavailable": "The agent stopped responding. Please try again."
+  "Rooms:Turn:AiUnavailable": "The agent stopped responding. Please try again.",
+  "Rooms:Room:NotWorkspaceMember": "You are not a member of this workspace, so you cannot create a room in it.",
+  "Rooms:Room:UserNotWorkspaceMember": "This user is not a member of the workspace; add them there first."
 }

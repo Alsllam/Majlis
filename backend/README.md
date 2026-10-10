@@ -9,7 +9,7 @@ Prerequisites: .NET 10 SDK, Docker.
 ```bash
 cp .env.example .env            # at the repo root; fill in every value (local only, git-ignored)
 docker compose up -d             # SQL Server, Redis, RabbitMQ
-backend/scripts/run-local.sh     # migrations + seed, then Auth (7001), Rooms (7020), Realtime (7002), BFF (7000)
+backend/scripts/run-local.sh     # migrations + seed, then Auth (7001), Workspaces (7010), Rooms (7020), Realtime (7002), BFF (7000)
 backend/scripts/stop-local.sh
 ```
 
@@ -19,6 +19,8 @@ Logs: `backend/.local/logs/*.log`. Everything is reached through the BFF at `htt
 |---|---|
 | `/connect/*`, `/.well-known/*`, `/Account/*` | Auth (OpenIddict, login page) |
 | `/api/realtime/ticket` | Auth (hub ticket) |
+| `/api/identity/users/lookup` | Auth host (tenant user picker) |
+| `/api/workspaces/workspaces/*` | Workspaces |
 | `/api/rooms/rooms/*`, `/api/rooms/sessions/*` | Rooms |
 | `/hubs/session` | Realtime (SignalR) |
 | `/ai-api/*` | ai-service (next PR) |

@@ -1,0 +1,20 @@
+.workspace { display: grid; gap: var(--space-4); }
+.head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-4); flex-wrap: wrap; border-inline-start: 4px solid var(--ws-color, var(--brand-solid)); }
+.back { font-size: var(--fs-sm); color: var(--text-muted); text-decoration: none; &:hover { color: var(--brand-text); } }
+.name-row { display: flex; align-items: center; gap: var(--space-2); }
+.icon { font-size: var(--fs-2xl); line-height: 1; }
+h1 { font-size: var(--fs-xl); margin: 0; }
+h2 { font-size: var(--fs-md); margin: 0; }
+.desc { margin: 0; color: var(--text-muted); font-size: var(--fs-sm); }
+.actions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.body { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-4); }
+.members { padding: var(--space-3) var(--space-4); }
+.section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2); }
+.who { display: inline-flex; align-items: center; gap: var(--space-2); }
+.me { color: var(--text-muted); font-size: var(--fs-xs); margin-inline-start: var(--space-1); }
+.role { max-width: 180px; }
+.table { --bs-table-bg: transparent; --bs-table-color: var(--text-primary); --bs-table-border-color: var(--border-subtle); }
+.instructions { padding: var(--space-4); display: grid; gap: var(--space-2); align-content: start; }
+.hint { margin: 0; color: var(--text-muted); font-size: var(--fs-xs); }
+.save-row { display: flex; justify-content: flex-end; }
+@media (max-width: 900px) { .body { grid-template-columns: 1fr; } }

@@ -15,7 +15,10 @@
     "Decline": "Decline",
     "Send": "Send",
     "Stop": "Stop",
-    "Retry": "Retry"
+    "Retry": "Retry",
+    "Edit": "Edit",
+    "Remove": "Remove",
+    "Actions": "Actions"
   },
   "Language": {
     "ar": "العربية",
@@ -27,7 +30,8 @@
     "dim": "Dim"
   },
   "Menu": {
-    "Rooms": "Rooms"
+    "Rooms": "Rooms",
+    "Workspaces": "Workspaces"
   },
   "Errors": {
     "Network": "The server could not be reached. Check your connection and try again.",
@@ -54,7 +58,11 @@
     "Created": "Room created",
     "Open": "Open room",
     "NameRequired": "The room name is required",
-    "Back": "All rooms"
+    "Back": "All rooms",
+    "Workspace": "Workspace",
+    "WorkspaceRequired": "Choose a workspace",
+    "NoWorkspaceTitle": "You do not belong to any workspace",
+    "NoWorkspaceText": "Create a workspace or ask to be added to one before creating rooms."
   },
   "Session": {
     "Start": "Start a session",
@@ -125,5 +133,58 @@
     "active": "Active",
     "typing:comment": "Typing a comment",
     "typing:suggestion": "Typing a suggestion"
+  },
+  "Workspaces": {
+    "Title": "Workspaces",
+    "Subtitle": "Your teams, their rooms and knowledge",
+    "Create": "New workspace",
+    "Edit": "Edit workspace",
+    "Name": "Name",
+    "NameRequired": "The workspace name is required",
+    "Description": "Description",
+    "Icon": "Icon",
+    "Color": "Color",
+    "Colors": {
+      "brand": "Teal",
+      "accent": "Brass",
+      "success": "Green",
+      "warning": "Orange",
+      "danger": "Red",
+      "info": "Blue",
+      "neutral": "Grey"
+    },
+    "Members": "{{count}} members",
+    "MembersTitle": "Members",
+    "Member": "Member",
+    "AddMember": "Add member",
+    "SearchUsers": "Search by name or email",
+    "NoUsers": "No results",
+    "AlreadyMember": "Already a member",
+    "RoleLabel": "Role",
+    "Role": {
+      "Owner": "Owner",
+      "Admin": "Admin",
+      "Contributor": "Contributor",
+      "Viewer": "Viewer"
+    },
+    "InstructionsTitle": "Agent instructions",
+    "InstructionsHint": "Added to every session's context in this workspace: house style, terms, tone.",
+    "InstructionsPlaceholder": "Example: write in formal Arabic and quote the article number when citing regulations…",
+    "Archive": "Archive",
+    "Restore": "Restore",
+    "Archived": "Archived",
+    "ArchivedDone": "Workspace archived",
+    "Restored": "Workspace restored",
+    "ShowArchived": "Show archived",
+    "HideArchived": "Hide archived",
+    "EmptyTitle": "No workspaces yet",
+    "EmptyText": "Create a workspace for your team, then add members and open rooms.",
+    "Created": "Workspace created",
+    "Saved": "Saved",
+    "MemberAdded": "Member added",
+    "MemberRemoved": "Member removed",
+    "RoleChanged": "Role changed",
+    "Back": "All workspaces",
+    "OpenRooms": "Rooms"
   }
 }
