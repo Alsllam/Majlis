@@ -234,7 +234,8 @@
       "Processing": "قيد الفهرسة",
       "Indexed": "مفهرس",
       "Failed": "فشل",
-      "Superseded": "نسخة قديمة"
+      "Superseded": "نسخة قديمة",
+      "Stored": "محفوظة (غير مفهرسة)"
     },
     "Reasons": {
       "Knowledge:Ingestion:Unsupported": "تعذّر استخراج النص من هذا النوع",
@@ -242,7 +243,11 @@
       "Knowledge:Ingestion:Failed": "فشلت الفهرسة",
       "General:Errors:AiBusy": "خدمة الذكاء الاصطناعي مشغولة",
       "General:Errors:AiNotConfigured": "خدمة الذكاء الاصطناعي غير مهيأة"
-    }
+    },
+    "Draft": "مسودة من الوكيل",
+    "DraftHint": "هذه مسودة كتبها الوكيل بعد موافقة أحد الأعضاء. لا يستخدمها الوكيل في الإجابات حتى يضيفها شخص إلى المعرفة.",
+    "AddToKnowledge": "إضافة إلى المعرفة",
+    "AddedToKnowledge": "أُضيفت إلى المعرفة وستُفهرس الآن"
   },
   "Approvals": {
     "Title": "الموافقات",
@@ -301,12 +306,17 @@
       "description": "الوصف",
       "assigneeName": "المسؤول",
       "dueDate": "تاريخ الاستحقاق",
-      "priority": "الأولوية"
+      "priority": "الأولوية",
+      "contentMarkdown": "المحتوى",
+      "type": "النوع",
+      "language": "اللغة"
     },
     "Reasons": {
       "Tasks:Task:NotWorkspaceMember": "الطالب لم يعد عضواً مساهماً في المساحة",
       "General:Fields:Required": "حقل مطلوب ناقص"
-    }
+    },
+    "OpenDraft": "فتح المسودة",
+    "ShowContent": "عرض النص الكامل"
   },
   "Tasks": {
     "Title": "المهام",

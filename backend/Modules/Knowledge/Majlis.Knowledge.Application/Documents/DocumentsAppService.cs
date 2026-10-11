@@ -50,7 +50,7 @@ public class DocumentsAppService(
             .Take(Math.Clamp(input.MaxResultCount, 1, 100))
             .Select(d => new
             {
-                d.Id, d.WorkspaceId, d.RoomId, d.Title, d.Type, d.Language, d.CreationTime, d.CreatorId,
+                d.Id, d.WorkspaceId, d.RoomId, d.Title, d.Type, d.Language, d.CreationTime, d.CreatorId, d.Origin, d.Status,
                 Latest = d.Versions.OrderByDescending(v => v.Number).Select(v => new { v.Status, v.FailureReasonKey, v.FileName, v.SizeBytes, v.PageCount }).FirstOrDefault(),
             })
             .ToListAsync(cancellationToken);
@@ -59,7 +59,7 @@ public class DocumentsAppService(
             .Select(d => new DocumentListDto(
                 d.Id, d.WorkspaceId, d.RoomId, d.Title, d.Type, d.Language,
                 d.Latest?.Status ?? IngestionStatus.Pending, d.Latest?.FailureReasonKey,
-                d.Latest?.FileName ?? string.Empty, d.Latest?.SizeBytes ?? 0, d.Latest?.PageCount ?? 0, d.CreationTime, d.CreatorId))
+                d.Latest?.FileName ?? string.Empty, d.Latest?.SizeBytes ?? 0, d.Latest?.PageCount ?? 0, d.CreationTime, d.CreatorId, d.Origin, d.Status))
             .Where(r => input.Status == null || r.Status == input.Status)
             .ToList();
         return new PagedResultDto<DocumentListDto>(rows, total);
@@ -156,6 +156,49 @@ public class DocumentsAppService(
         var version = document.GetVersion(input.VersionId);
         var url = await blobs.CreateDownloadUrlAsync(KnowledgeFieldDefinitions.Container, version.BlobPath, version.FileName, TimeSpan.FromMinutes(Options.DownloadUrlMinutes), cancellationToken);
         return new DownloadUrlDto(url.Url, url.ExpiresAt, version.FileName);
+    }
+
+    /// <inheritdoc />
+    [HttpPost("content")]
+    [HasPermission(KnowledgePermissions.ViewDocument)]
+    public async Task<VersionContentDto> GetContentAsync(VersionIdDto input, CancellationToken cancellationToken = default)
+    {
+        var document = await documents.Query().Include(d => d.Versions)
+            .FirstOrDefaultAsync(d => d.Versions.Any(v => v.Id == input.VersionId), cancellationToken)
+            ?? throw new EntityNotFoundException();
+        await RequireMemberAsync(document.WorkspaceId, cancellationToken);
+        var version = document.GetVersion(input.VersionId);
+        if (version.ContentType is not ("text/markdown" or "text/plain") || version.SizeBytes > KnowledgeFieldDefinitions.MaxInlineContentBytes)
+        {
+            throw new CustomValidationException(KnowledgeErrors.ContentNotText);
+        }
+
+        var bytes = await blobs.DownloadAsync(KnowledgeFieldDefinitions.Container, version.BlobPath, cancellationToken)
+            ?? throw new CustomValidationException(KnowledgeErrors.FileNotUploaded);
+        return new VersionContentDto(version.Id, version.ContentType, System.Text.Encoding.UTF8.GetString(bytes));
+    }
+
+    /// <inheritdoc />
+    [HttpPost("add-to-knowledge")]
+    [HasPermission(KnowledgePermissions.UploadDocument)]
+    public async Task<DocumentDto> AddToKnowledgeAsync(DocumentIdDto input, CancellationToken cancellationToken = default)
+    {
+        var document = await LoadAsync(input.Id, tracked: true, cancellationToken);
+        var member = await RequireMemberAsync(document.WorkspaceId, cancellationToken);
+        if (!member.CanContribute)
+        {
+            throw new ForbiddenException(KnowledgeErrors.NotWorkspaceMember);
+        }
+
+        var version = document.AddToKnowledge(clock.GetUtcNow().UtcDateTime);
+        await documents.UpdateAsync(document, autoSave: false, cancellationToken);
+        await publisher.PublishAsync(
+            new DocumentUploaded(
+                document.TenantId, document.WorkspaceId, document.RoomId, document.Id, version.Id, version.BlobPath, version.FileName,
+                version.ContentType, document.Title, document.Type.ToString(), document.Language, document.AclGroups),
+            cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return document.ToDto();
     }
 
     /// <inheritdoc />

@@ -11,6 +11,8 @@ public static class KnowledgePermissions
 /// <summary>Localization keys for business errors in this module.</summary>
 public static class KnowledgeErrors
 {
+    public const string NotADraft = "Knowledge:Document:NotADraft";
+    public const string ContentNotText = "Knowledge:Document:ContentNotText";
     public const string NotWorkspaceMember = "Knowledge:Document:NotWorkspaceMember";
     public const string FileTooLarge = "Knowledge:Document:FileTooLarge";
     public const string TypeNotSupported = "Knowledge:Document:TypeNotSupported";
@@ -32,6 +34,9 @@ public static class KnowledgeFieldDefinitions
 
     /// <summary>Blob container for documents; the path is <c>{tenant}/{workspace}/{document}/{version}/{file}</c>.</summary>
     public const string Container = "documents";
+
+    /// <summary>Largest text version served inline to the viewer.</summary>
+    public const int MaxInlineContentBytes = 512 * 1024;
 
     /// <summary>FR-KNW-001 accepted types (content type → extension); configurable max size lives in <c>KnowledgeOptions</c>.</summary>
     public static readonly IReadOnlyDictionary<string, string> ContentTypes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)

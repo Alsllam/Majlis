@@ -28,6 +28,9 @@ namespace Majlis.Knowledge.EntityFrameworkCore.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("ApprovalRequestId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
 
@@ -65,6 +68,12 @@ namespace Majlis.Knowledge.EntityFrameworkCore.Migrations
                     b.Property<Guid?>("RoomId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("SessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<string>("Tags")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -84,6 +93,10 @@ namespace Majlis.Knowledge.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ApprovalRequestId")
+                        .IsUnique()
+                        .HasFilter("[ApprovalRequestId] IS NOT NULL");
 
                     b.HasIndex("TenantId");
 

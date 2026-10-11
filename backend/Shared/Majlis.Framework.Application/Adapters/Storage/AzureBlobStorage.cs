@@ -76,6 +76,25 @@ public sealed class AzureBlobStorage : IBlobStorage
     public async Task DeleteAsync(string container, string path, CancellationToken cancellationToken = default)
         => await _client.GetBlobContainerClient(container).GetBlobClient(path).DeleteIfExistsAsync(cancellationToken: cancellationToken);
 
+    public async Task UploadAsync(string container, string path, byte[] content, string contentType, CancellationToken cancellationToken = default)
+    {
+        await EnsureContainerAsync(container, cancellationToken);
+        var blob = _client.GetBlobContainerClient(container).GetBlobClient(path);
+        await blob.UploadAsync(new BinaryData(content), new BlobUploadOptions { HttpHeaders = new BlobHttpHeaders { ContentType = contentType } }, cancellationToken);
+    }
+
+    public async Task<byte[]?> DownloadAsync(string container, string path, CancellationToken cancellationToken = default)
+    {
+        var blob = _client.GetBlobContainerClient(container).GetBlobClient(path);
+        if (!await blob.ExistsAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        var result = await blob.DownloadContentAsync(cancellationToken);
+        return result.Value.Content.ToArray();
+    }
+
     /// <summary>Browser uploads need CORS on the storage service; set once at startup when origins are configured (dev + Azurite).</summary>
     public async Task ConfigureCorsAsync(CancellationToken cancellationToken = default)
     {

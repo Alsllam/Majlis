@@ -234,7 +234,8 @@
       "Processing": "Indexing",
       "Indexed": "Indexed",
       "Failed": "Failed",
-      "Superseded": "Older version"
+      "Superseded": "Older version",
+      "Stored": "Stored (not indexed)"
     },
     "Reasons": {
       "Knowledge:Ingestion:Unsupported": "Text could not be extracted from this type",
@@ -242,7 +243,11 @@
       "Knowledge:Ingestion:Failed": "Indexing failed",
       "General:Errors:AiBusy": "The AI service is busy",
       "General:Errors:AiNotConfigured": "The AI service is not configured"
-    }
+    },
+    "Draft": "Agent draft",
+    "DraftHint": "A draft the agent wrote after a person approved it. The agent does not answer from it until someone adds it to the knowledge.",
+    "AddToKnowledge": "Add to knowledge",
+    "AddedToKnowledge": "Added to the knowledge; indexing starts now"
   },
   "Approvals": {
     "Title": "Approvals",
@@ -301,12 +306,17 @@
       "description": "Description",
       "assigneeName": "Assignee",
       "dueDate": "Due date",
-      "priority": "Priority"
+      "priority": "Priority",
+      "contentMarkdown": "Content",
+      "type": "Type",
+      "language": "Language"
     },
     "Reasons": {
       "Tasks:Task:NotWorkspaceMember": "The requester is no longer a contributing member",
       "General:Fields:Required": "A required field is missing"
-    }
+    },
+    "OpenDraft": "Open the draft",
+    "ShowContent": "Show the full text"
   },
   "Tasks": {
     "Title": "Tasks",

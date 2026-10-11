@@ -4,7 +4,9 @@ import { BaseFilterDto } from '@majlis/core';
 export type DocumentType = 'Other' | 'Regulation' | 'Contract' | 'Policy' | 'Sop' | 'Report';
 export const DOCUMENT_TYPES: readonly DocumentType[] = ['Regulation', 'Contract', 'Policy', 'Sop', 'Report', 'Other'];
 export type DocumentOrigin = 'Upload' | 'Agent';
-export type IngestionStatus = 'Pending' | 'Queued' | 'Processing' | 'Indexed' | 'Failed' | 'Superseded';
+export type IngestionStatus = 'Pending' | 'Queued' | 'Processing' | 'Indexed' | 'Failed' | 'Superseded' | 'Stored';
+/** FR-KNW-009: an agent draft stays `Draft` until a person adds it to knowledge. */
+export type DocumentStatus = 'Active' | 'Draft';
 
 /** FR-KNW-001 accepted content types, same list as `KnowledgeFieldDefinitions.ContentTypes`. */
 export const ACCEPTED_CONTENT_TYPES: Record<string, string> = {
@@ -52,6 +54,9 @@ export interface DocumentDto {
   effectiveDate: string | null;
   tags: string | null;
   origin: DocumentOrigin;
+  documentStatus: DocumentStatus;
+  approvalRequestId: string | null;
+  sessionId: string | null;
   currentVersionId: string | null;
   creationTime: string;
   creatorId: string | null;
@@ -72,6 +77,14 @@ export interface DocumentListDto {
   pageCount: number;
   creationTime: string;
   creatorId: string | null;
+  origin: DocumentOrigin;
+  documentStatus: DocumentStatus;
+}
+
+export interface VersionContentDto {
+  versionId: string;
+  contentType: string;
+  text: string;
 }
 
 export interface FilterDocumentDto extends BaseFilterDto {

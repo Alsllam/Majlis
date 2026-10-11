@@ -26,6 +26,9 @@ public sealed record DocumentDto(
     DateOnly? EffectiveDate,
     string? Tags,
     DocumentOrigin Origin,
+    DocumentStatus DocumentStatus,
+    Guid? ApprovalRequestId,
+    Guid? SessionId,
     Guid? CurrentVersionId,
     DateTime CreationTime,
     Guid? CreatorId,
@@ -44,7 +47,9 @@ public sealed record DocumentListDto(
     long SizeBytes,
     int PageCount,
     DateTime CreationTime,
-    Guid? CreatorId);
+    Guid? CreatorId,
+    DocumentOrigin Origin,
+    DocumentStatus DocumentStatus);
 
 public sealed record DocumentIdDto(Guid Id);
 
@@ -86,6 +91,9 @@ public sealed record VersionIdDto
 }
 
 public sealed record DownloadUrlDto(Uri Url, DateTimeOffset ExpiresAt, string FileName);
+
+/// <summary>Text of a markdown / plain-text version, for the in-page viewer (drafts).</summary>
+public sealed record VersionContentDto(Guid VersionId, string ContentType, string Text);
 
 public sealed record UpdateDocumentDto
 {

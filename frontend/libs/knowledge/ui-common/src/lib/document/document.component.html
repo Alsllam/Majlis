@@ -9,14 +9,37 @@
           <span class="status-tag status-tag-neutral">{{ 'Documents.Types.' + doc.type | translate }}</span>
           @if (doc.language) { <span class="status-tag status-tag-neutral">{{ 'Language.' + doc.language | translate }}</span> }
           @if (doc.origin === 'Agent') { <span class="status-tag status-tag-agent">{{ 'Session.AiLabel' | translate }}</span> }
+          @if (doc.documentStatus === 'Draft') { <span class="status-tag status-tag-warning" data-testid="draft-tag">{{ 'Documents.Draft' | translate }}</span> }
           <span class="num muted">{{ doc.creationTime | date: 'mediumDate' : undefined : lang() }}</span>
         </div>
       }
     </div>
-    @if (doc?.currentVersionId; as current) {
-      <button type="button" class="btn btn-primary" (click)="download(current)">{{ 'Documents.Download' | translate }}</button>
-    }
+    <div class="actions">
+      @if (doc?.documentStatus === 'Draft') {
+        <button *majlisPermission="permissions.uploadDocument" type="button" class="btn btn-primary" (click)="addToKnowledge()" [disabled]="adding()">{{ 'Documents.AddToKnowledge' | translate }}</button>
+      }
+      @if (doc?.currentVersionId; as current) {
+        <button type="button" class="btn btn-outline-secondary" (click)="download(current)">{{ 'Documents.Download' | translate }}</button>
+      }
+    </div>
   </header>
+
+  @if (doc?.documentStatus === 'Draft') {
+    <p class="hint">{{ 'Documents.DraftHint' | translate }}</p>
+  }
+
+  @if (content(); as blocks) {
+    <article class="card-surface content" data-testid="document-content" [attr.lang]="doc?.language" [attr.dir]="doc?.language === 'en' ? 'ltr' : 'rtl'">
+      @for (block of blocks; track $index) {
+        @switch (block.kind) {
+          @case ('h') { @if (block.level <= 1) { <h2 class="md-h1">{{ block.text }}</h2> } @else { <h3>{{ block.text }}</h3> } }
+          @case ('p') { <p>{{ block.text }}</p> }
+          @case ('ul') { <ul>@for (item of block.items; track $index) { <li>{{ item }}</li> }</ul> }
+          @case ('ol') { <ol>@for (item of block.items; track $index) { <li>{{ item }}</li> }</ol> }
+        }
+      }
+    </article>
+  }
 
   @if (passage()) {
     <section class="card-surface cited">

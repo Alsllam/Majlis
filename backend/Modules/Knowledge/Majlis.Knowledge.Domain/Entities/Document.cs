@@ -45,6 +45,14 @@ public class Document : FullAuditedEntity<Guid>, IMultiTenant
 
     public DocumentOrigin Origin { get; private set; }
 
+    /// <summary>Draft until a person adds it to knowledge (FR-KNW-009); uploads are active from the start.</summary>
+    public DocumentStatus Status { get; private set; }
+
+    /// <summary>Agent-originated writes carry the approval that allowed them (idempotency key) and the session they came from.</summary>
+    public Guid? ApprovalRequestId { get; private set; }
+
+    public Guid? SessionId { get; private set; }
+
     /// <summary>The version the index serves; null until the first version is indexed.</summary>
     public Guid? CurrentVersionId { get; private set; }
 
@@ -58,6 +66,33 @@ public class Document : FullAuditedEntity<Guid>, IMultiTenant
         var number = _versions.Count == 0 ? 1 : _versions.Max(v => v.Number) + 1;
         var version = new DocumentVersion(versionId, Id, number, fileName, contentType, sizeBytes, blobPath);
         _versions.Add(version);
+        return version;
+    }
+
+    /// <summary>An agent draft (FR-KNW-009): one stored version, not indexed, waiting for a person to add it to knowledge.</summary>
+    public static Document CreateDraft(Guid id, Guid tenantId, Guid workspaceId, Guid? roomId, string title, DocumentType type, string? language, Guid approvalRequestId, Guid? sessionId, Guid versionId, string fileName, string contentType, long sizeBytes, string blobPath)
+    {
+        var document = new Document(id, tenantId, workspaceId, roomId, title, type, language, DocumentOrigin.Agent)
+        {
+            Status = DocumentStatus.Draft,
+            ApprovalRequestId = approvalRequestId,
+            SessionId = sessionId,
+        };
+        document.AddVersion(versionId, fileName, contentType, sizeBytes, blobPath).MarkStored(sizeBytes);
+        return document;
+    }
+
+    /// <summary>A person adds the draft to the workspace knowledge: it becomes active and its version is queued for indexing.</summary>
+    public DocumentVersion AddToKnowledge(DateTime at)
+    {
+        if (Status != DocumentStatus.Draft)
+        {
+            throw new ConflictException(KnowledgeErrors.NotADraft);
+        }
+
+        var version = LatestVersion ?? throw new EntityNotFoundException();
+        version.Queue(at);
+        Status = DocumentStatus.Active;
         return version;
     }
 
@@ -125,6 +160,25 @@ public class DocumentVersion : CreationAuditedEntity<Guid>
     public int PageCount { get; private set; }
     public DateTime? ConfirmedAt { get; private set; }
     public DateTime? IndexedAt { get; private set; }
+
+    /// <summary>Written by the server (agent draft); kept out of the index on purpose.</summary>
+    internal void MarkStored(long sizeBytes)
+    {
+        SizeBytes = sizeBytes;
+        Status = IngestionStatus.Stored;
+    }
+
+    /// <summary>A stored draft version enters the ingestion queue.</summary>
+    internal void Queue(DateTime at)
+    {
+        if (Status != IngestionStatus.Stored)
+        {
+            throw new ConflictException(KnowledgeErrors.VersionNotPending);
+        }
+
+        ConfirmedAt = at;
+        Status = IngestionStatus.Queued;
+    }
 
     /// <summary>The file is in storage; ingestion may start.</summary>
     public void Confirm(long sizeBytes, DateTime at)

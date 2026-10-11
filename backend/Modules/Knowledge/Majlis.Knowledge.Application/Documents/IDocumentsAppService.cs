@@ -22,6 +22,12 @@ public interface IDocumentsAppService
     Task<DownloadUrlDto> GetDownloadUrlAsync(VersionIdDto input, CancellationToken cancellationToken = default);
 
     /// <summary>Title, type, effective date, tags.</summary>
+    /// <summary>Text of a markdown or plain-text version (drafts), for the in-page viewer.</summary>
+    Task<VersionContentDto> GetContentAsync(VersionIdDto input, CancellationToken cancellationToken = default);
+
+    /// <summary>FR-KNW-009: a person adds an agent draft to the workspace knowledge; it is then indexed like an upload.</summary>
+    Task<DocumentDto> AddToKnowledgeAsync(DocumentIdDto input, CancellationToken cancellationToken = default);
+
     Task UpdateAsync(UpdateDocumentDto input, CancellationToken cancellationToken = default);
 
     /// <summary>Soft-deletes the document and asks ai-service to drop its chunks (FR-KNW-007).</summary>

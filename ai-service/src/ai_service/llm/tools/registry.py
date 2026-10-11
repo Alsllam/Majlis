@@ -11,6 +11,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ValidationError
 
 from ai_service.llm.tools.create_task import CreateTaskArgs, summarize_create_task
+from ai_service.llm.tools.draft_document import DraftDocumentArgs, summarize_draft_document
 
 Risk = Literal["Low", "Medium", "High"]
 
@@ -66,6 +67,19 @@ TOOLS: dict[str, ToolSpec] = {
         risk="Low",
         required_permission="Permissions.Approvals.RequestAction",
         summarize=summarize_create_task,
+    ),
+    "draft_document": ToolSpec(
+        name="draft_document",
+        description=(
+            "Propose a draft document (memo, policy, letter, report, summary) saved to the team's workspace as a draft "
+            "that a person reviews, approves and then adds to the knowledge. Use it when a participant asks you to "
+            "write, draft or prepare a document; put the whole text in contentMarkdown."
+        ),
+        args_model=DraftDocumentArgs,
+        mutates=True,
+        risk="Low",
+        required_permission="Permissions.Approvals.RequestAction",
+        summarize=summarize_draft_document,
     ),
 }
 

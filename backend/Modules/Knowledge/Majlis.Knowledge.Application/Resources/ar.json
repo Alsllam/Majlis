@@ -7,5 +7,7 @@
   "Knowledge:Document:Deleted": "حُذف هذا المستند.",
   "Knowledge:Ingestion:Unsupported": "تعذّر استخراج النص من هذا النوع من الملفات.",
   "Knowledge:Ingestion:Empty": "لم يُعثر على نص في الملف.",
-  "Knowledge:Ingestion:Failed": "فشلت الفهرسة. حاول مرة أخرى أو تواصل مع المشرف."
+  "Knowledge:Ingestion:Failed": "فشلت الفهرسة. حاول مرة أخرى أو تواصل مع المشرف.",
+  "Knowledge:Document:NotADraft": "هذا المستند ليس مسودة.",
+  "Knowledge:Document:ContentNotText": "محتوى هذه النسخة ليس نصاً يمكن عرضه هنا."
 }

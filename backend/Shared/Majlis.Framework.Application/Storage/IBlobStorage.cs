@@ -16,6 +16,12 @@ public interface IBlobStorage
     Task<StoredBlobInfo?> GetPropertiesAsync(string container, string path, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(string container, string path, CancellationToken cancellationToken = default);
+
+    /// <summary>Server-side write (agent drafts); browser uploads use the pre-signed url instead.</summary>
+    Task UploadAsync(string container, string path, byte[] content, string contentType, CancellationToken cancellationToken = default);
+
+    /// <summary>Server-side read of a small blob (text drafts for the viewer); null when it does not exist.</summary>
+    Task<byte[]?> DownloadAsync(string container, string path, CancellationToken cancellationToken = default);
 }
 
 public sealed record PresignedUrl(Uri Url, DateTimeOffset ExpiresAt);

@@ -10,6 +10,7 @@ import {
   FilterDocumentDto,
   UpdateDocumentDto,
   UploadTicketDto,
+  VersionContentDto,
 } from './document.model';
 
 /** Mirrors `DocumentsAppService` (`[Route("documents")]`, reached as `/api/knowledge/documents/...`). */
@@ -31,6 +32,9 @@ export class DocumentsService {
     this.call<{ versionId: string }, DocumentDto>('POST', '/confirm', { versionId }, config);
   getDownloadUrl = (versionId: string, config?: Partial<RestConfig>) =>
     this.call<{ versionId: string }, DownloadUrlDto>('POST', '/download-url', { versionId }, config);
+  getContent = (versionId: string, config?: Partial<RestConfig>) =>
+    this.call<{ versionId: string }, VersionContentDto>('POST', '/content', { versionId }, config);
+  addToKnowledge = (id: string, config?: Partial<RestConfig>) => this.call<{ id: string }, DocumentDto>('POST', '/add-to-knowledge', { id }, config);
   update = (input: UpdateDocumentDto, config?: Partial<RestConfig>) => this.call<UpdateDocumentDto, void>('PUT', '', input, config);
   delete = (id: string, config?: Partial<RestConfig>) => this.call<{ id: string }, void>('DELETE', '', { id }, config);
 

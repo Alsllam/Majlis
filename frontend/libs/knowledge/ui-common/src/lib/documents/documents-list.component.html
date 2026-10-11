@@ -65,6 +65,7 @@
           <tr>
             <td>
               <a [routerLink]="[doc.id]" class="title">{{ doc.title }}</a>
+              @if (doc.documentStatus === 'Draft') { <span class="status-tag status-tag-warning">{{ 'Documents.Draft' | translate }}</span> }
               <div class="file">{{ doc.fileName }}</div>
             </td>
             <td><span class="status-tag status-tag-neutral">{{ 'Documents.Types.' + doc.type | translate }}</span></td>
@@ -72,6 +73,7 @@
               @switch (doc.status) {
                 @case ('Indexed') { <span class="status-tag status-tag-success">{{ 'Documents.Statuses.Indexed' | translate }}</span> }
                 @case ('Failed') { <span class="status-tag status-tag-danger" [attr.title]="doc.failureReasonKey ? ('Documents.Reasons.' + doc.failureReasonKey | translate) : ''">{{ 'Documents.Statuses.Failed' | translate }}</span> }
+                @case ('Stored') { <span class="status-tag status-tag-neutral">{{ 'Documents.Statuses.Stored' | translate }}</span> }
                 @default { <span class="status-tag status-tag-info"><span class="live"></span>{{ 'Documents.Statuses.' + doc.status | translate }}</span> }
               }
             </td>

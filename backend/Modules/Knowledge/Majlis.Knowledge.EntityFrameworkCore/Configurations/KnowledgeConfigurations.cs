@@ -15,6 +15,8 @@ public sealed class DocumentConfiguration : DefaultEntityTypeConfiguration<Docum
         builder.Property(d => d.Title).HasMaxLength(KnowledgeFieldDefinitions.MaxTitleLength).IsRequired();
         builder.Property(d => d.Type).HasConversion<int>();
         builder.Property(d => d.Origin).HasConversion<int>();
+        builder.Property(d => d.Status).HasConversion<int>();
+        builder.HasIndex(d => d.ApprovalRequestId).IsUnique().HasFilter("[ApprovalRequestId] IS NOT NULL");
         builder.Property(d => d.Language).HasMaxLength(Framework.Domain.Localization.FieldDefinitions.LanguageCodeLength);
         builder.Property(d => d.Tags).HasMaxLength(KnowledgeFieldDefinitions.MaxTagsLength);
         builder.HasIndex(d => new { d.WorkspaceId, d.RoomId });

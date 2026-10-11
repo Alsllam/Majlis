@@ -22,7 +22,7 @@ Logs: `backend/.local/logs/*.log`. Everything is reached through the BFF at `htt
 | `/api/identity/users/lookup` | Auth host (tenant user picker) |
 | `/api/workspaces/workspaces/*` | Workspaces |
 | `/api/rooms/rooms/*`, `/api/rooms/sessions/*` | Rooms |
-| `/api/knowledge/documents/*` | Knowledge (uploads go straight to blob storage through pre-signed urls) |
+| `/api/knowledge/documents/*` | Knowledge (uploads go straight to blob storage through pre-signed urls; agent drafts are written by the host) |
 | `/api/approvals/requests/*` | Approvals (ai-service creates requests with the driver's token; people approve or reject) |
 | `/api/tasks/tasks/*` | Tasks |
 | `/api/notifications/notifications/*` | Notifications (list, unread count, mark read, settings) |

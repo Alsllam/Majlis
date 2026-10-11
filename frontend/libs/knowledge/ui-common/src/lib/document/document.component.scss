@@ -11,3 +11,7 @@ blockquote { margin: 0; white-space: pre-wrap; }
 .file { direction: ltr; display: inline-block; }
 .reason { font-size: var(--fs-xs); color: var(--danger-text); margin-top: var(--space-1); }
 .table { --bs-table-bg: transparent; --bs-table-color: var(--text-primary); --bs-table-border-color: var(--border-subtle); }
+.actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.hint { margin: 0; font-size: var(--fs-sm); color: var(--text-secondary); }
+.content { padding: var(--space-4) var(--space-5); max-width: 80ch; line-height: 1.8;
+  .md-h1 { font-size: var(--fs-xl); margin: 0 0 var(--space-3); } h3 { font-size: var(--fs-md); margin: var(--space-4) 0 var(--space-2); } p { margin: 0 0 var(--space-3); } ul, ol { margin: 0 0 var(--space-3); padding-inline-start: var(--space-5); } }

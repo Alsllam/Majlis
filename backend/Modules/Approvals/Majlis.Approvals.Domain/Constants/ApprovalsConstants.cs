@@ -29,7 +29,8 @@ public static class ApprovalsFieldDefinitions
     public const int MaxSummaryLength = Framework.Domain.Localization.FieldDefinitions.MaxDescriptionLength;
     public const int MaxReasonLength = Framework.Domain.Localization.FieldDefinitions.MaxDescriptionLength;
     public const int MaxNoteLength = Framework.Domain.Localization.FieldDefinitions.MaxNoteLength;
-    public const int MaxArgsLength = 16000;
+    /// <summary>Room for a full draft document (nvarchar(max) in SQL Server).</summary>
+    public const int MaxArgsLength = 200_000;
     public const int MaxDisplayNameLength = Framework.Domain.Localization.FieldDefinitions.MaxNameLength;
     public const int MaxResultLength = Framework.Domain.Localization.FieldDefinitions.MaxDescriptionLength;
 }
