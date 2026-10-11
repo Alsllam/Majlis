@@ -22,7 +22,7 @@ public sealed partial class NotificationDispatcher(
     IEventPublisher publisher,
     IUnitOfWork unitOfWork,
     IEmailSender email,
-    IIdentityInternalClient identity,
+    IRecipientLookup recipients,
     IOptions<NotificationsOptions> options,
     TimeProvider clock,
     ILogger<NotificationDispatcher> logger)
@@ -82,12 +82,12 @@ public sealed partial class NotificationDispatcher(
             return;
         }
 
-        List<InternalUserDto> users;
+        List<RecipientDto> users;
         try
         {
-            users = await identity.LookupByIdsAsync(new InternalUsersQueryDto(tenantId, targets.Select(t => t.UserId).ToList()), cancellationToken);
+            users = await recipients.LookupAsync(tenantId, targets.Select(t => t.UserId).ToList(), cancellationToken);
         }
-        catch (Exception ex) when (ex is HttpRequestException or Refit.ApiException or TaskCanceledException)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
         {
             Log.LookupFailed(logger, ex);
             return;

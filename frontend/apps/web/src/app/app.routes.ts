@@ -14,6 +14,7 @@ export const appRoutes: Route[] = [
       { path: 'rooms', loadChildren: () => import('@majlis/rooms-ui-common').then((m) => m.RoomsUICommonRoutes) },
       { path: 'approvals', loadChildren: () => import('@majlis/approvals-ui-common').then((m) => m.ApprovalsUICommonRoutes) },
       { path: 'tasks', loadChildren: () => import('@majlis/tasks-ui-common').then((m) => m.TasksUICommonRoutes) },
+      { path: 'notifications', loadChildren: () => import('@majlis/notifications-ui-common').then((m) => m.NotificationsUICommonRoutes) },
       { path: '403', loadComponent: () => import('./pages/forbidden.component').then((m) => m.ForbiddenComponent) },
       { path: '404', loadComponent: () => import('./pages/not-found.component').then((m) => m.NotFoundComponent) },
     ],

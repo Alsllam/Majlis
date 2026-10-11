@@ -30,6 +30,10 @@
       <button type="button" class="icon-btn" (click)="toggle()" [attr.aria-label]="'General.ToggleMenu' | translate">☰</button>
       <span class="spacer"></span>
 
+      @for (widget of widgets(); track widget) {
+        <ng-container *ngComponentOutlet="widget" />
+      }
+
       <div ngbDropdown class="d-inline-block">
         <button type="button" class="chip" ngbDropdownToggle [attr.aria-label]="'General.Language' | translate">
           {{ 'Language.' + localization.lang() | translate }}

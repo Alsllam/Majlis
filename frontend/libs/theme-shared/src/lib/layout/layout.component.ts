@@ -1,15 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { NgComponentOutlet } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Type, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslatePipe } from '@ngx-translate/core';
-import { AuthService, LANGUAGES, LocalizationService, RoutesService, THEMES, ThemeService } from '@majlis/core';
+import { AuthService, LANGUAGES, LocalizationService, RoutesService, THEMES, TOPBAR_WIDGETS, ThemeService } from '@majlis/core';
 import { ToastsComponent } from '../toast/toasts.component';
 
 /** Sidebar + top bar. Content sits on `--surface-sunken`; cards on `--surface` (skill §0.5). */
 @Component({
   selector: 'majlis-layout',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, NgbDropdownModule, TranslatePipe, ToastsComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, NgbDropdownModule, TranslatePipe, ToastsComponent, NgComponentOutlet],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.scss',
 })
@@ -26,6 +27,13 @@ export class LayoutComponent {
     return `/brand/logo-${this.localization.lang()}${dark}.svg`;
   });
   protected readonly initials = computed(() => (this.auth.user()?.name ?? '?').slice(0, 1));
+  /** Top-bar widgets provided by the app (lazy components), loaded once. */
+  protected readonly widgets = signal<Type<unknown>[]>([]);
+
+  constructor() {
+    const loaders = inject(TOPBAR_WIDGETS, { optional: true }) ?? [];
+    void Promise.all(loaders.map((load) => load())).then((types) => this.widgets.set(types));
+  }
 
   toggle(): void {
     this.collapsed.update((v) => !v);

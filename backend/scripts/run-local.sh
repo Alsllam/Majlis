@@ -14,6 +14,7 @@ export ConnectionStrings__Redis="localhost:6379"
 export RabbitMq__Username="${RABBITMQ_USER:-majlis}" RabbitMq__Password="${RABBITMQ_PASSWORD}"
 export Seed__Password="${MAJLIS_SEED_PASSWORD:-}" Seed__RealtimeClientSecret="${MAJLIS_REALTIME_CLIENT_SECRET:-}" Seed__NotificationsClientSecret="${MAJLIS_NOTIFICATIONS_CLIENT_SECRET:-$MAJLIS_REALTIME_CLIENT_SECRET}"
 export InternalAuth__ClientSecret="${MAJLIS_REALTIME_CLIENT_SECRET:-}"
+export Email__ConnectionString="${EMAIL_CONNECTION_STRING:-}"
 # The Notifications host has its own client; it falls back to the realtime secret for a quick local setup.
 export MAJLIS_NOTIFICATIONS_CLIENT_SECRET="${MAJLIS_NOTIFICATIONS_CLIENT_SECRET:-$MAJLIS_REALTIME_CLIENT_SECRET}"
 

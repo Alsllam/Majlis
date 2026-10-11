@@ -97,7 +97,7 @@ Every module has the four projects from the skill (`Majlis.{Module}.Domain`, `.A
 - **Owns:** Notification, NotificationPreference, delivery log, device registrations (FCM) for mobile.
 - **Publishes:** `NotificationCreated` (Realtime pushes it to `user:{id}`).
 - **Consumes:** `MentionCreated`, `ApprovalRequested/Decided`, `ControlChanged` (hand-off offers, take-over notices), `TaskAssigned`, `TaskDue`, `DocumentIndexingFailed`, `UserInvited`.
-- **Notes:** renders ar/en templates per recipient language, honors quiet hours and weekend days, sends email and push through `IEmailSender` / `IPushSender` (ADR-0006). Email and push carry **no content** by default ("You have a new approval request" + link); a tenant can opt in to content previews when its provider is in its data region.
+- **Notes:** renders ar/en templates per recipient language, honors quiet hours and weekend days, sends email and push through `IEmailSender` / `IPushSender` (ADR-0006). Email and push carry **no content** by default ("You have a new approval request" + link); a tenant can opt in to content previews when its provider is in its data region. *(Built 2026-10-11: in-app rows for approval requests / decisions / outcomes, task assignments and hand-off offers, pushed live through the Realtime host (`NotificationCreated` → `Clients.User`), email through Azure Communication Services behind `IEmailSender` with recipient address and language from the Auth host internal lookup, per-user email on/off and muted types. Digest, quiet hours, push and mentions follow.)*
 
 ### Audit — `audit` · 7080
 - **Owns:** AuditEntry (append-only, hash chain per tenant).

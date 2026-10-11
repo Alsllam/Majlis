@@ -58,7 +58,8 @@ test.describe('shared agent session', () => {
     await khalid.locator('#handoff-to').selectOption({ label: USERS.sara.name });
     await khalid.locator('#handoff-note').fill('دورك');
     await khalid.locator('majlis-hand-off-modal button[type="submit"]').click();
-    await expect(sara.getByText('خالد يعرض عليك قيادة الجلسة')).toBeVisible({ timeout: 10000 });
+    // The same sentence also arrives as a notification (toast + bell), so look at the room banner only.
+    await expect(sara.locator('.banner.handoff')).toContainText('خالد يعرض عليك قيادة الجلسة', { timeout: 10000 });
     await sara.getByRole('button', { name: 'قبول' }).click();
     await expect(sara.getByText('أنت تقود')).toBeVisible({ timeout: 10000 });
     await setTheme(sara, 'dim');

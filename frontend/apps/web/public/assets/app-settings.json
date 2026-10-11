@@ -33,6 +33,9 @@
     },
     "tasks": {
       "url": "http://localhost:7000/api/tasks"
+    },
+    "notifications": {
+      "url": "http://localhost:7000/api/notifications"
     }
   },
   "realtime": {
@@ -61,7 +64,8 @@
       "Permissions.Approvals.ApproveAction",
       "Permissions.Tasks.ViewTask",
       "Permissions.Tasks.CreateTask",
-      "Permissions.Tasks.UpdateTask"
+      "Permissions.Tasks.UpdateTask",
+      "Permissions.Notifications.ViewNotification"
     ]
   }
 }

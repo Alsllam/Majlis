@@ -336,5 +336,35 @@
       "High": "عالية",
       "Urgent": "عاجلة"
     }
+  },
+  "Notifications": {
+    "Title": "الإشعارات",
+    "Subtitle": "ما يخصّك: موافقات، مهام، تسليم التحكم",
+    "Empty": "لا إشعارات",
+    "EmptyTitle": "لا إشعارات بعد",
+    "EmptyText": "تصلك هنا طلبات الموافقة وقراراتها والمهام المسندة إليك وعروض تسليم التحكم.",
+    "MarkAllRead": "تعليم الكل كمقروء",
+    "SeeAll": "كل الإشعارات",
+    "Settings": "إعدادات الإشعارات",
+    "SettingsSubtitle": "البريد الإلكتروني وأنواع الإشعارات التي تريدها",
+    "Back": "الإشعارات",
+    "EmailEnabled": "إرسال الإشعارات إلى بريدي الإلكتروني",
+    "EmailHint": "يحمل البريد تنبيهاً قصيراً ورابطاً فقط، دون محتوى المستندات أو المحادثات.",
+    "Saved": "حُفظت الإعدادات",
+    "Kinds": {
+      "Title": "الأنواع",
+      "approval.requested": "طلب موافقة",
+      "approval.decided": "قرار على طلبي",
+      "approval.executed": "نتيجة الإجراء",
+      "task.assigned": "مهمة مسندة إليّ",
+      "handoff.offered": "عرض تسليم التحكم"
+    },
+    "Types": {
+      "approval.requested": "{{name}} طلب موافقة على: {{summary}}",
+      "approval.decided": "{{name}} بتّ في طلبك: {{summary}}",
+      "approval.executed": "نتيجة الإجراء: {{summary}}",
+      "task.assigned": "{{name}} أسند إليك المهمة: {{title}}",
+      "handoff.offered": "{{name}} يعرض عليك قيادة الجلسة"
+    }
   }
 }

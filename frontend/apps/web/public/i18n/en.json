@@ -336,5 +336,35 @@
       "High": "High",
       "Urgent": "Urgent"
     }
+  },
+  "Notifications": {
+    "Title": "Notifications",
+    "Subtitle": "What concerns you: approvals, tasks, hand-offs",
+    "Empty": "No notifications",
+    "EmptyTitle": "No notifications yet",
+    "EmptyText": "Approval requests and decisions, tasks assigned to you and hand-off offers show up here.",
+    "MarkAllRead": "Mark all as read",
+    "SeeAll": "All notifications",
+    "Settings": "Notification settings",
+    "SettingsSubtitle": "Email and the kinds of notifications you want",
+    "Back": "Notifications",
+    "EmailEnabled": "Send notifications to my email",
+    "EmailHint": "Emails carry a short notice and a link only, never document or conversation content.",
+    "Saved": "Settings saved",
+    "Kinds": {
+      "Title": "Kinds",
+      "approval.requested": "Approval request",
+      "approval.decided": "Decision on my request",
+      "approval.executed": "Action outcome",
+      "task.assigned": "Task assigned to me",
+      "handoff.offered": "Hand-off offered"
+    },
+    "Types": {
+      "approval.requested": "{{name}} requests approval for: {{summary}}",
+      "approval.decided": "{{name}} decided on your request: {{summary}}",
+      "approval.executed": "Action outcome: {{summary}}",
+      "task.assigned": "{{name}} assigned you the task: {{title}}",
+      "handoff.offered": "{{name}} offers you control of the session"
+    }
   }
 }

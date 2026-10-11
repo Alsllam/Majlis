@@ -13,3 +13,4 @@ export * from './lib/localization/enar.pipe';
 export * from './lib/theme/theme.service';
 export * from './lib/routes/routes.service';
 export * from './lib/core.providers';
+export * from './lib/layout/topbar-widgets';

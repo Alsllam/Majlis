@@ -58,17 +58,17 @@ public sealed class NotificationsTestHost : IDisposable
         services.AddScoped<NotificationsAppService>();
         _provider = services.BuildServiceProvider();
 
-        A.CallTo(() => Identity.LookupByIdsAsync(A<InternalUsersQueryDto>._, A<CancellationToken>._))
-            .ReturnsLazily((InternalUsersQueryDto q, CancellationToken _) =>
-                new[] { Sara, Khalid, Noura }.Where(u => q.Ids.Contains(u.Id))
-                    .Select(u => new InternalUserDto(u.Id, u.Name, $"{u.Name}@demo.local", u == Khalid ? "en" : "ar", true)).ToList());
+        A.CallTo(() => Identity.LookupAsync(A<Guid>._, A<IReadOnlyCollection<Guid>>._, A<CancellationToken>._))
+            .ReturnsLazily((Guid _, IReadOnlyCollection<Guid> ids, CancellationToken _) =>
+                new[] { Sara, Khalid, Noura }.Where(u => ids.Contains(u.Id))
+                    .Select(u => new RecipientDto(u.Id, u.Name, $"{u.Name}@demo.local", u == Khalid ? "en" : "ar", true)).ToList());
     }
 
     public IEventPublisher Publisher { get; } = A.Fake<IEventPublisher>();
 
     public IEmailSender Email { get; } = A.Fake<IEmailSender>();
 
-    public IIdentityInternalClient Identity { get; } = A.Fake<IIdentityInternalClient>();
+    public IRecipientLookup Identity { get; } = A.Fake<IRecipientLookup>();
 
     public IServiceScope Scope((Guid Id, string Name) user)
     {

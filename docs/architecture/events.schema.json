@@ -325,6 +325,35 @@
         "reasonKey": { "type": "string" },
         "detail": { "type": ["string", "null"] }
       }
+    },
+    "taskAssigned": {
+      "description": "Tasks → Notifications (exchange majlis.task-assigned): a task got an assignee, by a person or by the agent after approval.",
+      "type": "object",
+      "required": ["tenantId", "workspaceId", "taskId", "title", "assigneeUserId"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "workspaceId": { "$ref": "#/$defs/uuid" },
+        "roomId": { "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }] },
+        "taskId": { "$ref": "#/$defs/uuid" },
+        "title": { "type": "string" },
+        "assigneeUserId": { "$ref": "#/$defs/uuid" },
+        "assignedByUserId": { "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }] },
+        "assignedByDisplayName": { "type": ["string", "null"] }
+      }
+    },
+    "notificationCreated": {
+      "description": "Notifications → Realtime (exchange majlis.notification-created): one in-app notification; Realtime sends the hub message `notification` {id, type, params, link, createdAt, readAt: null} to every connection of the user.",
+      "type": "object",
+      "required": ["tenantId", "userId", "notificationId", "type", "paramsJson", "at"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "userId": { "$ref": "#/$defs/uuid" },
+        "notificationId": { "$ref": "#/$defs/uuid" },
+        "type": { "type": "string", "enum": ["approval.requested", "approval.decided", "approval.executed", "task.assigned", "handoff.offered"] },
+        "paramsJson": { "type": "string", "description": "JSON object of strings the client puts into the translated text (name, summary, title, …)." },
+        "link": { "type": ["string", "null"], "description": "In-app route to open." },
+        "at": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "x-redis-keys": {

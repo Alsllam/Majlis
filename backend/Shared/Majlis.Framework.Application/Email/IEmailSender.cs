@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Majlis.Framework.Application.Email;
 
@@ -54,7 +53,7 @@ public static class EmailServiceCollectionExtensions
         }
         else
         {
-            services.AddSingleton<IEmailSender>(sp => new Adapters.Email.AzureCommunicationEmailSender(sp.GetRequiredService<IOptions<EmailOptions>>()));
+            services.AddSingleton<IEmailSender, Adapters.Email.AzureCommunicationEmailSender>();
         }
 
         return services;
