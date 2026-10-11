@@ -8,7 +8,8 @@ export const appRoutes: Route[] = [
     component: LayoutComponent,
     canActivate: [authGuard],
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'workspaces' },
+      { path: '', pathMatch: 'full', redirectTo: 'home' },
+      { path: 'home', loadChildren: () => import('@majlis/workspaces-ui-common').then((m) => m.WorkspaceHomeRoutes) },
       { path: 'workspaces', loadChildren: () => import('@majlis/workspaces-ui-common').then((m) => m.WorkspacesUICommonRoutes) },
       { path: 'documents', loadChildren: () => import('@majlis/knowledge-ui-common').then((m) => m.KnowledgeUICommonRoutes) },
       { path: 'rooms', loadChildren: () => import('@majlis/rooms-ui-common').then((m) => m.RoomsUICommonRoutes) },

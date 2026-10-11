@@ -35,7 +35,8 @@
     "Workspaces": "Workspaces",
     "Documents": "Documents",
     "Approvals": "Approvals",
-    "Tasks": "Tasks"
+    "Tasks": "Tasks",
+    "Home": "Home"
   },
   "Errors": {
     "Network": "The server could not be reached. Check your connection and try again.",
@@ -376,5 +377,23 @@
       "task.assigned": "{{name}} assigned you the task: {{title}}",
       "handoff.offered": "{{name}} offers you control of the session"
     }
+  },
+  "Home": {
+    "Title": "Welcome, {{name}}",
+    "Subtitle": "What needs you now in the workspace",
+    "WorkspaceSettings": "Workspace settings",
+    "LiveRooms": "Live rooms now",
+    "PendingApprovals": "Awaiting your approval",
+    "MyOpenTasks": "Your open tasks",
+    "YourRole": "Your role",
+    "Rooms": "Rooms",
+    "Approvals": "Awaiting your approval",
+    "Tasks": "My tasks",
+    "Documents": "Latest documents",
+    "All": "All",
+    "NoApprovals": "Nothing is waiting for you",
+    "NoTasks": "No open tasks assigned to you",
+    "NoWorkspaceTitle": "You are not in a workspace yet",
+    "NoWorkspaceText": "Create a workspace or ask a colleague to add you to theirs."
   }
 }

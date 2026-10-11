@@ -1,0 +1,127 @@
+@let ws = workspace();
+<majlis-page-header [title]="'Home.Title' | translate: { name: firstName() }" subtitle="Home.Subtitle">
+  @if (myWorkspaces()?.length) {
+    <select class="form-select form-select-sm ws-select" [ngModel]="selected()" (ngModelChange)="select($event)" [attr.aria-label]="'Rooms.Workspace' | translate">
+      @for (w of myWorkspaces(); track w.id) {
+        <option [value]="w.id">{{ w.icon }} {{ w.name }}</option>
+      }
+    </select>
+  }
+  @if (ws) {
+    <a [routerLink]="['/workspaces', ws.id]" class="btn btn-outline-secondary btn-sm">{{ 'Home.WorkspaceSettings' | translate }}</a>
+  }
+</majlis-page-header>
+
+@if (myWorkspaces()?.length === 0) {
+  <majlis-empty-state title="Home.NoWorkspaceTitle" text="Home.NoWorkspaceText">
+    <a routerLink="/workspaces" class="btn btn-primary">{{ 'Menu.Workspaces' | translate }}</a>
+  </majlis-empty-state>
+} @else if (ws) {
+  <div class="tiles" data-testid="home-tiles">
+    <a class="card-surface tile" [routerLink]="['/rooms']" [queryParams]="{ workspaceId: ws.id }">
+      <span class="value num">{{ liveRooms().length | enar }}</span>
+      <span class="label">{{ 'Home.LiveRooms' | translate }}</span>
+    </a>
+    @if (pending(); as p) {
+      <a class="card-surface tile" [class.attention]="p.length" routerLink="/approvals">
+        <span class="value num">{{ p.length | enar }}</span>
+        <span class="label">{{ 'Home.PendingApprovals' | translate }}</span>
+      </a>
+    }
+    @if (myTasks(); as t) {
+      <a class="card-surface tile" [routerLink]="['/tasks']" [queryParams]="{ workspaceId: ws.id }">
+        <span class="value num">{{ t.length | enar }}</span>
+        <span class="label">{{ 'Home.MyOpenTasks' | translate }}</span>
+      </a>
+    }
+    <div class="card-surface tile">
+      <span class="value">{{ 'Workspaces.Role.' + ws.myRole | translate }}</span>
+      <span class="label">{{ 'Home.YourRole' | translate }}</span>
+    </div>
+  </div>
+
+  <div class="blocks">
+    <section class="card-surface block" data-testid="home-rooms">
+      <header><h2>{{ 'Home.Rooms' | translate }}</h2><a [routerLink]="['/rooms']" [queryParams]="{ workspaceId: ws.id }">{{ 'Home.All' | translate }}</a></header>
+      @if (rows() === null) {
+        <p class="muted">{{ 'General.Loading' | translate }}</p>
+      } @else {
+        <ul>
+          @for (room of rows(); track room.id) {
+            <li>
+              <a [routerLink]="['/rooms', room.id]" class="row-link">
+                <span class="main">{{ room.name }}</span>
+                @if (room.activeSessionId) {
+                  <span class="status-tag status-tag-success"><span class="live"></span>{{ 'Rooms.Live' | translate }}</span>
+                } @else {
+                  <span class="muted">{{ 'Rooms.Participants' | translate: { count: (room.participantCount | enar) } }}</span>
+                }
+              </a>
+            </li>
+          } @empty {
+            <li class="muted">{{ 'Rooms.EmptyTitle' | translate }}</li>
+          }
+        </ul>
+      }
+    </section>
+
+    @if (pending(); as p) {
+      <section class="card-surface block" data-testid="home-approvals">
+        <header><h2>{{ 'Home.Approvals' | translate }}</h2><a routerLink="/approvals">{{ 'Home.All' | translate }}</a></header>
+        <ul>
+          @for (r of p; track r.id) {
+            <li>
+              <a [routerLink]="['/rooms', r.roomId]" class="row-link">
+                <span class="main">{{ r.summary }}</span>
+                <span class="muted">{{ 'Approvals.RequestedBy' | translate: { name: r.requestedBy.displayName } }}</span>
+              </a>
+            </li>
+          } @empty {
+            <li class="muted">{{ 'Home.NoApprovals' | translate }}</li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (myTasks(); as t) {
+      <section class="card-surface block" data-testid="home-tasks">
+        <header><h2>{{ 'Home.Tasks' | translate }}</h2><a [routerLink]="['/tasks']" [queryParams]="{ workspaceId: ws.id }">{{ 'Home.All' | translate }}</a></header>
+        <ul>
+          @for (task of t; track task.id) {
+            <li class="row-link">
+              <span class="main">{{ task.title }}</span>
+              <span class="status-tag status-tag-neutral">{{ 'Tasks.Priorities.' + task.priority | translate }}</span>
+              @if (task.dueDate) { <span class="muted num">{{ task.dueDate | date: 'mediumDate' : undefined : lang() }}</span> }
+            </li>
+          } @empty {
+            <li class="muted">{{ 'Home.NoTasks' | translate }}</li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (latestDocuments(); as docs) {
+      <section class="card-surface block" data-testid="home-documents">
+        <header><h2>{{ 'Home.Documents' | translate }}</h2><a [routerLink]="['/documents']" [queryParams]="{ workspaceId: ws.id }">{{ 'Home.All' | translate }}</a></header>
+        <ul>
+          @for (doc of docs; track doc.id) {
+            <li>
+              <a [routerLink]="['/documents', doc.id]" class="row-link">
+                <span class="main">{{ doc.title }}</span>
+                @if (doc.documentStatus === 'Draft') {
+                  <span class="status-tag status-tag-warning">{{ 'Documents.Draft' | translate }}</span>
+                } @else if (doc.status === 'Indexed') {
+                  <span class="status-tag status-tag-success">{{ 'Documents.Statuses.Indexed' | translate }}</span>
+                } @else {
+                  <span class="status-tag status-tag-info">{{ 'Documents.Statuses.' + doc.status | translate }}</span>
+                }
+              </a>
+            </li>
+          } @empty {
+            <li class="muted">{{ 'Documents.EmptyTitle' | translate }}</li>
+          }
+        </ul>
+      </section>
+    }
+  </div>
+}

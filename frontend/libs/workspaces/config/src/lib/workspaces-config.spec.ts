@@ -13,6 +13,6 @@ describe('provideWorkspacesConfig', () => {
       ],
     });
     await TestBed.inject(ApplicationInitStatus).donePromise;
-    expect(TestBed.inject(RoutesService).tree().map((n) => n.name)).toEqual(['Menu.Workspaces']);
+    expect(TestBed.inject(RoutesService).tree().map((n) => n.name)).toEqual(['Menu.Home', 'Menu.Workspaces']);
   });
 });

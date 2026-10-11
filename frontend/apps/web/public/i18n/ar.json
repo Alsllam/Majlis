@@ -35,7 +35,8 @@
     "Workspaces": "مساحات العمل",
     "Documents": "المستندات",
     "Approvals": "الموافقات",
-    "Tasks": "المهام"
+    "Tasks": "المهام",
+    "Home": "الرئيسية"
   },
   "Errors": {
     "Network": "تعذّر الوصول إلى الخادم. تحقق من الاتصال ثم أعد المحاولة.",
@@ -376,5 +377,23 @@
       "task.assigned": "{{name}} أسند إليك المهمة: {{title}}",
       "handoff.offered": "{{name}} يعرض عليك قيادة الجلسة"
     }
+  },
+  "Home": {
+    "Title": "مرحباً {{name}}",
+    "Subtitle": "ما يحتاجك الآن في مساحة العمل",
+    "WorkspaceSettings": "إعدادات المساحة",
+    "LiveRooms": "غرف نشطة الآن",
+    "PendingApprovals": "موافقات بانتظارك",
+    "MyOpenTasks": "مهامك المفتوحة",
+    "YourRole": "دورك",
+    "Rooms": "الغرف",
+    "Approvals": "بانتظار موافقتك",
+    "Tasks": "مهامي",
+    "Documents": "آخر المستندات",
+    "All": "الكل",
+    "NoApprovals": "لا شيء بانتظارك",
+    "NoTasks": "لا مهام مفتوحة مسندة إليك",
+    "NoWorkspaceTitle": "لست عضواً في أي مساحة عمل بعد",
+    "NoWorkspaceText": "أنشئ مساحة عمل أو اطلب من زميل إضافتك إلى مساحته."
   }
 }

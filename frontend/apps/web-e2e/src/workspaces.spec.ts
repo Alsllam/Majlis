@@ -10,7 +10,8 @@ test('an owner creates a workspace, adds a member and writes agent instructions;
   await signIn(sara, USERS.sara, 'ar');
   await signIn(khalid, USERS.khalid, 'en');
 
-  // The home screen lists workspaces; the seeded one is there.
+  // The workspaces screen lists them; the seeded one is there.
+  await sara.goto('/workspaces');
   await expect(sara.getByRole('heading', { name: 'مساحات العمل' })).toBeVisible();
   await expect(sara.locator('a.ws', { hasText: 'الشؤون القانونية' })).toBeVisible();
   await sara.screenshot({ path: testInfo.outputPath('workspaces-ar-light.png'), fullPage: true });

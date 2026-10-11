@@ -7,6 +7,14 @@ export function provideWorkspacesConfig(): EnvironmentProviders {
     provideAppInitializer(() =>
       inject(RoutesService).add([
         {
+          path: '/home',
+          name: 'Menu.Home',
+          icon: '⌂',
+          order: -1,
+          layout: eLayoutType.application,
+          requiredPolicy: WORKSPACES_PERMISSIONS.viewWorkspace,
+        },
+        {
           path: '/workspaces',
           name: 'Menu.Workspaces',
           icon: '▦',
