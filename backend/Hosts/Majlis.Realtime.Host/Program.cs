@@ -51,7 +51,7 @@ services.AddRefitGeneratedClient<IRoomsInternalClient>()
 
 builder.AddMajlisMessaging(
     "realtime",
-    new MessagingTopology().Publish<SessionPresenceLost>().Publish<SessionPresenceRestored>().Listen<SessionEventAppended>(),
+    new MessagingTopology().Publish<SessionPresenceLost>().Publish<SessionPresenceRestored>().Listen<SessionEventAppended>().Listen<NotificationCreated>(),
     typeof(Program).Assembly);
 services.AddHostedService<StreamRelay>();
 services.AddHostedService<PresenceSweeper>();

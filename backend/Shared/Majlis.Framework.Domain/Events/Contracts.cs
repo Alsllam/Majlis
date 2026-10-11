@@ -124,3 +124,24 @@ public sealed record ActionRejected(Guid TenantId, Guid SessionId, Guid RequestI
 public sealed record ActionExecuted(Guid TenantId, Guid RequestId, string Tool, Guid? EntityId, string? ResultSummary) : IEvent;
 
 public sealed record ActionExecutionFailed(Guid TenantId, Guid RequestId, string Tool, string ReasonKey, string? Detail) : IEvent;
+
+/// <summary>Tasks: a task got an assignee (by a person or by the agent after approval). Notifications tells the assignee.</summary>
+public sealed record TaskAssigned(
+    Guid TenantId,
+    Guid WorkspaceId,
+    Guid? RoomId,
+    Guid TaskId,
+    string Title,
+    Guid AssigneeUserId,
+    Guid? AssignedByUserId,
+    string? AssignedByDisplayName) : IEvent;
+
+/// <summary>Notifications wrote an in-app notification; the Realtime host pushes it to the user's connections.</summary>
+public sealed record NotificationCreated(
+    Guid TenantId,
+    Guid UserId,
+    Guid NotificationId,
+    string Type,
+    string ParamsJson,
+    string? Link,
+    DateTime At) : IEvent;

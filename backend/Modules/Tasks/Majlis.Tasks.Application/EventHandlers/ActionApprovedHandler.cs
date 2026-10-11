@@ -82,6 +82,11 @@ public static class ActionApprovedHandler
         }
 
         await tasks.InsertAsync(task, autoSave: false, cancellationToken);
+        if (task.AssigneeUserId is { } assigneeId)
+        {
+            await publisher.PublishAsync(new TaskAssigned(task.TenantId, task.WorkspaceId, task.RoomId, task.Id, task.Title, assigneeId, message.RequestedByUserId, message.RequestedByDisplayName), cancellationToken);
+        }
+
         await publisher.PublishAsync(new ActionExecuted(message.TenantId, message.RequestId, Tool, task.Id, task.Title), cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }

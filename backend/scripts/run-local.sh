@@ -12,14 +12,17 @@ export ASPNETCORE_ENVIRONMENT=Development
 export ConnectionStrings__Default="Server=localhost,1433;Database=Majlis;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True"
 export ConnectionStrings__Redis="localhost:6379"
 export RabbitMq__Username="${RABBITMQ_USER:-majlis}" RabbitMq__Password="${RABBITMQ_PASSWORD}"
-export Seed__Password="${MAJLIS_SEED_PASSWORD:-}" Seed__RealtimeClientSecret="${MAJLIS_REALTIME_CLIENT_SECRET:-}"
+export Seed__Password="${MAJLIS_SEED_PASSWORD:-}" Seed__RealtimeClientSecret="${MAJLIS_REALTIME_CLIENT_SECRET:-}" Seed__NotificationsClientSecret="${MAJLIS_NOTIFICATIONS_CLIENT_SECRET:-$MAJLIS_REALTIME_CLIENT_SECRET}"
 export InternalAuth__ClientSecret="${MAJLIS_REALTIME_CLIENT_SECRET:-}"
+# The Notifications host has its own client; it falls back to the realtime secret for a quick local setup.
+export MAJLIS_NOTIFICATIONS_CLIENT_SECRET="${MAJLIS_NOTIFICATIONS_CLIENT_SECRET:-$MAJLIS_REALTIME_CLIENT_SECRET}"
 
 mkdir -p .local/logs
 dotnet build Majlis.sln -v q -nologo
 dotnet run --no-build --project Shared/Majlis.DbMigrator
 
-for host in Auth Workspaces Rooms Knowledge Approvals Tasks Realtime BFF; do
+for host in Auth Workspaces Rooms Knowledge Approvals Tasks Notifications Realtime BFF; do
+  if [ "$host" = Notifications ]; then export InternalAuth__ClientSecret="$MAJLIS_NOTIFICATIONS_CLIENT_SECRET"; else export InternalAuth__ClientSecret="${MAJLIS_REALTIME_CLIENT_SECRET:-}"; fi
   dotnet run --no-build --project "Hosts/Majlis.$host.Host" > ".local/logs/$host.log" 2>&1 &
   echo $! > ".local/$host.pid"
   echo "Started $host (pid $!) — log: backend/.local/logs/$host.log"

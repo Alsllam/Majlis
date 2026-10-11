@@ -23,6 +23,7 @@ public static class MajlisClients
     public const string Mobile = "majlis-mobile";
     public const string Realtime = "majlis-realtime";
     public const string AiService = "majlis-ai-service";
+    public const string Notifications = "majlis-notifications";
 }
 
 /// <summary>Permission names; identical strings are used by the web and mobile apps.</summary>

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>Majlis.Notifications.Host</RootNamespace>
+    <UserSecretsId>majlis-notifications-host</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Notifications\Majlis.Notifications.Application\Majlis.Notifications.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Wolverine compiles handler code at startup (TypeLoadMode.Dynamic). Production will pre-generate it (TypeLoadMode.Static) and drop this. -->
+    <PackageReference Include="WolverineFx.RuntimeCompilation" />
+  </ItemGroup>
+</Project>

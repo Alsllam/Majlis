@@ -21,6 +21,9 @@ public sealed class SeedOptions
 
     /// <summary>Client secret of ai-service (client credentials). The client is not created when empty.</summary>
     public string? AiServiceClientSecret { get; set; }
+
+    /// <summary>Client-credentials secret of the Notifications host (user lookups on the Auth host).</summary>
+    public string? NotificationsClientSecret { get; set; }
 }
 
 public sealed class SeedUser

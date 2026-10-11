@@ -14,6 +14,7 @@ public static class TasksApplicationModule
     public static MessagingTopology Topology => new MessagingTopology()
         .Publish<ActionExecuted>()
         .Publish<ActionExecutionFailed>()
+        .Publish<TaskAssigned>()
         .Listen<ActionApproved>()
         .Listen<MemberAdded>()
         .Listen<MemberRoleChanged>()

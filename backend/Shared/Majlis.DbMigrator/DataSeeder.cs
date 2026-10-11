@@ -10,6 +10,7 @@ using Majlis.Workspaces.EntityFrameworkCore;
 using Majlis.Knowledge.EntityFrameworkCore;
 using Majlis.Approvals.EntityFrameworkCore;
 using Majlis.Tasks.EntityFrameworkCore;
+using Majlis.Notifications.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -27,6 +28,7 @@ public sealed partial class DataSeeder(
     KnowledgeDbContext knowledgeDb,
     ApprovalsDbContext approvalsDb,
     TasksDbContext tasksDb,
+    NotificationsDbContext notificationsDb,
     UserManager<MajlisUser> users,
     RoleManager<MajlisRole> roles,
     IOpenIddictApplicationManager applications,
@@ -158,6 +160,11 @@ public sealed partial class DataSeeder(
         {
             await UpsertAsync(ServiceClient(MajlisClients.AiService, "Majlis ai-service", Seed.AiServiceClientSecret), []);
         }
+
+        if (!string.IsNullOrEmpty(Seed.NotificationsClientSecret))
+        {
+            await UpsertAsync(ServiceClient(MajlisClients.Notifications, "Majlis notifications host", Seed.NotificationsClientSecret), []);
+        }
     }
 
     private static OpenIddictApplicationDescriptor ServiceClient(string clientId, string displayName, string secret) => new()
@@ -247,6 +254,14 @@ public sealed partial class DataSeeder(
         }
 
         await tasksDb.SaveChangesAsync();
+
+        var knownInNotifications = await notificationsDb.WorkspaceMemberships.IgnoreQueryFilters().Where(m => m.WorkspaceId == Seed.DemoWorkspaceId).Select(m => m.UserId).ToListAsync();
+        foreach (var member in members.Where(m => !knownInNotifications.Contains(m.UserId)))
+        {
+            notificationsDb.WorkspaceMemberships.Add(new Majlis.Notifications.Domain.Entities.WorkspaceMembership(Seed.TenantId, Seed.DemoWorkspaceId, member.UserId, member.DisplayName, member.Role.ToString()));
+        }
+
+        await notificationsDb.SaveChangesAsync();
     }
 
     private async Task SeedDemoRoomAsync(List<MajlisUser> seededUsers)

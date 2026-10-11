@@ -15,6 +15,7 @@ public class ArchitectureTests
         typeof(Majlis.Knowledge.Domain.Entities.Document).Assembly,
         typeof(Majlis.Approvals.Domain.Entities.ApprovalRequest).Assembly,
         typeof(Majlis.Tasks.Domain.Entities.TaskItem).Assembly,
+        typeof(Majlis.Notifications.Domain.Entities.Notification).Assembly,
     ];
 
     private static readonly Assembly[] AllMajlis =
@@ -34,9 +35,11 @@ public class ArchitectureTests
         typeof(Majlis.Approvals.Application.ApprovalsApplicationModule).Assembly,
         typeof(Majlis.Tasks.EntityFrameworkCore.TasksDbContext).Assembly,
         typeof(Majlis.Tasks.Application.TasksApplicationModule).Assembly,
+        typeof(Majlis.Notifications.EntityFrameworkCore.NotificationsDbContext).Assembly,
+        typeof(Majlis.Notifications.Application.NotificationsApplicationModule).Assembly,
     ];
 
-    private static readonly string[] ModuleRoots = ["Majlis.Identity", "Majlis.Rooms", "Majlis.Workspaces", "Majlis.Knowledge", "Majlis.Approvals", "Majlis.Tasks"];
+    private static readonly string[] ModuleRoots = ["Majlis.Identity", "Majlis.Rooms", "Majlis.Workspaces", "Majlis.Knowledge", "Majlis.Approvals", "Majlis.Tasks", "Majlis.Notifications"];
 
     public static TheoryData<string> DomainNames => new(Domains.Select(a => a.GetName().Name!));
 
@@ -78,6 +81,7 @@ public class ArchitectureTests
     [InlineData("Majlis.Approvals.")]
     [InlineData("Majlis.Tasks.")]
     [InlineData("Majlis.Knowledge.")]
+    [InlineData("Majlis.Notifications.")]
     public void Module_ShouldNotReferenceOtherModules_WhenCompiled(string prefix)
     {
         var module = AllMajlis.Where(a => a.GetName().Name!.StartsWith(prefix, StringComparison.Ordinal)).ToArray();

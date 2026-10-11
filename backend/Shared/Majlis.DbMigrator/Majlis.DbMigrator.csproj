@@ -11,6 +11,7 @@
     <ProjectReference Include="..\..\Modules\Knowledge\Majlis.Knowledge.EntityFrameworkCore\Majlis.Knowledge.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\Modules\Approvals\Majlis.Approvals.EntityFrameworkCore\Majlis.Approvals.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\Modules\Tasks\Majlis.Tasks.EntityFrameworkCore\Majlis.Tasks.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\Modules\Notifications\Majlis.Notifications.EntityFrameworkCore\Majlis.Notifications.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Majlis.Framework.Application\Majlis.Framework.Application.csproj" />
   </ItemGroup>
   <ItemGroup>

@@ -2,6 +2,7 @@ using FluentValidation;
 using Majlis.Framework.Application.Dtos;
 using Majlis.Framework.Application.Security;
 using Majlis.Framework.Application.Services;
+using Majlis.Framework.Domain.Events;
 using Majlis.Framework.Domain.Exceptions;
 using Majlis.Framework.Domain.Repositories;
 using Majlis.Framework.Domain.Security;
@@ -19,6 +20,8 @@ namespace Majlis.Tasks.Application.Tasks;
 public class TasksAppService(
     IRepository<TaskItem, Guid> tasks,
     IReadOnlyRepository<WorkspaceMembership, Guid> memberships,
+    IEventPublisher publisher,
+    IUnitOfWork unitOfWork,
     ICurrentUser currentUser,
     IValidator<CreateTaskDto> createValidator,
     IValidator<UpdateTaskDto> updateValidator,
@@ -74,7 +77,9 @@ public class TasksAppService(
             task.Assign(assignee.UserId, assignee.DisplayName);
         }
 
-        await tasks.InsertAsync(task, autoSave: true, cancellationToken);
+        await tasks.InsertAsync(task, autoSave: false, cancellationToken);
+        await PublishAssignedAsync(task, member, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return task.Id;
     }
 
@@ -85,7 +90,8 @@ public class TasksAppService(
     {
         await ValidateAsync(updateValidator, input, cancellationToken);
         var task = await LoadTrackedAsync(input.Id, cancellationToken);
-        await RequireContributorAsync(task.WorkspaceId, cancellationToken);
+        var member = await RequireContributorAsync(task.WorkspaceId, cancellationToken);
+        var previousAssignee = task.AssigneeUserId;
         task.Update(input.Title.Trim(), Clean(input.Description), input.Priority, input.DueDate);
         if (input.AssigneeUserId is { } assigneeId)
         {
@@ -98,7 +104,13 @@ public class TasksAppService(
             task.Assign(null, null);
         }
 
-        await tasks.UpdateAsync(task, autoSave: true, cancellationToken);
+        await tasks.UpdateAsync(task, autoSave: false, cancellationToken);
+        if (task.AssigneeUserId != previousAssignee)
+        {
+            await PublishAssignedAsync(task, member, cancellationToken);
+        }
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -123,12 +135,23 @@ public class TasksAppService(
             ?? throw new ForbiddenException(TasksErrors.NotWorkspaceMember);
     }
 
-    private async Task RequireContributorAsync(Guid workspaceId, CancellationToken cancellationToken)
+    private async Task<WorkspaceMembership> RequireContributorAsync(Guid workspaceId, CancellationToken cancellationToken)
     {
         var member = await RequireMemberAsync(workspaceId, cancellationToken);
         if (!member.CanContribute)
         {
             throw new ForbiddenException(TasksErrors.NotWorkspaceMember);
+        }
+
+        return member;
+    }
+
+    /// <summary>Notifications tells the assignee (FR-NTF-001); nothing is published when the task has no assignee.</summary>
+    private async Task PublishAssignedAsync(TaskItem task, WorkspaceMembership by, CancellationToken cancellationToken)
+    {
+        if (task.AssigneeUserId is { } assignee)
+        {
+            await publisher.PublishAsync(new TaskAssigned(task.TenantId, task.WorkspaceId, task.RoomId, task.Id, task.Title, assignee, by.UserId, by.DisplayName), cancellationToken);
         }
     }
 

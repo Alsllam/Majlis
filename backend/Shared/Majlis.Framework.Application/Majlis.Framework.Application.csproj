@@ -11,6 +11,7 @@
   </ItemGroup>
   <ItemGroup>
     <!-- Azure SDKs are referenced only from the Adapters namespace (ADR-0006; architecture test). -->
+    <PackageReference Include="Azure.Communication.Email" />
     <PackageReference Include="Azure.Storage.Blobs" />
     <PackageReference Include="FluentValidation" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />

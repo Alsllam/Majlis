@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Majlis.Notifications.Host": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:7070",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    }
+  }
+}
