@@ -115,7 +115,7 @@ export class WorkspaceHomeComponent {
       return; // the person switched meanwhile
     }
     this.rows.set([...rooms.items].sort((a, b) => Number(!!b.activeSessionId) - Number(!!a.activeSessionId)).slice(0, 6));
-    this.pending.set(pending?.items ?? null);
+    this.pending.set(pending ? pending.items.slice(0, 6) : null);
     this.myTasks.set(tasks ? tasks.items.filter((t) => t.status === 'ToDo' || t.status === 'InProgress').slice(0, 6) : null);
     this.latestDocuments.set(documents?.items ?? null);
   }
