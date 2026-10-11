@@ -22,6 +22,7 @@ public static class MeetingsApplicationModule
         .Listen<MinutesGenerated>()
         .Listen<MinutesFailed>()
         .Listen<ActionExecuted>()
+        .Listen<RecordingRetentionSweepRequested>()
         .Listen<MemberAdded>()
         .Listen<MemberRoleChanged>()
         .Listen<MemberRemoved>();

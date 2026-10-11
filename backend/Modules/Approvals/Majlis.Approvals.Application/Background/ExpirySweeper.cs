@@ -4,36 +4,14 @@ using Majlis.Framework.Domain.Events;
 using Majlis.Framework.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Wolverine.Attributes;
 
 namespace Majlis.Approvals.Application.Background;
 
-/// <summary>FR-APR-006: pending requests past <c>ExpiresAt</c> expire and never execute (moves to the Jobs host later).</summary>
-public sealed partial class ExpirySweeper(IServiceScopeFactory scopes, IOptions<ApprovalsOptions> options, TimeProvider clock, ILogger<ExpirySweeper> logger) : BackgroundService
+/// <summary>FR-APR-006: pending requests past <c>ExpiresAt</c> expire and never execute. Run by the Jobs host tick every minute.</summary>
+public sealed partial class ExpirySweeper(IServiceScopeFactory scopes, TimeProvider clock, ILogger<ExpirySweeper> logger)
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await SweepOnceAsync(stoppingToken);
-            }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-            {
-                return;
-            }
-            catch (Exception ex)
-            {
-                Log.SweepFailed(logger, ex);
-            }
-
-            await Task.Delay(TimeSpan.FromSeconds(options.Value.SweepIntervalSeconds), stoppingToken);
-        }
-    }
-
     public async Task<int> SweepOnceAsync(CancellationToken cancellationToken)
     {
         using var scope = scopes.CreateScope();
@@ -66,8 +44,20 @@ public sealed partial class ExpirySweeper(IServiceScopeFactory scopes, IOptions<
     {
         [LoggerMessage(EventId = 4001, Level = LogLevel.Information, Message = "Expired {Count} approval requests")]
         public static partial void Expired(ILogger logger, int count);
+    }
+}
 
-        [LoggerMessage(EventId = 4002, Level = LogLevel.Error, Message = "Approval expiry sweep failed")]
-        public static partial void SweepFailed(ILogger logger, Exception exception);
+/// <summary>The Jobs host ticks once a minute; a late or duplicate tick finds nothing due and is harmless.</summary>
+[WolverineHandler]
+public static class ApprovalExpirySweepRequestedHandler
+{
+    public static async Task Handle(ApprovalExpirySweepRequested m, ExpirySweeper sweeper, CancellationToken cancellationToken)
+    {
+        _ = m;
+        var expired = await sweeper.SweepOnceAsync(cancellationToken);
+        while (expired >= 100)
+        {
+            expired = await sweeper.SweepOnceAsync(cancellationToken);
+        }
     }
 }

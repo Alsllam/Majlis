@@ -1,4 +1,5 @@
 using Majlis.Audit.Application.Recording;
+using Majlis.Audit.Application.Verification;
 using Majlis.Audit.Domain.Events;
 using Majlis.Framework.Application.Messaging;
 using Majlis.Framework.Domain.Events;
@@ -23,12 +24,14 @@ public static class AuditApplicationModule
         .Listen<TaskAssigned>()
         .Listen<MemberAdded>()
         .Listen<MemberRoleChanged>()
-        .Listen<MemberRemoved>();
+        .Listen<MemberRemoved>()
+        .Listen<AuditChainVerificationRequested>();
 
     public static IServiceCollection AddAuditApplicationModule(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<AuditOptions>(configuration.GetSection("Audit"));
         services.AddScoped<AuditRecorder>();
+        services.AddScoped<ChainVerifier>();
         return services;
     }
 }

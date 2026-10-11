@@ -35,6 +35,11 @@ public static class EmailTemplates
         };
     }
 
+    /// <summary>The daily digest: a count and a link, never the content (SRS §4.8).</summary>
+    public static (string Subject, string Text) Digest(int unread, string language) => language == "en"
+        ? ("Majlis: your daily digest", $"You have {unread} unread notification(s) since yesterday. Open Majlis to see them.")
+        : ("مجلس: ملخصك اليومي", $"لديك {unread} إشعارًا غير مقروء منذ أمس. افتح مجلس للاطلاع عليها.");
+
     public static string Html(string text, string link, string language)
     {
         var dir = language == "en" ? "ltr" : "rtl";

@@ -5,6 +5,7 @@ using Majlis.Audit.Application.Entries;
 using Majlis.Audit.Application.Entries.DTOs;
 using Majlis.Audit.Application.EventHandlers;
 using Majlis.Audit.Application.Recording;
+using Majlis.Audit.Application.Verification;
 using Majlis.Audit.Domain.Constants;
 using Majlis.Audit.Domain.Entities;
 using Majlis.Audit.EntityFrameworkCore;
@@ -15,6 +16,8 @@ using Majlis.Framework.EntityFrameworkCore.Extensions;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Majlis.Audit.Tests.Application;
@@ -53,6 +56,8 @@ public class AuditTests : IDisposable
         services.AddSingleton(A.Fake<IEventPublisher>());
         services.AddSingleton(Options.Create(new AuditOptions { ExportMaxRows = 100 }));
         services.AddScoped<AuditRecorder>();
+        services.AddScoped<ChainVerifier>();
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         services.AddScoped<AuditAppService>();
         _provider = services.BuildServiceProvider();
     }
@@ -138,6 +143,31 @@ public class AuditTests : IDisposable
         var verification = await check.ServiceProvider.GetRequiredService<AuditAppService>().VerifyAsync(Ct);
         Assert.False(verification.Valid);
         Assert.Equal(2, verification.BrokenAtSeq);
+    }
+
+    [Fact]
+    public async Task NightlyVerification_ShouldCheckEveryTenant_AndRecordTheOutcomeOnTheChain()
+    {
+        await RecordControlAsync(1, "control.changed");
+        await RecordControlAsync(2, "session.ended");
+        await RecordControlAsync(1, "control.changed", OtherTenant);
+        using (var scope = Scope(OtherTenant, Sara))
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AuditDbContext>();
+            var entry = await db.Entries.IgnoreQueryFilters().SingleAsync(e => e.TenantId == OtherTenant, Ct);
+            db.Entry(entry).Property(e => e.Action).CurrentValue = "handoff.offered";
+            await db.SaveChangesAsync(Ct);
+        }
+
+        using var check = Scope(TenantId, Sara);
+        var broken = await AuditChainVerificationRequestedHandler.Handle(new AuditChainVerificationRequested(DateTime.UtcNow), check.ServiceProvider.GetRequiredService<ChainVerifier>(), Ct).ContinueWith(_ => 0, Ct, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.Default);
+        Assert.Equal(0, broken);
+        var chains = await check.ServiceProvider.GetRequiredService<AuditDbContext>().Chains.IgnoreQueryFilters().ToListAsync(Ct);
+        var good = chains.Single(c => c.TenantId == TenantId);
+        var bad = chains.Single(c => c.TenantId == OtherTenant);
+        Assert.Equal((true, (long?)null), (good.LastVerificationValid, good.LastBrokenSeq));
+        Assert.Equal((false, (long?)1), (bad.LastVerificationValid, bad.LastBrokenSeq));
+        Assert.NotNull(good.LastVerifiedAt);
     }
 
     [Fact]

@@ -6,6 +6,9 @@ public sealed class MeetingsOptions
     public int MaxRecordingMb { get; set; } = 500;
 
     public int UploadUrlMinutes { get; set; } = 30;
+
+    /// <summary>Recordings are deleted this many days after transcription (the transcript and minutes stay); 0 keeps them.</summary>
+    public int RecordingRetentionDays { get; set; } = 30;
 }
 
 public sealed class ApprovalsClientOptions

@@ -45,6 +45,9 @@ public class Meeting : FullAuditedEntity<Guid>, IMultiTenant
     public string? RecordingContentType { get; private set; }
     public long RecordingSizeBytes { get; private set; }
 
+    /// <summary>When the transcript was received; recordings are deleted a retention period after it.</summary>
+    public DateTime? TranscribedAt { get; private set; }
+
     /// <summary>Notes, the uploaded transcript, or the transcription result. User content: stored as written.</summary>
     public string? TranscriptText { get; private set; }
 
@@ -82,12 +85,21 @@ public class Meeting : FullAuditedEntity<Guid>, IMultiTenant
         FailureReasonKey = null;
     }
 
-    public void CompleteTranscription(string text, string? language)
+    public void CompleteTranscription(string text, string? language, DateTime at)
     {
         TranscriptText = text.Trim();
         Status = MeetingStatus.Transcribed;
         FailureReasonKey = null;
+        TranscribedAt = at;
         _ = language; // the minutes language stays the person's choice
+    }
+
+    /// <summary>The recording blob is gone (retention); the transcript stays.</summary>
+    public void ClearRecording()
+    {
+        RecordingBlobPath = null;
+        RecordingContentType = null;
+        RecordingSizeBytes = 0;
     }
 
     public void Fail(string reasonKey)

@@ -115,9 +115,23 @@ public class AuditChain : Entity<Guid>, IMultiTenant, IHasConcurrencyStamp
     public string LastHash { get; private set; } = GenesisHash;
     public byte[] RowVersion { get; set; } = [];
 
+    /// <summary>Outcome of the last full recomputation (the nightly job or a person's verify call).</summary>
+    public DateTime? LastVerifiedAt { get; private set; }
+
+    public bool? LastVerificationValid { get; private set; }
+
+    public long? LastBrokenSeq { get; private set; }
+
     public void Advance(AuditEntry entry)
     {
         LastSeq = entry.Seq;
         LastHash = entry.Hash;
+    }
+
+    public void RecordVerification(DateTime at, bool valid, long? brokenSeq)
+    {
+        LastVerifiedAt = at;
+        LastVerificationValid = valid;
+        LastBrokenSeq = valid ? null : brokenSeq;
     }
 }

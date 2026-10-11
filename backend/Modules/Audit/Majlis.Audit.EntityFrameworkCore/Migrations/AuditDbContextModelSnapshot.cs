@@ -28,6 +28,9 @@ namespace Majlis.Audit.EntityFrameworkCore.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<long?>("LastBrokenSeq")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("LastHash")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -35,6 +38,12 @@ namespace Majlis.Audit.EntityFrameworkCore.Migrations
 
                     b.Property<long>("LastSeq")
                         .HasColumnType("bigint");
+
+                    b.Property<bool?>("LastVerificationValid")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastVerifiedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()

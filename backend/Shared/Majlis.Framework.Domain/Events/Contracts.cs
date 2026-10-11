@@ -176,3 +176,17 @@ public sealed record MinutesFailed(Guid TenantId, Guid MeetingId, string ReasonK
 
 /// <summary>Meetings → Knowledge: approved minutes become a workspace document (FR-MTG-005), indexed like an upload.</summary>
 public sealed record MinutesPublished(Guid TenantId, Guid WorkspaceId, Guid? RoomId, Guid MeetingId, string Title, string Markdown, string Language, Guid UserId, string? DisplayName) : IEvent;
+
+// Jobs host → modules: scheduled ticks (Hangfire). Each is idempotent in the handling module, so a late or duplicate tick is harmless.
+
+/// <summary>Jobs → Approvals: expire pending requests past their deadline (FR-APR-006).</summary>
+public sealed record ApprovalExpirySweepRequested(DateTime At) : IEvent;
+
+/// <summary>Jobs → Notifications: one email per user with unread notifications since the last digest (FR-NTF-002).</summary>
+public sealed record DailyDigestRequested(DateTime At) : IEvent;
+
+/// <summary>Jobs → Audit: recompute every tenant's hash chain and record the result (invariant 7).</summary>
+public sealed record AuditChainVerificationRequested(DateTime At) : IEvent;
+
+/// <summary>Jobs → Meetings: delete recordings transcribed longer ago than the retention period.</summary>
+public sealed record RecordingRetentionSweepRequested(DateTime At) : IEvent;

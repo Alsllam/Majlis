@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Majlis.Audit.Application.Entries.DTOs;
+using Majlis.Audit.Application.Verification;
 using Majlis.Audit.Domain.Constants;
 using Majlis.Audit.Domain.Entities;
 using Majlis.Framework.Application.Dtos;
@@ -19,7 +20,7 @@ namespace Majlis.Audit.Application.Entries;
 [Route("entries")]
 public class AuditAppService(
     IReadOnlyRepository<AuditEntry, Guid> entries,
-    IReadOnlyRepository<AuditChain, Guid> chains,
+    ChainVerifier verifier,
     ICurrentUser currentUser,
     TimeProvider clock,
     IOptions<AuditOptions> options) : ApplicationService, IAuditAppService
@@ -40,27 +41,8 @@ public class AuditAppService(
     [HasPermission(AuditPermissions.ViewAudit)]
     public async Task<ChainVerificationDto> VerifyAsync(CancellationToken cancellationToken = default)
     {
-        var tenantId = currentUser.GetRequiredTenantId();
-        var chain = await chains.Query().FirstOrDefaultAsync(c => c.TenantId == tenantId, cancellationToken);
-        var previous = AuditChain.GenesisHash;
-        long expected = 0;
-        long? broken = null;
-        var count = 0L;
-        await foreach (var entry in entries.Query().Where(e => e.TenantId == tenantId).OrderBy(e => e.Seq).AsAsyncEnumerable().WithCancellation(cancellationToken))
-        {
-            count++;
-            expected++;
-            if (entry.Seq != expected || entry.PreviousHash != previous || entry.ComputeHash() != entry.Hash)
-            {
-                broken = entry.Seq;
-                break;
-            }
-
-            previous = entry.Hash;
-        }
-
-        var valid = broken is null && (chain is null ? count == 0 : chain.LastSeq == count && chain.LastHash == previous);
-        return new ChainVerificationDto(count, valid, broken ?? (valid ? null : count), previous, clock.GetUtcNow().UtcDateTime);
+        var result = await verifier.VerifyAsync(currentUser.GetRequiredTenantId(), record: true, cancellationToken);
+        return new ChainVerificationDto(result.Count, result.Valid, result.BrokenSeq, result.LastHash, result.VerifiedAt);
     }
 
     /// <inheritdoc />

@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Majlis.Meetings.Tests.Application.TestInfrastructure;
@@ -55,6 +57,7 @@ public sealed class MeetingsTestHost : IDisposable
         services.AddSingleton(Approvals);
         services.AddSingleton(Options.Create(new MeetingsOptions { MaxRecordingMb = 1 }));
         services.AddValidatorsFromAssembly(typeof(MeetingsApplicationModule).Assembly);
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         services.AddScoped<MeetingsAppService>();
         _provider = services.BuildServiceProvider();
 

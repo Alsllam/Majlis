@@ -118,6 +118,9 @@ namespace Majlis.Notifications.EntityFrameworkCore.Migrations
                     b.Property<bool>("EmailEnabled")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime?>("LastDigestAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("MutedTypes")
                         .IsRequired()
                         .HasMaxLength(1000)

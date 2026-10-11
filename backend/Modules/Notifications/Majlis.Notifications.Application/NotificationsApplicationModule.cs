@@ -22,13 +22,15 @@ public static class NotificationsApplicationModule
         .Listen<SessionEventAppended>()
         .Listen<MemberAdded>()
         .Listen<MemberRoleChanged>()
-        .Listen<MemberRemoved>();
+        .Listen<MemberRemoved>()
+        .Listen<DailyDigestRequested>();
 
     public static IServiceCollection AddNotificationsApplicationModule(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<NotificationsOptions>(configuration.GetSection("Notifications"));
         services.AddMajlisEmail(configuration);
         services.AddScoped<NotificationDispatcher>();
+        services.AddScoped<DigestSender>();
 
         services.Configure<InternalAuthOptions>(configuration.GetSection("InternalAuth"));
         services.AddSingleton<IRecipientLookup, IdentityRecipientLookup>();

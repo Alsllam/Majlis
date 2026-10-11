@@ -134,6 +134,9 @@ namespace Majlis.Meetings.EntityFrameworkCore.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<DateTime?>("TranscribedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("TranscriptText")
                         .HasMaxLength(400000)
                         .HasColumnType("nvarchar(max)");

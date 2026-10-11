@@ -3,6 +3,7 @@ using Majlis.Framework.Application.Storage;
 using Majlis.Framework.Domain.Events;
 using Majlis.Framework.Domain.Exceptions;
 using Majlis.Framework.Domain.Repositories;
+using Majlis.Meetings.Application;
 using Majlis.Meetings.Application.Approvals;
 using Majlis.Meetings.Application.EventHandlers;
 using Majlis.Meetings.Application.Meetings.DTOs;
@@ -178,7 +179,7 @@ public class MeetingsAppServiceTests : IDisposable
         await TranscriptionFailedHandler.Handle(new TranscriptionFailed(TenantId, id, "Meetings:Transcription:Unavailable", null), sp.GetRequiredService<IRepository<Meeting, Guid>>(), sp.GetRequiredService<IUnitOfWork>(), Ct);
         var failed = await service.GetAsync(new MeetingIdDto(id), Ct);
         Assert.Equal((MeetingStatus.Failed, "Meetings:Transcription:Unavailable"), (failed.Status, failed.FailureReasonKey));
-        await TranscriptionCompletedHandler.Handle(new TranscriptionCompleted(TenantId, id, " نص التفريغ ", "ar"), sp.GetRequiredService<IRepository<Meeting, Guid>>(), sp.GetRequiredService<IUnitOfWork>(), Ct);
+        await TranscriptionCompletedHandler.Handle(new TranscriptionCompleted(TenantId, id, " نص التفريغ ", "ar"), sp.GetRequiredService<IRepository<Meeting, Guid>>(), sp.GetRequiredService<IUnitOfWork>(), TimeProvider.System, Ct);
         var done = await service.GetAsync(new MeetingIdDto(id), Ct);
         Assert.Equal((MeetingStatus.Transcribed, "نص التفريغ", null), (done.Status, done.TranscriptText, done.FailureReasonKey));
 
@@ -187,6 +188,39 @@ public class MeetingsAppServiceTests : IDisposable
         await MinutesFailedHandler.Handle(new MinutesFailed(TenantId, id, "Meetings:Minutes:ModelError", "boom"), sp.GetRequiredService<IRepository<Meeting, Guid>>(), sp.GetRequiredService<IUnitOfWork>(), Ct);
         var minutesFailed = await service.GetAsync(new MeetingIdDto(id), Ct);
         Assert.Equal((MeetingStatus.Transcribed, "Meetings:Minutes:ModelError"), (minutesFailed.Status, minutesFailed.FailureReasonKey));
+    }
+
+    [Fact]
+    public async Task RecordingRetention_ShouldDeleteOldRecordings_AndKeepTheTranscript()
+    {
+        await _host.SeedMembershipsAsync();
+        using var scope = _host.Scope(Sara);
+        var service = _host.Meetings(scope);
+        var sp = scope.ServiceProvider;
+        var id = await service.CreateAsync(Notes() with { Source = MeetingSource.Recording, Text = null }, Ct);
+        await service.BeginRecordingUploadAsync(new BeginRecordingUploadDto { MeetingId = id, FileName = "m.mp3", ContentType = "audio/mpeg", SizeBytes = 100 }, Ct);
+        A.CallTo(() => _host.Blobs.GetPropertiesAsync(MeetingsFieldDefinitions.RecordingsContainer, A<string>._, A<CancellationToken>._)).Returns(new StoredBlobInfo(100, "audio/mpeg"));
+        await service.ConfirmRecordingAsync(new MeetingIdDto(id), Ct);
+        var transcribedAt = new DateTime(2026, 9, 1, 10, 0, 0, DateTimeKind.Utc);
+        await TranscriptionCompletedHandler.Handle(new TranscriptionCompleted(TenantId, id, "نص", "ar"), sp.GetRequiredService<IRepository<Meeting, Guid>>(), sp.GetRequiredService<IUnitOfWork>(), new FixedClock(transcribedAt), Ct);
+
+        Task SweepAsync(DateTime at, int days) => RecordingRetentionHandler.Handle(new RecordingRetentionSweepRequested(at), sp.GetRequiredService<IRepository<Meeting, Guid>>(), _host.Blobs, sp.GetRequiredService<IUnitOfWork>(), Microsoft.Extensions.Options.Options.Create(new MeetingsOptions { RecordingRetentionDays = days }), sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meeting>>(), Ct);
+
+        await SweepAsync(transcribedAt.AddDays(29), 30); // not yet
+        await SweepAsync(transcribedAt.AddDays(40), 0); // retention off
+        Assert.True((await service.GetAsync(new MeetingIdDto(id), Ct)).HasRecording);
+        A.CallTo(() => _host.Blobs.DeleteAsync(A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
+
+        await SweepAsync(transcribedAt.AddDays(31), 30);
+        await SweepAsync(transcribedAt.AddDays(32), 30); // nothing left
+        var meeting = await service.GetAsync(new MeetingIdDto(id), Ct);
+        Assert.Equal((false, "نص", MeetingStatus.Transcribed), (meeting.HasRecording, meeting.TranscriptText, meeting.Status));
+        A.CallTo(() => _host.Blobs.DeleteAsync(MeetingsFieldDefinitions.RecordingsContainer, A<string>.That.EndsWith("recording.mp3"), A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
+
+    private sealed class FixedClock(DateTime now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => new(now, TimeSpan.Zero);
     }
 
     [Fact]

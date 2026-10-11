@@ -15,7 +15,7 @@ internal static class MeetingLoader
 [WolverineHandler]
 public static class TranscriptionCompletedHandler
 {
-    public static async Task Handle(TranscriptionCompleted m, IRepository<Meeting, Guid> meetings, IUnitOfWork unitOfWork, CancellationToken cancellationToken)
+    public static async Task Handle(TranscriptionCompleted m, IRepository<Meeting, Guid> meetings, IUnitOfWork unitOfWork, TimeProvider clock, CancellationToken cancellationToken)
     {
         var meeting = await MeetingLoader.LoadAsync(meetings, m.MeetingId, cancellationToken);
         if (meeting is null)
@@ -23,7 +23,7 @@ public static class TranscriptionCompletedHandler
             return;
         }
 
-        meeting.CompleteTranscription(m.Text, m.Language);
+        meeting.CompleteTranscription(m.Text, m.Language, clock.GetUtcNow().UtcDateTime);
         await meetings.UpdateAsync(meeting, autoSave: false, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }

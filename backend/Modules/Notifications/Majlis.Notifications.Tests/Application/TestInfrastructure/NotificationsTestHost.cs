@@ -55,6 +55,7 @@ public sealed class NotificationsTestHost : IDisposable
         services.AddSingleton(Options.Create(new NotificationsOptions { WebBaseUrl = "http://web.local" }));
         services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         services.AddScoped<NotificationDispatcher>();
+        services.AddScoped<DigestSender>();
         services.AddScoped<NotificationsAppService>();
         _provider = services.BuildServiceProvider();
 

@@ -19,6 +19,7 @@ public static class ApprovalsApplicationModule
         .Publish<ActionApproved>()
         .Publish<ActionRejected>()
         .Listen<ActionExecuted>()
+        .Listen<ApprovalExpirySweepRequested>()
         .Listen<ActionExecutionFailed>()
         .Listen<MemberAdded>()
         .Listen<MemberRoleChanged>()
@@ -34,7 +35,6 @@ public static class ApprovalsApplicationModule
     public static IServiceCollection AddApprovalsBackgroundServices(this IServiceCollection services)
     {
         services.AddSingleton<ExpirySweeper>();
-        services.AddHostedService(sp => sp.GetRequiredService<ExpirySweeper>());
         return services;
     }
 }

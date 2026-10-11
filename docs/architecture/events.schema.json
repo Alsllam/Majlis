@@ -469,6 +469,12 @@
         "userId": { "$ref": "#/$defs/uuid" },
         "displayName": { "type": ["string", "null"] }
       }
+    },
+    "jobTick": {
+      "description": "Jobs host → a module (exchanges majlis.approval-expiry-sweep-requested, majlis.daily-digest-requested, majlis.audit-chain-verification-requested, majlis.recording-retention-sweep-requested): a scheduled tick (Hangfire, UTC). Idempotent in the handling module: a late or duplicate tick is harmless.",
+      "type": "object",
+      "required": ["at"],
+      "properties": { "at": { "type": "string", "format": "date-time" } }
     }
   },
   "x-redis-keys": {

@@ -24,6 +24,11 @@ public class NotificationSettings : Entity<Guid>, IMultiTenant
     /// <summary>Comma-separated notification types the user does not want at all.</summary>
     public string MutedTypes { get; private set; } = string.Empty;
 
+    /// <summary>When the last daily digest email went out (FR-NTF-002); the next one covers only newer notifications.</summary>
+    public DateTime? LastDigestAt { get; private set; }
+
+    public void MarkDigestSent(DateTime at) => LastDigestAt = at;
+
     public IReadOnlyList<string> MutedTypeList => MutedTypes.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
     public bool IsMuted(string type) => MutedTypeList.Contains(type, StringComparer.Ordinal);

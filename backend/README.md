@@ -9,7 +9,7 @@ Prerequisites: .NET 10 SDK, Docker.
 ```bash
 cp .env.example .env            # at the repo root; fill in every value (local only, git-ignored)
 docker compose up -d             # SQL Server, Redis, RabbitMQ
-backend/scripts/run-local.sh     # migrations + seed, then Auth (7001), Workspaces (7010), Rooms (7020), Knowledge (7040), Approvals (7030), Tasks (7050), Meetings (7060), Notifications (7070), Audit (7080), Realtime (7002), BFF (7000), ai-service (8000)
+backend/scripts/run-local.sh     # migrations + seed, then Auth (7001), Workspaces (7010), Rooms (7020), Knowledge (7040), Approvals (7030), Tasks (7050), Meetings (7060), Notifications (7070), Audit (7080), Realtime (7002), BFF (7000), Jobs (7090, Hangfire dashboard at http://localhost:7090/hangfire from the machine itself), ai-service (8000)
 backend/scripts/stop-local.sh
 ```
 
