@@ -14,6 +14,7 @@
     <ProjectReference Include="..\..\Modules\Tasks\Majlis.Tasks.Application\Majlis.Tasks.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Notifications\Majlis.Notifications.Application\Majlis.Notifications.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Audit\Majlis.Audit.Application\Majlis.Audit.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Meetings\Majlis.Meetings.Application\Majlis.Meetings.Application.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NetArchTest.Rules" />

@@ -87,8 +87,14 @@ class LlmNotConfiguredError(LlmError):
     key = "General:Errors:AiNotConfigured"
 
 
+class LlmInvalidOutputError(LlmError):
+    """The model answered, but not in the shape asked for (structured outputs)."""
+
+    key = "General:Errors:AiInvalidOutput"
+
+
 class LlmProvider(Protocol):
-    """Chat streaming plus embeddings (the `Embedder` port in `rag/ports.py`), one adapter per profile."""
+    """Chat streaming, embeddings (the `Embedder` port in `rag/ports.py`), speech to text. One adapter per profile."""
 
     @property
     def dimensions(self) -> int: ...
@@ -106,6 +112,10 @@ class LlmProvider(Protocol):
         tools: Sequence[dict[str, Any]] | None = None,
     ) -> AsyncIterator[StreamEvent]:
         """Streams text deltas and function calls, then one `Completed` with usage. Raises `LlmError` subclasses."""
+        ...
+
+    async def transcribe(self, data: bytes, file_name: str, content_type: str, language: str | None) -> str:
+        """Speech to text for one recording (FR-MTG-002). Raises `LlmError` subclasses."""
         ...
 
     async def aclose(self) -> None: ...

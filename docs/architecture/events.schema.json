@@ -369,6 +369,106 @@
         "kind": { "type": "string", "enum": ["download", "read"] },
         "at": { "type": "string", "format": "date-time" }
       }
+    },
+    "transcriptionRequested": {
+      "description": "Meetings → ai-service (exchange majlis.transcription-requested): a recording is in the recordings container; transcribe it (FR-MTG-002).",
+      "type": "object",
+      "required": ["tenantId", "meetingId", "blobPath", "contentType"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "meetingId": { "$ref": "#/$defs/uuid" },
+        "blobPath": { "type": "string" },
+        "contentType": { "type": "string" },
+        "language": { "type": ["string", "null"], "description": "Hint for the speech model (ar / en)." }
+      }
+    },
+    "transcriptionCompleted": {
+      "description": "ai-service → Meetings (exchange majlis.transcription-completed): the transcript text. Content: stays in the tenant's region.",
+      "type": "object",
+      "required": ["tenantId", "meetingId", "text"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "meetingId": { "$ref": "#/$defs/uuid" },
+        "text": { "type": "string" },
+        "language": { "type": ["string", "null"] }
+      }
+    },
+    "transcriptionFailed": {
+      "description": "ai-service → Meetings (exchange majlis.transcription-failed); reasonKey is a localization key (Meetings:Transcription:* or General:Errors:*).",
+      "type": "object",
+      "required": ["tenantId", "meetingId", "reasonKey"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "meetingId": { "$ref": "#/$defs/uuid" },
+        "reasonKey": { "type": "string" },
+        "detail": { "type": ["string", "null"] }
+      }
+    },
+    "minutesRequested": {
+      "description": "Meetings → ai-service (exchange majlis.minutes-requested): write the minutes from the transcript or notes in the given language (FR-MTG-003).",
+      "type": "object",
+      "required": ["tenantId", "meetingId", "title", "heldAt", "language", "transcript"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "meetingId": { "$ref": "#/$defs/uuid" },
+        "title": { "type": "string" },
+        "heldAt": { "type": "string", "format": "date-time" },
+        "attendees": { "type": "array", "items": { "type": "string" } },
+        "language": { "type": "string", "enum": ["ar", "en"] },
+        "transcript": { "type": "string" }
+      }
+    },
+    "minutesGenerated": {
+      "description": "ai-service → Meetings (exchange majlis.minutes-generated): the draft; people edit and approve it before anything happens (FR-MTG-005).",
+      "type": "object",
+      "required": ["tenantId", "meetingId", "summary", "language"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "meetingId": { "$ref": "#/$defs/uuid" },
+        "summary": { "type": "string" },
+        "decisions": { "type": "array", "items": { "type": "string" } },
+        "openQuestions": { "type": "array", "items": { "type": "string" } },
+        "actionItems": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["text"],
+            "properties": {
+              "text": { "type": "string" },
+              "ownerName": { "type": ["string", "null"] },
+              "dueDate": { "type": ["string", "null"], "format": "date" }
+            }
+          }
+        },
+        "language": { "type": "string", "enum": ["ar", "en"] }
+      }
+    },
+    "minutesFailed": {
+      "description": "ai-service → Meetings (exchange majlis.minutes-failed); same shape as transcriptionFailed.",
+      "type": "object",
+      "required": ["tenantId", "meetingId", "reasonKey"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "meetingId": { "$ref": "#/$defs/uuid" },
+        "reasonKey": { "type": "string" },
+        "detail": { "type": ["string", "null"] }
+      }
+    },
+    "minutesPublished": {
+      "description": "Meetings → Knowledge (exchange majlis.minutes-published): approved minutes become a workspace document (one per meeting) and are indexed like an upload.",
+      "type": "object",
+      "required": ["tenantId", "workspaceId", "meetingId", "title", "markdown", "language", "userId"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "workspaceId": { "$ref": "#/$defs/uuid" },
+        "roomId": { "anyOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }] },
+        "meetingId": { "$ref": "#/$defs/uuid" },
+        "title": { "type": "string" },
+        "markdown": { "type": "string" },
+        "language": { "type": "string" },
+        "userId": { "$ref": "#/$defs/uuid" },
+        "displayName": { "type": ["string", "null"] }
+      }
     }
   },
   "x-redis-keys": {

@@ -1,0 +1,16 @@
+{
+  "Meetings:Meeting:NotWorkspaceMember": "لست عضواً في مساحة العمل هذه.",
+  "Meetings:Meeting:TextRequired": "اكتب ملاحظات الاجتماع أو الصق نص التفريغ.",
+  "Meetings:Meeting:NoTranscript": "لا يوجد نص لهذا الاجتماع بعد.",
+  "Meetings:Meeting:NoMinutes": "لم يُولَّد المحضر بعد.",
+  "Meetings:Meeting:Busy": "المحضر قيد التوليد الآن.",
+  "Meetings:Minutes:Approved": "المحضر معتمد ولا يمكن تعديله.",
+  "Meetings:Minutes:NotApproved": "اعتمد المحضر أولاً.",
+  "Meetings:ActionItems:AlreadyProposed": "كل بنود العمل أُرسلت للموافقة من قبل.",
+  "Meetings:Recording:TooLarge": "التسجيل يتجاوز الحجم المسموح ({0} ميجابايت).",
+  "Meetings:Recording:TypeNotSupported": "نوع التسجيل غير مدعوم. المقبول: m4a, mp3, wav, mp4, webm.",
+  "Meetings:Recording:NotUploaded": "لم يصل التسجيل إلى التخزين بعد.",
+  "Meetings:Transcription:NotConfigured": "خدمة التفريغ غير مهيأة.",
+  "Meetings:Transcription:Failed": "تعذّر تفريغ التسجيل.",
+  "Meetings:Minutes:Failed": "تعذّر توليد المحضر. حاول مرة أخرى."
+}

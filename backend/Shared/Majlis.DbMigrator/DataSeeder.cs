@@ -11,6 +11,7 @@ using Majlis.Knowledge.EntityFrameworkCore;
 using Majlis.Approvals.EntityFrameworkCore;
 using Majlis.Tasks.EntityFrameworkCore;
 using Majlis.Notifications.EntityFrameworkCore;
+using Majlis.Meetings.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -29,6 +30,7 @@ public sealed partial class DataSeeder(
     ApprovalsDbContext approvalsDb,
     TasksDbContext tasksDb,
     NotificationsDbContext notificationsDb,
+    MeetingsDbContext meetingsDb,
     UserManager<MajlisUser> users,
     RoleManager<MajlisRole> roles,
     IOpenIddictApplicationManager applications,
@@ -46,6 +48,7 @@ public sealed partial class DataSeeder(
         await SeedScopesAsync();
         await SeedClientsAsync();
         await SeedDemoWorkspaceAsync(seeded);
+        await BackfillMeetingsMembershipsAsync();
         await SeedDemoRoomAsync(seeded);
     }
 
@@ -262,6 +265,30 @@ public sealed partial class DataSeeder(
         }
 
         await notificationsDb.SaveChangesAsync();
+
+        var knownInMeetings = await meetingsDb.WorkspaceMemberships.IgnoreQueryFilters().Where(m => m.WorkspaceId == Seed.DemoWorkspaceId).Select(m => m.UserId).ToListAsync();
+        foreach (var member in members.Where(m => !knownInMeetings.Contains(m.UserId)))
+        {
+            meetingsDb.WorkspaceMemberships.Add(new Majlis.Meetings.Domain.Entities.WorkspaceMembership(Seed.TenantId, Seed.DemoWorkspaceId, member.UserId, member.DisplayName, member.Role.ToString()));
+        }
+
+        await meetingsDb.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Meetings shipped after the first workspaces existed: its membership read model only hears future member events,
+    /// so the members of every workspace known to Workspaces are copied once (idempotent per workspace and user).
+    /// </summary>
+    private async Task BackfillMeetingsMembershipsAsync()
+    {
+        var members = await workspacesDb.Members.IgnoreQueryFilters().Join(workspacesDb.Workspaces.IgnoreQueryFilters(), m => m.WorkspaceId, w => w.Id, (m, w) => new { w.TenantId, m.WorkspaceId, m.UserId, m.DisplayName, m.Role }).ToListAsync();
+        var known = (await meetingsDb.WorkspaceMemberships.IgnoreQueryFilters().Select(m => new { m.WorkspaceId, m.UserId }).ToListAsync()).ToHashSet();
+        foreach (var member in members.Where(m => !known.Contains(new { m.WorkspaceId, m.UserId })))
+        {
+            meetingsDb.WorkspaceMemberships.Add(new Majlis.Meetings.Domain.Entities.WorkspaceMembership(member.TenantId, member.WorkspaceId, member.UserId, member.DisplayName, member.Role.ToString()));
+        }
+
+        await meetingsDb.SaveChangesAsync();
     }
 
     private async Task SeedDemoRoomAsync(List<MajlisUser> seededUsers)

@@ -22,7 +22,7 @@ mkdir -p .local/logs
 dotnet build Majlis.sln -v q -nologo
 dotnet run --no-build --project Shared/Majlis.DbMigrator
 
-for host in Auth Workspaces Rooms Knowledge Approvals Tasks Notifications Audit Realtime BFF; do
+for host in Auth Workspaces Rooms Knowledge Approvals Tasks Notifications Audit Meetings Realtime BFF; do
   if [ "$host" = Notifications ]; then export InternalAuth__ClientSecret="$MAJLIS_NOTIFICATIONS_CLIENT_SECRET"; else export InternalAuth__ClientSecret="${MAJLIS_REALTIME_CLIENT_SECRET:-}"; fi
   dotnet run --no-build --project "Hosts/Majlis.$host.Host" > ".local/logs/$host.log" 2>&1 &
   echo $! > ".local/$host.pid"

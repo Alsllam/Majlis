@@ -53,6 +53,9 @@ public class Document : FullAuditedEntity<Guid>, IMultiTenant
 
     public Guid? SessionId { get; private set; }
 
+    /// <summary>Set for published meeting minutes: the meeting they came from (one document per meeting).</summary>
+    public Guid? MeetingId { get; private set; }
+
     /// <summary>The version the index serves; null until the first version is indexed.</summary>
     public Guid? CurrentVersionId { get; private set; }
 
@@ -79,6 +82,19 @@ public class Document : FullAuditedEntity<Guid>, IMultiTenant
             SessionId = sessionId,
         };
         document.AddVersion(versionId, fileName, contentType, sizeBytes, blobPath).MarkStored(sizeBytes);
+        return document;
+    }
+
+    /// <summary>Approved minutes published by a person (FR-MTG-005): active at once, one stored version queued for indexing.</summary>
+    public static Document CreateFromMinutes(Guid id, Guid tenantId, Guid workspaceId, Guid? roomId, string title, string? language, Guid meetingId, Guid versionId, string fileName, string contentType, long sizeBytes, string blobPath, DateTime at)
+    {
+        var document = new Document(id, tenantId, workspaceId, roomId, title, DocumentType.Report, language, DocumentOrigin.Meeting)
+        {
+            Status = DocumentStatus.Draft,
+            MeetingId = meetingId,
+        };
+        document.AddVersion(versionId, fileName, contentType, sizeBytes, blobPath).MarkStored(sizeBytes);
+        document.AddToKnowledge(at);
         return document;
     }
 

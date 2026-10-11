@@ -19,6 +19,7 @@ public static class KnowledgeApplicationModule
         .Publish<ActionExecuted>()
         .Publish<ActionExecutionFailed>()
         .Listen<ActionApproved>()
+        .Listen<MinutesPublished>()
         .Listen<DocumentIndexed>()
         .Listen<DocumentIndexingFailed>()
         .Listen<MemberAdded>()

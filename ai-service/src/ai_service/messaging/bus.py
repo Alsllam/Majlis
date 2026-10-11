@@ -1,5 +1,5 @@
 """
-Turn results → RabbitMQ for Rooms to sequence. The backend runs Wolverine (ADR-0009), which consumes plain JSON:
+Results → RabbitMQ for Rooms, Knowledge and Meetings. The backend runs Wolverine (ADR-0009), which consumes plain JSON:
 camelCase body, the message alias in the AMQP `type` property, published to the durable fanout exchange
 `majlis.{alias}` that Rooms declares and binds its queue to. Nothing here depends on the .NET bus library.
 """
@@ -11,10 +11,25 @@ from uuid import uuid4
 import aio_pika
 from aio_pika.abc import AbstractRobustChannel, AbstractRobustConnection
 
-from ai_service.messaging.contracts import DocumentIndexed, DocumentIndexingFailed
+from ai_service.messaging.contracts import (
+    DocumentIndexed,
+    DocumentIndexingFailed,
+    MinutesFailed,
+    MinutesGenerated,
+    TranscriptionCompleted,
+    TranscriptionFailed,
+)
 from ai_service.sessions.contracts import CamelModel, TurnCompleted, TurnFailed, TurnResult, TurnStopped
 
-OutboundMessage = TurnResult | DocumentIndexed | DocumentIndexingFailed
+OutboundMessage = (
+    TurnResult
+    | DocumentIndexed
+    | DocumentIndexingFailed
+    | TranscriptionCompleted
+    | TranscriptionFailed
+    | MinutesGenerated
+    | MinutesFailed
+)
 
 EXCHANGE_PREFIX = "majlis."
 ALIASES: dict[type[CamelModel], str] = {
@@ -23,6 +38,10 @@ ALIASES: dict[type[CamelModel], str] = {
     TurnFailed: "turn-failed",
     DocumentIndexed: "document-indexed",
     DocumentIndexingFailed: "document-indexing-failed",
+    TranscriptionCompleted: "transcription-completed",
+    TranscriptionFailed: "transcription-failed",
+    MinutesGenerated: "minutes-generated",
+    MinutesFailed: "minutes-failed",
 }
 
 

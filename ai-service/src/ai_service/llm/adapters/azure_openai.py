@@ -65,6 +65,7 @@ class AzureOpenAIProvider:
             ModelRole.CHAT: settings.azure_openai_chat_deployment,
             ModelRole.FAST: settings.azure_openai_fast_deployment or settings.azure_openai_chat_deployment,
             ModelRole.EMBED: settings.azure_openai_embed_deployment,
+            ModelRole.STT: settings.azure_openai_transcribe_deployment,
         }
         self._dimensions = settings.embed_dimensions
         self._client = client or (build_client(settings) if settings.llm_configured else None)
@@ -152,6 +153,26 @@ class AzureOpenAIProvider:
             raise LlmError from exc
         vectors = sorted(response.data, key=lambda d: d.index)
         return [list(v.embedding) for v in vectors]
+
+    async def transcribe(self, data: bytes, file_name: str, content_type: str, language: str | None) -> str:
+        """Speech to text (FR-MTG-002) through the audio transcriptions endpoint; plain text back."""
+        deployment = self._deployments.get(ModelRole.STT)
+        if self._client is None or not deployment:
+            raise LlmNotConfiguredError
+        try:
+            response = await self._client.audio.transcriptions.create(
+                model=deployment,
+                file=(file_name, data, content_type),
+                language=language if language else omit,
+                response_format="json",
+            )
+        except _TRANSIENT as exc:
+            raise LlmBusyError from exc
+        except openai.BadRequestError as exc:
+            raise LlmError from exc
+        except openai.APIStatusError as exc:
+            raise LlmError from exc
+        return response.text
 
     async def aclose(self) -> None:
         if self._client is not None:

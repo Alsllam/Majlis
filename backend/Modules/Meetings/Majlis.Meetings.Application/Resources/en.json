@@ -1,0 +1,16 @@
+{
+  "Meetings:Meeting:NotWorkspaceMember": "You are not a member of this workspace.",
+  "Meetings:Meeting:TextRequired": "Write the meeting notes or paste the transcript.",
+  "Meetings:Meeting:NoTranscript": "This meeting has no text yet.",
+  "Meetings:Meeting:NoMinutes": "The minutes have not been generated yet.",
+  "Meetings:Meeting:Busy": "The minutes are being generated.",
+  "Meetings:Minutes:Approved": "The minutes are approved and cannot be edited.",
+  "Meetings:Minutes:NotApproved": "Approve the minutes first.",
+  "Meetings:ActionItems:AlreadyProposed": "Every action item was already sent for approval.",
+  "Meetings:Recording:TooLarge": "The recording exceeds the allowed size ({0} MB).",
+  "Meetings:Recording:TypeNotSupported": "Unsupported recording type. Accepted: m4a, mp3, wav, mp4, webm.",
+  "Meetings:Recording:NotUploaded": "The recording has not reached storage yet.",
+  "Meetings:Transcription:NotConfigured": "The transcription service is not configured.",
+  "Meetings:Transcription:Failed": "The recording could not be transcribed.",
+  "Meetings:Minutes:Failed": "The minutes could not be generated. Try again."
+}

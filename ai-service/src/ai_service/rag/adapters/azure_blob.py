@@ -7,7 +7,7 @@ from ai_service.settings import Settings
 
 
 class AzureBlobStore:
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: Settings, container: str | None = None) -> None:
         if settings.azure_storage_connection_string is not None:
             self._client = BlobServiceClient.from_connection_string(
                 settings.azure_storage_connection_string.get_secret_value()
@@ -17,7 +17,7 @@ class AzureBlobStore:
             self._client = BlobServiceClient(settings.azure_storage_account_url, credential=DefaultAzureCredential())
         else:
             raise RuntimeError("AZURE_STORAGE_CONNECTION_STRING or AZURE_STORAGE_ACCOUNT_URL is required.")
-        self._container = settings.blob_container
+        self._container = container or settings.blob_container
 
     async def download(self, path: str) -> bytes:
         blob = self._client.get_container_client(self._container).get_blob_client(path)

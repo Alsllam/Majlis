@@ -10,6 +10,7 @@ using Majlis.Approvals.EntityFrameworkCore;
 using Majlis.Tasks.EntityFrameworkCore;
 using Majlis.Notifications.EntityFrameworkCore;
 using Majlis.Audit.EntityFrameworkCore;
+using Majlis.Meetings.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -43,6 +44,8 @@ builder.Services.AddDbContext<NotificationsDbContext>(o =>
     o.UseSqlServer(connectionString, sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", NotificationsDbContext.SchemaName)));
 builder.Services.AddDbContext<AuditDbContext>(o =>
     o.UseSqlServer(connectionString, sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", AuditDbContext.SchemaName)));
+builder.Services.AddDbContext<MeetingsDbContext>(o =>
+    o.UseSqlServer(connectionString, sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", MeetingsDbContext.SchemaName)));
 builder.Services.AddIdentityCore<MajlisUser>(o => o.User.RequireUniqueEmail = true)
     .AddRoles<MajlisRole>()
     .AddEntityFrameworkStores<MajlisIdentityDbContext>();
@@ -60,6 +63,7 @@ await scope.ServiceProvider.GetRequiredService<ApprovalsDbContext>().Database.Mi
 await scope.ServiceProvider.GetRequiredService<TasksDbContext>().Database.MigrateAsync();
 await scope.ServiceProvider.GetRequiredService<NotificationsDbContext>().Database.MigrateAsync();
 await scope.ServiceProvider.GetRequiredService<AuditDbContext>().Database.MigrateAsync();
+await scope.ServiceProvider.GetRequiredService<MeetingsDbContext>().Database.MigrateAsync();
 Console.WriteLine("Migrations applied");
 
 await scope.ServiceProvider.GetRequiredService<DataSeeder>().SeedAsync();

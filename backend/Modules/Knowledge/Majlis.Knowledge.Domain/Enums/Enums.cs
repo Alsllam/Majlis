@@ -15,6 +15,9 @@ public enum DocumentOrigin
 {
     Upload = 0,
     Agent = 1,
+
+    /// <summary>Approved meeting minutes published by a person (FR-MTG-005).</summary>
+    Meeting = 2,
 }
 
 /// <summary>FR-KNW-009: an agent draft is stored but not part of the knowledge until a person adds it.</summary>

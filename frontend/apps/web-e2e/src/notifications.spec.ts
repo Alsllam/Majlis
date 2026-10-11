@@ -54,9 +54,14 @@ test('an approval request reaches the approver live; the decision comes back to 
   // The full list and the settings page.
   await khalid.goto('/notifications');
   await expect(khalid.locator('majlis-notifications-list .row-item', { hasText: title })).toBeVisible();
-  // Opening it from the bell already marked it read, so nothing is unread and the button is disabled.
-  await expect(khalid.getByTestId('unread-count')).toHaveCount(0);
-  await expect(khalid.getByRole('button', { name: 'تعليم الكل كمقروء' })).toBeDisabled();
+  // Opening it from the bell marked it read. Other scenarios (meeting action items, drafts) may still deliver
+  // requests to Khalid in the background, so the inbox is cleared again rather than assumed empty.
+  await expect(khalid.locator('majlis-notifications-list .row-item', { hasText: title })).not.toHaveClass(/unread/);
+  const markAllAgain = khalid.getByRole('button', { name: 'تعليم الكل كمقروء' });
+  await expect(async () => {
+    await markAllAgain.click({ timeout: 2000 }).catch(() => undefined);
+    await expect(markAllAgain).toBeDisabled();
+  }).toPass({ timeout: 15000 });
   await khalid.goto('/notifications/settings');
   const email = khalid.locator('#email-enabled');
   await expect(email).toBeVisible();

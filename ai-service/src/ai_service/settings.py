@@ -19,17 +19,24 @@ class Settings(BaseSettings):
     azure_openai_chat_deployment: str = ""
     azure_openai_fast_deployment: str = ""
     azure_openai_embed_deployment: str = ""
+    # Speech to text for meeting recordings (FR-MTG-002); empty = transcription unavailable.
+    azure_openai_transcribe_deployment: str = ""
     llm_timeout_s: float = 60.0
     chat_temperature: float = 0.3
     max_output_tokens: int = 1500
     agent_prompt_version: str = "agent.v3"
     # Agent tools: at most this many model rounds per turn (each tool call costs one round).
     max_tool_rounds: int = Field(default=5, ge=1, le=10)
+    minutes_prompt_version: str = "minutes.v1"
+    minutes_max_output_tokens: int = 2500
+    # Recordings above this size are refused before download (the speech API limit is 25 MB per request).
+    transcribe_max_mb: int = 25
 
     # Knowledge: blob storage (documents uploaded through the Knowledge module), extraction, search index.
     azure_storage_connection_string: SecretStr | None = None
     azure_storage_account_url: str = ""
     blob_container: str = "documents"
+    recordings_container: str = "recordings"
     document_intelligence_endpoint: str = ""
     document_intelligence_api_key: SecretStr | None = None
     azure_search_endpoint: str = ""

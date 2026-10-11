@@ -11,7 +11,7 @@ public sealed class CreateApprovalRequestValidator : AbstractValidator<CreateApp
     {
         RuleFor(x => x.WorkspaceId).NotEmpty().WithMessage("General:Fields:Required");
         RuleFor(x => x.RoomId).NotEmpty().WithMessage("General:Fields:Required");
-        RuleFor(x => x.SessionId).NotEmpty().WithMessage("General:Fields:Required");
+        // SessionId may be empty: meeting action items are proposed outside a session (FR-MTG-004); Rooms then appends nothing.
         RuleFor(x => x.Tool).NotEmpty().WithMessage("General:Fields:Required")
             .Must(KnownTools.Risk.ContainsKey).WithMessage(ApprovalsErrors.UnknownTool);
         RuleFor(x => x.Args).Must(a => a.ValueKind == JsonValueKind.Object).WithMessage(ApprovalsErrors.InvalidArgs)

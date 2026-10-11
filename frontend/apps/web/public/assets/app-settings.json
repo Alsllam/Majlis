@@ -39,6 +39,9 @@
     },
     "audit": {
       "url": "http://localhost:7000/api/audit"
+    },
+    "meetings": {
+      "url": "http://localhost:7000/api/meetings"
     }
   },
   "realtime": {
@@ -68,7 +71,9 @@
       "Permissions.Tasks.ViewTask",
       "Permissions.Tasks.CreateTask",
       "Permissions.Tasks.UpdateTask",
-      "Permissions.Notifications.ViewNotification"
+      "Permissions.Notifications.ViewNotification",
+      "Permissions.Meetings.ViewMeeting",
+      "Permissions.Meetings.ManageMeeting"
     ]
   }
 }

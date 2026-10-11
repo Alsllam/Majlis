@@ -212,3 +212,37 @@ async def test_stream_omits_tool_fields_when_no_tools_are_given(settings: Settin
     assert "tools" not in body
     assert "tool_choice" not in body
     assert "parallel_tool_calls" not in body
+
+
+async def test_transcribe_posts_the_recording_as_multipart_and_returns_the_text(settings: Settings) -> None:
+    requests: list[httpx2.Request] = []
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        requests.append(request)
+        return httpx2.Response(200, json={"text": "نص التفريغ"})
+
+    provider = provider_with(settings.model_copy(update={"azure_openai_transcribe_deployment": "stt-test"}), handler)
+
+    text = await provider.transcribe(b"RIFF....", "recording.wav", "audio/wav", "ar")
+
+    assert text == "نص التفريغ"
+    assert str(requests[0].url).endswith("/openai/v1/audio/transcriptions")
+    assert requests[0].headers["content-type"].startswith("multipart/form-data")
+    content = requests[0].content
+    assert b'name="model"\r\n\r\nstt-test' in content
+    assert b'name="language"\r\n\r\nar' in content
+    assert b'filename="recording.wav"' in content
+    assert b"RIFF...." in content
+
+
+async def test_transcribe_requires_a_deployment(settings: Settings) -> None:
+    provider = provider_with(settings, lambda _: httpx2.Response(500))
+    with pytest.raises(LlmNotConfiguredError):
+        await provider.transcribe(b"x", "a.mp3", "audio/mpeg", None)
+
+    busy = provider_with(
+        settings.model_copy(update={"azure_openai_transcribe_deployment": "stt-test"}),
+        lambda _: httpx2.Response(429, json={"error": {"message": "slow down"}}),
+    )
+    with pytest.raises(LlmBusyError):
+        await busy.transcribe(b"x", "a.mp3", "audio/mpeg", None)

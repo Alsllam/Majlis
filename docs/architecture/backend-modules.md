@@ -91,7 +91,7 @@ Every module has the four projects from the skill (`Majlis.{Module}.Domain`, `.A
 - **Owns:** Meeting, Transcript (segments), Minutes, ActionItem.
 - **Publishes:** `TranscriptionRequested` (to ai-service), `MinutesDrafted`, `ActionItemsProposed` (→ bulk approval through Approvals), `ActionExecuted`.
 - **Consumes:** `TranscriptionCompleted/Failed`, `MinutesGenerated` (from ai-service), `ActionApproved` for `save_minutes`.
-- **Notes:** recordings live in Blob Storage with their own retention (default 30 days after transcription).
+- **Notes:** recordings live in Blob Storage with their own retention (default 30 days after transcription). *(Built 2026-10-11: meetings from pasted notes, a transcript file or an uploaded recording (pre-signed url to the `recordings` container, then `TranscriptionRequested`); `MinutesRequested` → ai-service → `MinutesGenerated` / `MinutesFailed` (summary, decisions, open questions, action items); people edit the draft, approve it, propose the action items as one `create_task` approval request each through the Approvals API with the caller's token (`ActionExecuted` links the item to its task), publish the minutes to Knowledge (`MinutesPublished` → a workspace document, indexed) and export them as Markdown. `ActionItemsProposed`, `save_minutes`, segments with speakers, DOCX/PDF export and the retention job follow. The membership read model is backfilled once by the migrator from Workspaces because the module shipped after the first workspaces existed.)*
 
 ### Notifications — `notifications` · 7070
 - **Owns:** Notification, NotificationPreference, delivery log, device registrations (FCM) for mobile.

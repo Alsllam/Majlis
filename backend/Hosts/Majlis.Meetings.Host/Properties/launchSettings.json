@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Majlis.Meetings.Host": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:7060",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    }
+  }
+}

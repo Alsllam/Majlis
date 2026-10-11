@@ -1,0 +1,107 @@
+<majlis-page-header title="Meetings.Title" subtitle="Meetings.Subtitle">
+  @if (myWorkspaces()?.length) {
+    <select class="form-select form-select-sm ws-select" [ngModel]="selectedWorkspace()" (ngModelChange)="selectWorkspace($event)" [attr.aria-label]="'Rooms.Workspace' | translate">
+      @for (w of myWorkspaces(); track w.id) {
+        <option [value]="w.id">{{ w.icon }} {{ w.name }}</option>
+      }
+    </select>
+  }
+  @if (canContribute()) {
+    <button type="button" class="btn btn-primary btn-sm" *majlisPermission="permissions.manageMeeting" (click)="creating.set(!creating())">{{ 'Meetings.New' | translate }}</button>
+  }
+</majlis-page-header>
+
+@if (creating() && canContribute()) {
+  <form class="card-surface new-meeting" (ngSubmit)="create()">
+    <div class="row g-2">
+      <div class="col-md-6">
+        <label class="form-label" for="meeting-title">{{ 'Meetings.MeetingTitle' | translate }}</label>
+        <input id="meeting-title" class="form-control" name="title" [ngModel]="title()" (ngModelChange)="title.set($event)" maxlength="200" required />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="meeting-date">{{ 'Meetings.HeldAt' | translate }}</label>
+        <input id="meeting-date" type="date" class="form-control" name="heldAt" [ngModel]="heldAt()" (ngModelChange)="heldAt.set($event)" required />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="meeting-room">{{ 'Meetings.Room' | translate }}</label>
+        <select id="meeting-room" class="form-select" name="roomId" [ngModel]="roomId()" (ngModelChange)="roomId.set($event)">
+          @for (r of myRooms(); track r.id) {
+            <option [value]="r.id">{{ r.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="meeting-attendees">{{ 'Meetings.Attendees' | translate }}</label>
+        <input id="meeting-attendees" class="form-control" name="attendees" [ngModel]="attendees()" (ngModelChange)="attendees.set($event)" [placeholder]="'Meetings.AttendeesHint' | translate" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="meeting-language">{{ 'Meetings.MinutesLanguage' | translate }}</label>
+        <select id="meeting-language" class="form-select" name="language" [ngModel]="language()" (ngModelChange)="language.set($event)">
+          <option value="ar">العربية</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="meeting-source">{{ 'Meetings.Source' | translate }}</label>
+        <select id="meeting-source" class="form-select" name="source" [ngModel]="source()" (ngModelChange)="source.set($event)">
+          @for (s of sources; track s) {
+            <option [value]="s">{{ 'Meetings.Sources.' + s | translate }}</option>
+          }
+        </select>
+      </div>
+      @if (source() === 'Notes') {
+        <div class="col-12">
+          <label class="form-label" for="meeting-text">{{ 'Meetings.Notes' | translate }}</label>
+          <textarea id="meeting-text" class="form-control" name="text" rows="6" [ngModel]="text()" (ngModelChange)="text.set($event)" [placeholder]="'Meetings.NotesHint' | translate"></textarea>
+        </div>
+      } @else {
+        <div class="col-12">
+          <label class="form-label" for="meeting-file">{{ (source() === 'Recording' ? 'Meetings.RecordingFile' : 'Meetings.TranscriptFile') | translate }}</label>
+          <input id="meeting-file" type="file" class="form-control" name="file" [accept]="source() === 'Recording' ? recordingAccept : '.txt,.md,.vtt,.srt,text/plain'" (change)="pickFile($event)" />
+          @if (fileError(); as error) {
+            <div class="invalid-feedback d-block">{{ error | translate }}</div>
+          }
+          <div class="form-text">{{ (source() === 'Recording' ? 'Meetings.RecordingHint' : 'Meetings.TranscriptHint') | translate }}</div>
+        </div>
+      }
+    </div>
+    <div class="actions">
+      @if (progress() !== null) {
+        <span class="text-secondary">{{ 'Meetings.Uploading' | translate }} {{ progress() }}%</span>
+      }
+      <button type="button" class="btn btn-ghost" (click)="creating.set(false)">{{ 'General.Cancel' | translate }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="!canSubmit() || busy()">{{ 'General.Create' | translate }}</button>
+    </div>
+  </form>
+}
+
+@if (items() === null) {
+  <p class="text-secondary">{{ 'General.Loading' | translate }}</p>
+} @else if (items()?.length === 0) {
+  <majlis-empty-state title="Meetings.EmptyTitle" text="Meetings.EmptyText" />
+} @else {
+  <div class="card-surface">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>{{ 'Meetings.Meeting' | translate }}</th>
+          <th>{{ 'Meetings.HeldAt' | translate }}</th>
+          <th>{{ 'Meetings.Source' | translate }}</th>
+          <th>{{ 'Meetings.ActionItems' | translate }}</th>
+          <th>{{ 'Meetings.Status' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (m of items(); track m.id) {
+          <tr [attr.data-meeting-id]="m.id">
+            <td><a class="title" [routerLink]="['/meetings', m.id]">{{ m.title }}</a></td>
+            <td class="num">{{ m.heldAt | date: 'mediumDate' : undefined : lang() }}</td>
+            <td>{{ 'Meetings.Sources.' + m.source | translate }}</td>
+            <td class="num">{{ m.actionItemCount }}</td>
+            <td><span class="status-tag" [class]="'status-tag ' + statusClass(m)">{{ (m.minutesStatus === 'Approved' ? 'Meetings.MinutesStatuses.Approved' : 'Meetings.Statuses.' + m.status) | translate }}</span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

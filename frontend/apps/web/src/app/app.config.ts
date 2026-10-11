@@ -6,6 +6,7 @@ import { TOPBAR_WIDGETS, provideMajlisCore } from '@majlis/core';
 import { provideNotificationsConfig } from '@majlis/notifications-config';
 import { provideKnowledgeConfig } from '@majlis/knowledge-config';
 import { provideRoomsConfig } from '@majlis/rooms-config';
+import { provideMeetingsConfig } from '@majlis/meetings-config';
 import { provideTasksConfig } from '@majlis/tasks-config';
 import { provideThemeShared } from '@majlis/theme-shared';
 import { provideWorkspacesConfig } from '@majlis/workspaces-config';
@@ -24,6 +25,7 @@ export const appConfig: ApplicationConfig = {
     provideKnowledgeConfig(),
     provideApprovalsConfig(),
     provideTasksConfig(),
+    provideMeetingsConfig(),
     provideNotificationsConfig(),
     provideAuditConfig(),
     // Top-bar widgets, loaded lazily so the shell stays independent of the features.

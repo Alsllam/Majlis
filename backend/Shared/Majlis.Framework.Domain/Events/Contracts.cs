@@ -148,3 +148,31 @@ public sealed record NotificationCreated(
 
 /// <summary>Knowledge: a person downloaded or read a document version (audit only; no content travels).</summary>
 public sealed record DocumentAccessed(Guid TenantId, Guid WorkspaceId, Guid DocumentId, Guid VersionId, Guid UserId, string? DisplayName, string Kind, DateTime At) : IEvent;
+
+/// <summary>Meetings → ai-service: transcribe the uploaded recording (FR-MTG-002).</summary>
+public sealed record TranscriptionRequested(Guid TenantId, Guid MeetingId, string BlobPath, string ContentType, string? Language) : IEvent;
+
+/// <summary>ai-service → Meetings: the transcript text (speaker segments when the service provides them).</summary>
+public sealed record TranscriptionCompleted(Guid TenantId, Guid MeetingId, string Text, string? Language) : IEvent;
+
+public sealed record TranscriptionFailed(Guid TenantId, Guid MeetingId, string ReasonKey, string? Detail) : IEvent;
+
+/// <summary>Meetings → ai-service: produce the minutes from the transcript or notes (FR-MTG-003).</summary>
+public sealed record MinutesRequested(Guid TenantId, Guid MeetingId, string Title, DateTime HeldAt, IReadOnlyList<string> Attendees, string Language, string Transcript) : IEvent;
+
+public sealed record ActionItemContract(string Text, string? OwnerName, DateOnly? DueDate);
+
+/// <summary>ai-service → Meetings: a draft of the minutes; people edit and approve it.</summary>
+public sealed record MinutesGenerated(
+    Guid TenantId,
+    Guid MeetingId,
+    string Summary,
+    IReadOnlyList<string> Decisions,
+    IReadOnlyList<string> OpenQuestions,
+    IReadOnlyList<ActionItemContract> ActionItems,
+    string Language) : IEvent;
+
+public sealed record MinutesFailed(Guid TenantId, Guid MeetingId, string ReasonKey, string? Detail) : IEvent;
+
+/// <summary>Meetings → Knowledge: approved minutes become a workspace document (FR-MTG-005), indexed like an upload.</summary>
+public sealed record MinutesPublished(Guid TenantId, Guid WorkspaceId, Guid? RoomId, Guid MeetingId, string Title, string Markdown, string Language, Guid UserId, string? DisplayName) : IEvent;

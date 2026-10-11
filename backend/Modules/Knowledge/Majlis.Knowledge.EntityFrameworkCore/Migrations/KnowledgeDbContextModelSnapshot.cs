@@ -62,6 +62,9 @@ namespace Majlis.Knowledge.EntityFrameworkCore.Migrations
                     b.Property<Guid?>("LastModifierId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("MeetingId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("Origin")
                         .HasColumnType("int");
 
@@ -97,6 +100,10 @@ namespace Majlis.Knowledge.EntityFrameworkCore.Migrations
                     b.HasIndex("ApprovalRequestId")
                         .IsUnique()
                         .HasFilter("[ApprovalRequestId] IS NOT NULL");
+
+                    b.HasIndex("MeetingId")
+                        .IsUnique()
+                        .HasFilter("[MeetingId] IS NOT NULL");
 
                     b.HasIndex("TenantId");
 

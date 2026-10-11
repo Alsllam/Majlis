@@ -1,0 +1,141 @@
+@if (meeting(); as m) {
+  <majlis-page-header [title]="m.title" [subtitle]="'Meetings.Sources.' + m.source">
+    <a class="btn btn-ghost btn-sm" [routerLink]="['/meetings']" [queryParams]="{ workspaceId: m.workspaceId }">{{ 'Meetings.Back' | translate }}</a>
+    @if (canManage()) {
+      <button type="button" class="btn btn-ghost btn-sm text-danger" *majlisPermission="permissions.manageMeeting" [majlisBusy]="busy() === 'delete'" (click)="remove()">{{ 'Meetings.Delete' | translate }}</button>
+    }
+  </majlis-page-header>
+
+  <section class="card-surface meta">
+    <div><span class="label">{{ 'Meetings.HeldAt' | translate }}</span> <span class="num">{{ m.heldAt | date: 'mediumDate' : undefined : lang() }}</span></div>
+    <div><span class="label">{{ 'Meetings.Attendees' | translate }}</span> {{ m.attendees.length ? m.attendees.join('، ') : '—' }}</div>
+    <div><span class="label">{{ 'Meetings.MinutesLanguage' | translate }}</span> {{ m.language === 'en' ? 'English' : 'العربية' }}</div>
+    <div>
+      <span class="label">{{ 'Meetings.Status' | translate }}</span>
+      <span class="status-tag" [class.status-tag-success]="isApproved()" [class.status-tag-danger]="m.status === 'Failed'" [class.status-tag-info]="working()" data-testid="meeting-status">
+        {{ (isApproved() ? 'Meetings.MinutesStatuses.Approved' : 'Meetings.Statuses.' + m.status) | translate }}
+      </span>
+    </div>
+  </section>
+
+  @if (working()) {
+    <div class="alert alert-info" role="status">{{ (m.status === 'Transcribing' ? 'Meetings.TranscribingHint' : 'Meetings.SummarizingHint') | translate }}</div>
+  }
+  @if (m.failureReasonKey; as reason) {
+    <div class="alert alert-danger" role="alert">{{ 'Meetings.Reasons.' + reason | translate }}</div>
+  }
+
+  @if (m.transcriptText) {
+    <section class="card-surface block">
+      <header class="block-head">
+        <h2>{{ (m.source === 'Notes' ? 'Meetings.Notes' : 'Meetings.Transcript') | translate }}</h2>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="showTranscript.set(!showTranscript())">{{ (showTranscript() ? 'Meetings.Hide' : 'Meetings.Show') | translate }}</button>
+      </header>
+      @if (showTranscript()) {
+        <pre class="transcript">{{ m.transcriptText }}</pre>
+      }
+    </section>
+  }
+
+  <section class="card-surface block" data-testid="minutes">
+    <header class="block-head">
+      <h2>{{ 'Meetings.Minutes' | translate }} <span class="status-tag status-tag-agent">{{ 'Meetings.ByAgent' | translate }}</span></h2>
+      <div class="actions">
+        @if (canGenerate()) {
+          <button type="button" class="btn btn-outline-primary btn-sm" [majlisBusy]="busy() === 'generate'" (click)="generate()">{{ (minutes() ? 'Meetings.Regenerate' : 'Meetings.Generate') | translate }}</button>
+        }
+        @if (minutes()) {
+          <button type="button" class="btn btn-ghost btn-sm" [majlisBusy]="busy() === 'export'" (click)="exportMarkdown()">{{ 'Meetings.Export' | translate }}</button>
+        }
+      </div>
+    </header>
+
+    @if (!minutes()) {
+      <p class="text-secondary">{{ (m.transcriptText ? 'Meetings.NoMinutesYet' : 'Meetings.NoTranscriptYet') | translate }}</p>
+    } @else if (isDraft() && canManage()) {
+      <form class="editor" (ngSubmit)="save()">
+        <p class="hint">{{ 'Meetings.DraftHint' | translate }}</p>
+        <label class="form-label" for="minutes-summary">{{ 'Meetings.Summary' | translate }}</label>
+        <textarea id="minutes-summary" class="form-control" name="summary" rows="5" [ngModel]="summary()" (ngModelChange)="summary.set($event); touch()"></textarea>
+        <label class="form-label" for="minutes-decisions">{{ 'Meetings.Decisions' | translate }}</label>
+        <textarea id="minutes-decisions" class="form-control" name="decisions" rows="3" [ngModel]="decisions()" (ngModelChange)="decisions.set($event); touch()" [placeholder]="'Meetings.OnePerLine' | translate"></textarea>
+        <label class="form-label" for="minutes-questions">{{ 'Meetings.OpenQuestions' | translate }}</label>
+        <textarea id="minutes-questions" class="form-control" name="openQuestions" rows="2" [ngModel]="openQuestions()" (ngModelChange)="openQuestions.set($event); touch()" [placeholder]="'Meetings.OnePerLine' | translate"></textarea>
+        <div class="items-head">
+          <span class="form-label">{{ 'Meetings.ActionItems' | translate }}</span>
+          <button type="button" class="btn btn-ghost btn-sm" (click)="addItem()">{{ 'Meetings.AddItem' | translate }}</button>
+        </div>
+        @for (row of items(); track row.key) {
+          <div class="item-row">
+            <input class="form-control" [name]="'text-' + row.key" [ngModel]="row.text" (ngModelChange)="updateItem(row, { text: $event })" [placeholder]="'Meetings.ItemText' | translate" maxlength="500" />
+            <input class="form-control owner" [name]="'owner-' + row.key" [ngModel]="row.ownerName ?? ''" (ngModelChange)="updateItem(row, { ownerName: $event })" [placeholder]="'Meetings.Owner' | translate" maxlength="120" />
+            <input type="date" class="form-control due" [name]="'due-' + row.key" [ngModel]="row.dueDate ?? ''" (ngModelChange)="updateItem(row, { dueDate: $event })" [attr.aria-label]="'Meetings.Due' | translate" />
+            <button type="button" class="btn btn-ghost btn-sm" (click)="removeItem(row)" [attr.aria-label]="'Meetings.RemoveItem' | translate">✕</button>
+          </div>
+        }
+        <div class="actions end">
+          <button type="submit" class="btn btn-outline-primary" [disabled]="!dirty()" [majlisBusy]="busy() === 'save'">{{ 'General.Save' | translate }}</button>
+          <button type="button" class="btn btn-primary" [majlisBusy]="busy() === 'approve'" (click)="approve()">{{ 'Meetings.Approve' | translate }}</button>
+        </div>
+      </form>
+    } @else {
+      @if (minutes(); as mins) {
+        <div class="reader">
+          @if (isApproved()) {
+            <p class="hint">{{ 'Meetings.ApprovedBy' | translate: { name: mins.approvedByDisplayName } }} · <span class="num">{{ mins.approvedAt | date: 'medium' : undefined : lang() }}</span></p>
+          }
+          <h3>{{ 'Meetings.Summary' | translate }}</h3>
+          <p class="summary">{{ mins.summary }}</p>
+          <h3>{{ 'Meetings.Decisions' | translate }}</h3>
+          @if (mins.decisions.length) {
+            <ul>@for (d of mins.decisions; track $index) { <li>{{ d }}</li> }</ul>
+          } @else { <p class="text-muted">—</p> }
+          @if (mins.openQuestions.length) {
+            <h3>{{ 'Meetings.OpenQuestions' | translate }}</h3>
+            <ul>@for (q of mins.openQuestions; track $index) { <li>{{ q }}</li> }</ul>
+          }
+          <h3>{{ 'Meetings.ActionItems' | translate }}</h3>
+          @if (mins.actionItems.length) {
+            <table class="table align-middle mb-0 items">
+              <thead><tr><th>{{ 'Meetings.ItemText' | translate }}</th><th>{{ 'Meetings.Owner' | translate }}</th><th>{{ 'Meetings.Due' | translate }}</th><th>{{ 'Meetings.ItemState' | translate }}</th></tr></thead>
+              <tbody>
+                @for (i of mins.actionItems; track i.id) {
+                  <tr>
+                    <td>{{ i.text }}</td>
+                    <td>{{ i.ownerName ?? '—' }}</td>
+                    <td class="num">{{ i.dueDate ? (i.dueDate | date: 'mediumDate' : undefined : lang()) : '—' }}</td>
+                    <td>
+                      @if (i.taskId) {
+                        <a class="status-tag status-tag-success" [routerLink]="['/tasks']" [queryParams]="{ workspaceId: m.workspaceId }">{{ 'Meetings.ItemStates.Task' | translate }}</a>
+                      } @else if (i.approvalRequestId) {
+                        <a class="status-tag status-tag-warning" [routerLink]="['/approvals']">{{ 'Meetings.ItemStates.AwaitingApproval' | translate }}</a>
+                      } @else {
+                        <span class="status-tag status-tag-neutral">{{ 'Meetings.ItemStates.NotProposed' | translate }}</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else { <p class="text-muted">—</p> }
+          @if (isApproved() && canManage()) {
+            <div class="actions end">
+              @if (pendingItems() > 0) {
+                <button type="button" class="btn btn-primary" [majlisBusy]="busy() === 'propose'" (click)="propose()">{{ 'Meetings.ProposeItems' | translate: { count: pendingItems() } }}</button>
+              }
+              @if (!mins.publishedAt) {
+                <button type="button" class="btn btn-outline-primary" [majlisBusy]="busy() === 'publish'" (click)="publish()">{{ 'Meetings.Publish' | translate }}</button>
+              } @else {
+                <a class="status-tag status-tag-success" [routerLink]="['/documents']" [queryParams]="{ workspaceId: m.workspaceId }">{{ 'Meetings.PublishedTag' | translate }}</a>
+              }
+            </div>
+          } @else if (mins.publishedAt) {
+            <p class="hint">{{ 'Meetings.PublishedTag' | translate }}</p>
+          }
+        </div>
+      }
+    }
+  </section>
+} @else {
+  <p class="text-secondary">{{ 'General.Loading' | translate }}</p>
+}

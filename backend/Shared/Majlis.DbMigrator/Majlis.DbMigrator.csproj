@@ -13,6 +13,7 @@
     <ProjectReference Include="..\..\Modules\Tasks\Majlis.Tasks.EntityFrameworkCore\Majlis.Tasks.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\Modules\Notifications\Majlis.Notifications.EntityFrameworkCore\Majlis.Notifications.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\Modules\Audit\Majlis.Audit.EntityFrameworkCore\Majlis.Audit.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\Modules\Meetings\Majlis.Meetings.EntityFrameworkCore\Majlis.Meetings.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Majlis.Framework.Application\Majlis.Framework.Application.csproj" />
   </ItemGroup>
   <ItemGroup>
