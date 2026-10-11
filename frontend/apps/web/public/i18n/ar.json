@@ -36,7 +36,8 @@
     "Documents": "المستندات",
     "Approvals": "الموافقات",
     "Tasks": "المهام",
-    "Home": "الرئيسية"
+    "Home": "الرئيسية",
+    "Audit": "سجل التدقيق"
   },
   "Errors": {
     "Network": "تعذّر الوصول إلى الخادم. تحقق من الاتصال ثم أعد المحاولة.",
@@ -395,5 +396,63 @@
     "NoTasks": "لا مهام مفتوحة مسندة إليك",
     "NoWorkspaceTitle": "لست عضواً في أي مساحة عمل بعد",
     "NoWorkspaceText": "أنشئ مساحة عمل أو اطلب من زميل إضافتك إلى مساحته."
+  },
+  "Audit": {
+    "Title": "سجل التدقيق",
+    "Subtitle": "كل تغيير في التحكم والموافقات وتنفيذ الأدوات والوصول إلى المستندات، في سلسلة لا تُعدَّل",
+    "Verify": "التحقق من السلسلة",
+    "Export": "تصدير CSV",
+    "Exported": "بدأ تنزيل الملف",
+    "ChainValid": "السلسلة سليمة: {{count}} سجل",
+    "ChainBroken": "السلسلة مكسورة عند السجل {{seq}}",
+    "Category": "الفئة",
+    "AllCategories": "كل الفئات",
+    "AllWorkspaces": "كل المساحات",
+    "From": "من",
+    "To": "إلى",
+    "Search": "ابحث في الإجراء أو الاسم أو التفاصيل",
+    "Apply": "تطبيق",
+    "When": "الوقت",
+    "Action": "الإجراء",
+    "Actor": "الفاعل",
+    "Pages": "الصفحات",
+    "EmptyTitle": "لا سجلات",
+    "EmptyText": "تُسجَّل هنا تغييرات التحكم والموافقات وتنفيذ الأدوات والوصول إلى المستندات.",
+    "Categories": {
+      "session": "الجلسات",
+      "approval": "الموافقات",
+      "tool": "الأدوات",
+      "document": "المستندات",
+      "membership": "العضوية",
+      "task": "المهام"
+    },
+    "Actors": {
+      "agent": "الوكيل",
+      "system": "النظام",
+      "user": "مستخدم"
+    },
+    "Actions": {
+      "session.started": "بدء جلسة",
+      "session.ended": "إنهاء جلسة",
+      "control.changed": "تغيير التحكم",
+      "control.requested": "طلب التحكم",
+      "control.request.resolved": "البت في طلب التحكم",
+      "handoff.offered": "عرض تسليم التحكم",
+      "handoff.resolved": "البت في تسليم التحكم",
+      "approval.requested": "طلب موافقة",
+      "approval.approved": "موافقة",
+      "approval.rejected": "رفض",
+      "approval.expired": "انتهاء صلاحية طلب",
+      "tool.executed": "تنفيذ أداة",
+      "tool.failed": "فشل تنفيذ أداة",
+      "document.uploaded": "رفع مستند",
+      "document.deleted": "حذف مستند",
+      "document.download": "تنزيل مستند",
+      "document.read": "قراءة مستند",
+      "member.added": "إضافة عضو",
+      "member.role-changed": "تغيير دور عضو",
+      "member.removed": "إزالة عضو",
+      "task.assigned": "إسناد مهمة"
+    }
   }
 }

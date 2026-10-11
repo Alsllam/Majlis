@@ -15,6 +15,7 @@ public static class KnowledgeApplicationModule
     public static MessagingTopology Topology => new MessagingTopology()
         .Publish<DocumentUploaded>()
         .Publish<DocumentDeleted>()
+        .Publish<DocumentAccessed>()
         .Publish<ActionExecuted>()
         .Publish<ActionExecutionFailed>()
         .Listen<ActionApproved>()

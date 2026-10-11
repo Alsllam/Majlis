@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Majlis.Audit.Host": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:7080",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    }
+  }
+}

@@ -36,7 +36,8 @@
     "Documents": "Documents",
     "Approvals": "Approvals",
     "Tasks": "Tasks",
-    "Home": "Home"
+    "Home": "Home",
+    "Audit": "Audit log"
   },
   "Errors": {
     "Network": "The server could not be reached. Check your connection and try again.",
@@ -395,5 +396,63 @@
     "NoTasks": "No open tasks assigned to you",
     "NoWorkspaceTitle": "You are not in a workspace yet",
     "NoWorkspaceText": "Create a workspace or ask a colleague to add you to theirs."
+  },
+  "Audit": {
+    "Title": "Audit log",
+    "Subtitle": "Every control change, approval, tool run and document access, in a chain that cannot be edited",
+    "Verify": "Verify chain",
+    "Export": "Export CSV",
+    "Exported": "Download started",
+    "ChainValid": "Chain intact: {{count}} entries",
+    "ChainBroken": "Chain broken at entry {{seq}}",
+    "Category": "Category",
+    "AllCategories": "All categories",
+    "AllWorkspaces": "All workspaces",
+    "From": "From",
+    "To": "To",
+    "Search": "Search action, name or details",
+    "Apply": "Apply",
+    "When": "When",
+    "Action": "Action",
+    "Actor": "Actor",
+    "Pages": "Pages",
+    "EmptyTitle": "No entries",
+    "EmptyText": "Control changes, approvals, tool runs and document access are recorded here.",
+    "Categories": {
+      "session": "Sessions",
+      "approval": "Approvals",
+      "tool": "Tools",
+      "document": "Documents",
+      "membership": "Membership",
+      "task": "Tasks"
+    },
+    "Actors": {
+      "agent": "Agent",
+      "system": "System",
+      "user": "User"
+    },
+    "Actions": {
+      "session.started": "Session started",
+      "session.ended": "Session ended",
+      "control.changed": "Control changed",
+      "control.requested": "Control requested",
+      "control.request.resolved": "Control request resolved",
+      "handoff.offered": "Hand-off offered",
+      "handoff.resolved": "Hand-off resolved",
+      "approval.requested": "Approval requested",
+      "approval.approved": "Approved",
+      "approval.rejected": "Rejected",
+      "approval.expired": "Request expired",
+      "tool.executed": "Tool executed",
+      "tool.failed": "Tool failed",
+      "document.uploaded": "Document uploaded",
+      "document.deleted": "Document deleted",
+      "document.download": "Document downloaded",
+      "document.read": "Document read",
+      "member.added": "Member added",
+      "member.role-changed": "Member role changed",
+      "member.removed": "Member removed",
+      "task.assigned": "Task assigned"
+    }
   }
 }

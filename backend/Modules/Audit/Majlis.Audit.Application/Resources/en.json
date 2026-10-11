@@ -1,0 +1,3 @@
+{
+  "Audit:Export:TooLarge": "The export exceeds the limit ({0} rows). Narrow the filters and try again."
+}

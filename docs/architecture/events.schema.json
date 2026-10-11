@@ -354,6 +354,21 @@
         "link": { "type": ["string", "null"], "description": "In-app route to open." },
         "at": { "type": "string", "format": "date-time" }
       }
+    },
+    "documentAccessed": {
+      "description": "Knowledge → Audit (exchange majlis.document-accessed): a person downloaded or read a document version. Metadata only.",
+      "type": "object",
+      "required": ["tenantId", "workspaceId", "documentId", "versionId", "userId", "kind", "at"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "workspaceId": { "$ref": "#/$defs/uuid" },
+        "documentId": { "$ref": "#/$defs/uuid" },
+        "versionId": { "$ref": "#/$defs/uuid" },
+        "userId": { "$ref": "#/$defs/uuid" },
+        "displayName": { "type": ["string", "null"] },
+        "kind": { "type": "string", "enum": ["download", "read"] },
+        "at": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "x-redis-keys": {

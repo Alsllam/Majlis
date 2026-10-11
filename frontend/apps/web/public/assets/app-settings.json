@@ -36,6 +36,9 @@
     },
     "notifications": {
       "url": "http://localhost:7000/api/notifications"
+    },
+    "audit": {
+      "url": "http://localhost:7000/api/audit"
     }
   },
   "realtime": {

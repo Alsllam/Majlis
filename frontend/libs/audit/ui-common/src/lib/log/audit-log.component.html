@@ -1,0 +1,90 @@
+<majlis-page-header title="Audit.Title" subtitle="Audit.Subtitle">
+  <button type="button" class="btn btn-outline-secondary btn-sm" (click)="verify()" [disabled]="busy()" data-testid="audit-verify">{{ 'Audit.Verify' | translate }}</button>
+  <button *majlisPermission="permissions.exportAudit" type="button" class="btn btn-primary btn-sm" (click)="exportCsv()" [disabled]="busy()" data-testid="audit-export">{{ 'Audit.Export' | translate }}</button>
+</majlis-page-header>
+
+@if (verification(); as v) {
+  <div class="card-surface verification" [class.ok]="v.valid" [class.broken]="!v.valid" role="status" data-testid="audit-verification">
+    @if (v.valid) {
+      <span>✓ {{ 'Audit.ChainValid' | translate: { count: (v.entries | enar) } }}</span>
+    } @else {
+      <span>✗ {{ 'Audit.ChainBroken' | translate: { seq: ((v.brokenAtSeq ?? 0) | enar) } }}</span>
+    }
+    <code class="hash">{{ v.headHash.slice(0, 16) }}…</code>
+  </div>
+}
+
+<form class="card-surface filters" (ngSubmit)="apply()">
+  <select class="form-select form-select-sm" name="category" [ngModel]="category()" (ngModelChange)="category.set($event)" [attr.aria-label]="'Audit.Category' | translate">
+    <option value="">{{ 'Audit.AllCategories' | translate }}</option>
+    @for (c of categories; track c) {
+      <option [value]="c">{{ 'Audit.Categories.' + c | translate }}</option>
+    }
+  </select>
+  <select class="form-select form-select-sm" name="workspace" [ngModel]="workspaceId()" (ngModelChange)="workspaceId.set($event)" [attr.aria-label]="'Rooms.Workspace' | translate">
+    <option value="">{{ 'Audit.AllWorkspaces' | translate }}</option>
+    @for (w of myWorkspaces(); track w.id) {
+      <option [value]="w.id">{{ w.name }}</option>
+    }
+  </select>
+  <input class="form-control form-control-sm" type="date" name="from" [ngModel]="from()" (ngModelChange)="from.set($event)" [attr.aria-label]="'Audit.From' | translate" />
+  <input class="form-control form-control-sm" type="date" name="to" [ngModel]="to()" (ngModelChange)="to.set($event)" [attr.aria-label]="'Audit.To' | translate" />
+  <input class="form-control form-control-sm text" type="search" name="text" [ngModel]="text()" (ngModelChange)="text.set($event)" [placeholder]="'Audit.Search' | translate" [attr.aria-label]="'Audit.Search' | translate" />
+  <button type="submit" class="btn btn-outline-primary btn-sm">{{ 'Audit.Apply' | translate }}</button>
+</form>
+
+@if (items() === null) {
+  <p class="text-secondary">{{ 'General.Loading' | translate }}</p>
+} @else if (items()?.length === 0) {
+  <majlis-empty-state title="Audit.EmptyTitle" text="Audit.EmptyText" />
+} @else {
+  <div class="card-surface">
+    <table class="table align-middle mb-0" data-testid="audit-table">
+      <thead>
+        <tr>
+          <th class="num">#</th>
+          <th>{{ 'Audit.When' | translate }}</th>
+          <th>{{ 'Audit.Category' | translate }}</th>
+          <th>{{ 'Audit.Action' | translate }}</th>
+          <th>{{ 'Audit.Actor' | translate }}</th>
+          <th>{{ 'Rooms.Workspace' | translate }}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (e of items(); track e.id) {
+          <tr [class.expanded]="expanded() === e.id" (click)="toggle(e.id)">
+            <td class="num">{{ e.seq | enar }}</td>
+            <td class="num">{{ e.occurredAt | date: 'short' : undefined : lang() }}</td>
+            <td><span class="status-tag status-tag-neutral">{{ 'Audit.Categories.' + e.category | translate }}</span></td>
+            <td>{{ actionKey(e) | translate }}</td>
+            <td>
+              @if (e.actorKind === 'user') { {{ e.actorDisplayName || '—' }} } @else { <span class="status-tag status-tag-agent">{{ 'Audit.Actors.' + e.actorKind | translate }}</span> }
+            </td>
+            <td>{{ workspaceName(e.workspaceId) }}</td>
+            <td class="text-end">
+              @if (e.roomId) { <a [routerLink]="['/rooms', e.roomId]" (click)="$event.stopPropagation()">{{ 'Approvals.OpenRoom' | translate }}</a> }
+            </td>
+          </tr>
+          @if (expanded() === e.id) {
+            <tr class="details">
+              <td colspan="7">
+                <dl>
+                  @for (d of e.details | keyvalue; track d.key) {
+                    <div><dt>{{ d.key }}</dt><dd>{{ d.value }}</dd></div>
+                  }
+                  <div><dt>hash</dt><dd><code>{{ e.hash }}</code></dd></div>
+                </dl>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+  <nav class="pager" [attr.aria-label]="'Audit.Pages' | translate">
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="goTo(page() - 1)" [disabled]="page() === 0">‹</button>
+    <span class="num">{{ (page() + 1) | enar }} / {{ pages() | enar }}</span>
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="goTo(page() + 1)" [disabled]="page() >= pages() - 1">›</button>
+  </nav>
+}

@@ -155,6 +155,7 @@ public class DocumentsAppService(
         await RequireMemberAsync(document.WorkspaceId, cancellationToken);
         var version = document.GetVersion(input.VersionId);
         var url = await blobs.CreateDownloadUrlAsync(KnowledgeFieldDefinitions.Container, version.BlobPath, version.FileName, TimeSpan.FromMinutes(Options.DownloadUrlMinutes), cancellationToken);
+        await RecordAccessAsync(document, version, "download", cancellationToken);
         return new DownloadUrlDto(url.Url, url.ExpiresAt, version.FileName);
     }
 
@@ -175,6 +176,7 @@ public class DocumentsAppService(
 
         var bytes = await blobs.DownloadAsync(KnowledgeFieldDefinitions.Container, version.BlobPath, cancellationToken)
             ?? throw new CustomValidationException(KnowledgeErrors.FileNotUploaded);
+        await RecordAccessAsync(document, version, "read", cancellationToken);
         return new VersionContentDto(version.Id, version.ContentType, System.Text.Encoding.UTF8.GetString(bytes));
     }
 
@@ -232,6 +234,15 @@ public class DocumentsAppService(
 
         await documents.DeleteAsync(document, autoSave: false, cancellationToken);
         await publisher.PublishAsync(new DocumentDeleted(document.TenantId, document.Id), cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>Document access is audited (invariant 7): who opened which version, when; never what it says.</summary>
+    private async Task RecordAccessAsync(Document document, DocumentVersion version, string kind, CancellationToken cancellationToken)
+    {
+        await publisher.PublishAsync(
+            new DocumentAccessed(document.TenantId, document.WorkspaceId, document.Id, version.Id, currentUser.GetRequiredId(), currentUser.DisplayName, kind, clock.GetUtcNow().UtcDateTime),
+            cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 

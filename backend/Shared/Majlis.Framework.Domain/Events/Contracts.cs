@@ -145,3 +145,6 @@ public sealed record NotificationCreated(
     string ParamsJson,
     string? Link,
     DateTime At) : IEvent;
+
+/// <summary>Knowledge: a person downloaded or read a document version (audit only; no content travels).</summary>
+public sealed record DocumentAccessed(Guid TenantId, Guid WorkspaceId, Guid DocumentId, Guid VersionId, Guid UserId, string? DisplayName, string Kind, DateTime At) : IEvent;

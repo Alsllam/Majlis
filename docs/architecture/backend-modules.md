@@ -102,7 +102,7 @@ Every module has the four projects from the skill (`Majlis.{Module}.Domain`, `.A
 ### Audit — `audit` · 7080
 - **Owns:** AuditEntry (append-only, hash chain per tenant).
 - **Publishes:** —
-- **Consumes:** an `IAuditable` marker on events from every module (sign-ins, role changes, control changes, approvals, tool executions, document access, exports, settings).
+- **Consumes:** an `IAuditable` marker on events from every module (sign-ins, role changes, control changes, approvals, tool executions, document access, exports, settings). *(Built 2026-10-11: consumers for session control events, approvals and tool runs, document upload / delete / access, task assignment and membership; one append-only entry per source event in a per-tenant SHA-256 hash chain; list, verify and CSV export for tenant admins. Sign-ins, exports and settings events, retention and the nightly verification job follow.)*
 - **Notes:** write path is consume-only; read path is search + export for auditors. Separate database user with insert-only rights on the table.
 
 ### Non-module hosts

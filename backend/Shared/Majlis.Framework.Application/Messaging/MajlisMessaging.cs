@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Wolverine;
+using Wolverine.ErrorHandling;
 using Wolverine.EntityFrameworkCore;
 using Wolverine.RabbitMQ;
 using Wolverine.SqlServer;
@@ -107,6 +108,9 @@ public static class MajlisMessaging
 
         opts.ServiceName = moduleName;
         opts.Discovery.IncludeAssembly(handlersAssembly);
+        // Two handlers appending to the same sequence (a session timeline, the audit chain) collide on a row version
+        // or a unique index; the loser is retried, then parked in the error queue.
+        opts.Policies.OnException(Majlis.Framework.EntityFrameworkCore.DbConflicts.IsConflict, "database write conflict").RetryTimes(5).Then.MoveToErrorQueue();
         opts.UseSystemTextJsonForSerialization(stj =>
         {
             stj.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;

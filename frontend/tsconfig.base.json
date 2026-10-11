@@ -40,6 +40,9 @@
       "@majlis/notifications-proxy": ["./libs/shared/notifications-proxy/src/index.ts"],
       "@majlis/notifications-config": ["./libs/notifications/config/src/index.ts"],
       "@majlis/notifications-ui-common": ["./libs/notifications/ui-common/src/index.ts"],
+      "@majlis/audit-proxy": ["./libs/shared/audit-proxy/src/index.ts"],
+      "@majlis/audit-config": ["./libs/audit/config/src/index.ts"],
+      "@majlis/audit-ui-common": ["./libs/audit/ui-common/src/index.ts"],
       "@majlis/knowledge-proxy": ["./libs/shared/knowledge-proxy/src/index.ts"],
       "@majlis/knowledge-config": ["./libs/knowledge/config/src/index.ts"],
       "@majlis/knowledge-ui-common": ["./libs/knowledge/ui-common/src/index.ts"]
