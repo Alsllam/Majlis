@@ -72,7 +72,7 @@ Teams in Saudi Arabia and the GCC:
 
 ### 2.3 Constraints
 
-- **Stack is fixed** by the house skills: .NET 9 modular backend (`backend/`), Angular 20 + Nx (`frontend/`), Flutter (`mobile/`), Python FastAPI + Azure OpenAI + Azure AI Search (`ai-service/`).
+- **Stack is fixed** by the house skills: .NET 10 modular backend (`backend/`), Angular 22 + Nx (`frontend/`), Flutter (`mobile/`), Python FastAPI + Azure OpenAI + Azure AI Search (`ai-service/`).
 - **Only the AI service calls models.** Clients and .NET never hold model keys.
 - **Cloud first.** The product is built, tested and shipped for the `cloud` profile (Azure, multi-tenant, regional). Every Azure-specific service sits behind an adapter so an `on-prem` profile (customer data center, single tenant) can be added later without rewriting business code (§7.1, ADR-0006). Region rules are in §6.2.
 

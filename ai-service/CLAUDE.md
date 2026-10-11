@@ -17,13 +17,35 @@
 | Deployment profile | **`cloud`** (Azure OpenAI, Azure AI Search, Document Intelligence) — the only profile built now. `on-prem` (OpenAI-compatible model servers, OpenSearch, self-hosted extraction / speech / guard) later — ADR-0006 |
 | Region | the tenant's data region; model calls only to regions allowed by the tenant's inference consent (`docs/SRS.md` §6.2) |
 
+## What exists (walking skeleton)
+
+| Module | State |
+|---|---|
+| `settings.py`, `observability.py`, `api/errors.py` | env configuration, JSON logs, backend error shape with ar/en messages |
+| `security/tokens.py`, `api/deps.py` | RS256 access tokens validated against the Auth host JWKS (`aud = ai-api`); tenant and user only from the token |
+| `llm/provider.py`, `llm/adapters/azure_openai.py` | provider interface (chat streaming with function tools + embeddings) and the Azure OpenAI adapter (Responses API: `function_call` output items, `function_call` / `function_call_output` input items, `store=false`; embeddings) |
+| `llm/tools/` | tool registry (`ToolSpec`: JSON schema for the model, `mutates`, `risk`, `required_permission`, ar/en summary): `create_task` (pydantic `CreateTaskArgs`, same shape as the Tasks module's `CreateTaskToolArgs`) |
+| `llm/prompts/agent.v3.md` | the shared-room agent prompt: tools and approvals (a tool call returns a status, never a result; say the action awaits approval), answers only from the `<source id="S#">` blocks, cites `[S#]`, says when nothing matches |
+| `sessions/` | `POST /internal/sessions/{id}/turns` → background `TurnRunner`: progress `Session.Progress.Searching`, retrieval, coalesced deltas, snapshot, heartbeat, cancel, the **tool loop** (≤ `MAX_TOOL_ROUNDS` model rounds; a mutating tool becomes an approval request through `sessions/approvals.py` with the driver's forwarded token, progress `Session.Progress.RequestingApproval`; the model gets `pending_approval` / `rejected` / `error` back), one result with resolved citations |
+| `rag/ports.py`, `rag/models.py` | `BlobStore`, `DocumentExtractor`, `Embedder`, `SearchIndex` ports and the chunk/hit shapes |
+| `rag/adapters/` | `azure_blob.py` (Azure Blob / Azurite), `extractors.py` (Document Intelligence layout + Markdown; `SimpleExtractor` for digital PDF/DOCX/TXT/MD without a service), `azure_search.py` (hybrid + semantic ranker, Arabic/English analyzers, security filter), `local_index.py` (**development only**: a Redis-backed index selected by `SEARCH_BACKEND=local`) |
+| `rag/ingestion/` | `normalize.py` (Arabic search copy, language detection), `chunker.py` (headings → paragraphs, 400–800 tokens, 12 % overlap, whole table rows and numbered articles, heading paths), `pipeline.py` (download → extract → chunk → embed → upsert → report; idempotent on version + SHA-256; older versions removed) |
+| `rag/retrieval/` | `search.py` (embed, hybrid search trimmed to tenant + scope groups, threshold, ≤ 3 chunks per document), `context.py` (token budget, `<source>` blocks, `[S#]` → citation) |
+| `workers/ingest_worker.py` | consumes `majlis.document-uploaded` / `majlis.document-deleted` (queue `ai-service.{alias}`) inside the API process; publishes `DocumentIndexed` / `DocumentIndexingFailed` |
+| `messaging/bus.py`, `messaging/contracts.py` | plain camelCase JSON on exchange `majlis.{alias}` with the alias in the AMQP `type` property (ADR-0009); Knowledge contracts |
+
+Not built yet: query rewriting with the fast model, `turn.retrieval` events, `POST /ai-api/search`, the read-only tools (`search_knowledge`, `get_document`, `list_room_participants`) and the other mutating tools, conversations/usage in SQL, rate limits and quotas, Prompt Shields, evaluation suite, a separate worker container. The Document Intelligence and Azure AI Search adapters are written against the SDKs but have not run against real resources yet (no Azure credentials in this environment); the local stack uses Azurite, the stub model and the dev index.
+
+**Testing note:** the OpenAI SDK 3.x uses `httpx2`, not `httpx`, so `respx` cannot intercept it. Adapter tests pass an `openai.DefaultAsyncHttpx2Client(transport=httpx2.MockTransport(...))`.
+
 ## Majlis-specific rules
 
 - **Adapters (ADR-0006).** Business code depends only on these interfaces; implement the `cloud` version now, the `on-prem` version only when an on-prem customer is confirmed: `LlmProvider` (Azure OpenAI Responses API / OpenAI-compatible Chat Completions), `Embedder`, `SearchIndex` (Azure AI Search / OpenSearch + re-ranker), `DocumentExtractor`, `Transcriber`, `SafetyGuard`, `BlobStore`. The skill's Azure rules apply to the `cloud` implementations. Azure SDK imports are allowed only inside adapter modules.
-- **Shared sessions** are started by Rooms through `POST /internal/sessions/{sessionId}/turns` (internal only, not routed by the BFF). Token deltas go to Redis pub/sub (`session:{id}:stream`) with a text snapshot `turn:{id}:text`; durable milestones go to RabbitMQ for Rooms to sequence; check the cancel key `turn:{id}:cancel` between deltas; heartbeat `turn:{id}:hb` every 5 s (`docs/architecture/realtime-collaboration.md`).
+- **Retrieval scope (AI-RAG-004/008).** The tenant comes only from the validated token. The scope groups of a turn are `ws:{workspaceId}` and `room:{roomId}` from the Rooms request (Rooms checked the driver is a participant); every chunk stores `acl_groups` and every query filters on them. Documents: `ws:` for workspace documents, `room:` for room-only ones.
+- **Shared sessions** are started by Rooms through `POST /internal/sessions/{sessionId}/turns` (internal only, not routed by the BFF; body `startAiTurnRequest`, the driver's `Authorization` header forwarded; answer 202 and run the turn in the background). Token deltas go to Redis pub/sub `majlis:session:{sessionId}:stream` with the running text in the hash `majlis:turn:{turnId}:text` (`text`, `chunk`); results (`TurnCompleted`, `TurnStopped`, `TurnFailed`) go to RabbitMQ as plain JSON (exchange `majlis.turn-completed` etc., durable fanout, AMQP `type` = alias) for Rooms to sequence; check `majlis:turn:{turnId}:cancel` between deltas; refresh `majlis:turn:{turnId}:hb` every 5 s. Every shape is in `docs/architecture/events.schema.json`.
 
 - **The agent session is shared.** A session belongs to a room, not a user. Each turn records who sent it; the tool loop runs with the token of the person **currently in control** of the session, so their permissions apply.
-- **Every mutating tool returns `confirm_required`** and becomes an approval request in the backend Approvals module. The tool only runs after the `ActionApproved` event. The agent never retries a rejected action unless a person asks again.
+- **Every mutating tool returns `pending_approval`** (with the `requestId`) and becomes an approval request in the backend Approvals module (`POST {APPROVALS_URL}/requests`, the driver's token, so the requester is the person in control). The owning .NET module runs it only after `ActionApproved`; ai-service never executes a tool. Invalid arguments or a refused request go back to the model as `error` / `rejected`; the agent never retries a rejected action unless a person asks again.
 - MVP tools (SRS AI-AGT-006): `search_knowledge`, `get_document`, `create_task`, `update_task`, `draft_document`, `summarize_meeting`, `extract_action_items`, `list_room_participants`.
 - Arabic prompts use formal Modern Standard Arabic; answer in the language of the latest user turn.
 
@@ -32,3 +54,4 @@
 ```
 cd ai-service && uv run ruff check && uv run ruff format --check && uv run mypy --strict src && uv run pytest
 ```
+Run locally: `uv run uvicorn ai_service.main:create_app --factory --port 8000` (variables in `.env.example`: Azurite connection string, `SEARCH_BACKEND=local`), or `backend/scripts/run-local.sh`, which starts it with the backend. RAG is enabled only when storage, an index backend and the embedding deployment are configured (`Settings.knowledge_configured`); otherwise turns run ungrounded and a warning is logged.

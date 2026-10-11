@@ -1,0 +1,13 @@
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4); }
+.room { display: block; padding: var(--space-4); color: inherit; text-decoration: none; min-height: 132px; animation: rise var(--motion-base) var(--ease-out) both; transition: transform var(--motion-fast), box-shadow var(--motion-fast);
+  &:hover { transform: translateY(calc(-1 * var(--motion-distance-lift))); box-shadow: var(--shadow-md); }
+}
+.head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); }
+h2 { font-size: var(--fs-lg); margin: 0; }
+.purpose { color: var(--text-secondary); font-size: var(--fs-sm); margin: var(--space-2) 0 0; }
+.meta { display: flex; justify-content: space-between; margin-top: var(--space-3); color: var(--text-muted); font-size: var(--fs-xs); }
+.live { width: 8px; height: 8px; border-radius: 50%; background: var(--success-solid); animation: pulse var(--motion-pulse) ease-in-out infinite; }
+.skeleton { background: linear-gradient(90deg, var(--surface) 25%, var(--surface-hover) 50%, var(--surface) 75%); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
+@keyframes rise { from { opacity: 0; transform: translateY(var(--motion-distance-enter)); } to { opacity: 1; transform: none; } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }

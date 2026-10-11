@@ -1,0 +1,43 @@
+<majlis-page-header title="Workspaces.Title" subtitle="Workspaces.Subtitle">
+  <button type="button" class="btn btn-outline-secondary btn-sm" (click)="toggleArchived()">
+    {{ (includeArchived() ? 'Workspaces.HideArchived' : 'Workspaces.ShowArchived') | translate }}
+  </button>
+  <button *majlisPermission="permissions.createWorkspace" type="button" class="btn btn-primary" (click)="create()">
+    + {{ 'Workspaces.Create' | translate }}
+  </button>
+</majlis-page-header>
+
+@if (items() === null) {
+  <div class="grid">
+    @for (s of skeleton; track s) {
+      <div class="card-surface ws skeleton" aria-hidden="true"></div>
+    }
+  </div>
+} @else if (items()?.length === 0) {
+  <majlis-empty-state title="Workspaces.EmptyTitle" text="Workspaces.EmptyText">
+    <button *majlisPermission="permissions.createWorkspace" type="button" class="btn btn-primary" (click)="create()">{{ 'Workspaces.Create' | translate }}</button>
+  </majlis-empty-state>
+} @else {
+  <div class="grid">
+    @for (ws of items(); track ws.id; let i = $index) {
+      <a class="card-surface ws" [class.archived]="ws.isArchived" [routerLink]="[ws.id]" [style.animation-delay.ms]="i * 30" [style.--ws-color]="'var(--' + (ws.color ?? 'brand') + '-solid, var(--brand-solid))'">
+        <div class="head">
+          <span class="icon" aria-hidden="true">{{ ws.icon || '▦' }}</span>
+          <div class="titles">
+            <h2>{{ ws.name }}</h2>
+            @if (ws.description) {
+              <p class="desc">{{ ws.description }}</p>
+            }
+          </div>
+        </div>
+        <div class="meta">
+          <span class="status-tag status-tag-neutral">{{ 'Workspaces.Role.' + ws.myRole | translate }}</span>
+          @if (ws.isArchived) {
+            <span class="status-tag status-tag-warning">{{ 'Workspaces.Archived' | translate }}</span>
+          }
+          <span class="count">{{ 'Workspaces.Members' | translate: { count: (ws.memberCount | enar) } }}</span>
+        </div>
+      </a>
+    }
+  </div>
+}

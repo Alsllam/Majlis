@@ -1,0 +1,9 @@
+{
+  "Approvals:Request:NotWorkspaceMember": "You are not a member of this workspace.",
+  "Approvals:Request:NotPending": "This request was already decided or has expired.",
+  "Approvals:Request:SelfApprovalNotAllowed": "The person who requested this action cannot approve it; another approver is needed.",
+  "Approvals:Request:ApproverRoleRequired": "Approving this action needs a workspace owner or admin.",
+  "Approvals:Request:UnknownTool": "The requested tool is unknown.",
+  "Approvals:Request:InvalidArgs": "The action arguments are invalid.",
+  "Approvals:Request:ReasonRequired": "Give a reason for rejecting."
+}

@@ -1,0 +1,21 @@
+{
+  "name": "rooms-config",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/rooms/config/src",
+  "prefix": "majlis",
+  "projectType": "library",
+  "tags": ["type:config"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/rooms/config/jest.config.cts",
+        "tsConfig": "libs/rooms/config/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

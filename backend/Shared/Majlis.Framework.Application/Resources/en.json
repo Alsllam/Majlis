@@ -1,0 +1,17 @@
+{
+  "General:Business:NotFound": "The requested item was not found.",
+  "General:Business:Forbidden": "You do not have permission to do this.",
+  "General:Business:DeleteNotAllowed": "This item cannot be deleted because other items depend on it.",
+  "General:Errors:Unexpected": "Something went wrong. Please try again later.",
+  "General:Errors:ServiceUnavailable": "The service is unavailable right now. Please try again shortly.",
+  "General:Errors:AiBusy": "The AI service is busy right now. Please try again shortly.",
+  "General:Errors:TooManyRequests": "Too many requests. Please wait a moment and try again.",
+  "General:Errors:InvalidRequest": "The request is not valid.",
+  "General:Fields:Required": "{PropertyName} is required.",
+  "General:Fields:MaxLength": "{PropertyName} must be at most {MaxLength} characters.",
+  "General:Fields:InvalidCharacters": "{PropertyName} contains characters that are not allowed.",
+  "General:Fields:AlreadyExist": "{PropertyName} is already in use.",
+  "General:Fields:InvalidSorting": "Cannot sort by {0}.",
+  "General:Fields:Invalid": "{PropertyName} is not valid.",
+  "General:Errors:Conflict": "Someone else changed this at the same time. The state was refreshed; please try again."
+}

@@ -1,0 +1,39 @@
+<div class="modal-header">
+  <h2 class="modal-title fs-5">{{ 'Workspaces.AddMember' | translate }}</h2>
+  <button type="button" class="btn-close" [attr.aria-label]="'General.Close' | translate" (click)="modal.dismiss()"></button>
+</div>
+<div class="modal-body d-grid gap-3">
+  <div>
+    <label class="form-label" for="member-search">{{ 'Workspaces.SearchUsers' | translate }}</label>
+    <input id="member-search" class="form-control" type="search" [ngModel]="query" (ngModelChange)="search($event)" autocomplete="off" />
+    @if (results(); as users) {
+      @if (users.length === 0) {
+        <p class="empty">{{ 'Workspaces.NoUsers' | translate }}</p>
+      } @else {
+        <ul class="results">
+          @for (u of users; track u.id) {
+            <li>
+              <button type="button" class="user" [class.active]="selected()?.id === u.id" [disabled]="existing.has(u.id)" (click)="selected.set(u)">
+                <majlis-avatar [name]="u.displayName" style="--avatar-size: 28px" />
+                <span class="d-grid"><span>{{ u.displayName }}</span><span class="email" dir="ltr">{{ u.email }}</span></span>
+                @if (existing.has(u.id)) { <span class="status-tag status-tag-neutral ms-auto">{{ 'Workspaces.AlreadyMember' | translate }}</span> }
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    }
+  </div>
+  <div>
+    <label class="form-label" for="member-role">{{ 'Workspaces.RoleLabel' | translate }}</label>
+    <select id="member-role" class="form-select" [ngModel]="role()" (ngModelChange)="role.set($event)">
+      @for (r of roles; track r) {
+        <option [value]="r" [disabled]="r === 'Owner' && !canAssignOwner">{{ 'Workspaces.Role.' + r | translate }}</option>
+      }
+    </select>
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()">{{ 'General.Cancel' | translate }}</button>
+  <button type="button" class="btn btn-primary" (click)="submit()" [disabled]="!selected()" [majlisBusy]="busy()">{{ 'Workspaces.AddMember' | translate }}</button>
+</div>

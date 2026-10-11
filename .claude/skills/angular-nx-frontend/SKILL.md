@@ -1,6 +1,6 @@
 ---
 name: "angular-nx-frontend"
-description: Rules for building or extending an Angular 20 frontend, always in an Nx workspace, with ECharts for charts, AntV X6 for diagrams, typed proxies, list/filter engine, wizard forms, permissions, Arabic/English RTL, and a project brand kit (logo, colors, motion). Use for any frontend work in these projects.
+description: Rules for building or extending an Angular 22 frontend, always in an Nx workspace, with ECharts for charts, AntV X6 for diagrams, typed proxies, list/filter engine, wizard forms, permissions, Arabic/English RTL, and a project brand kit (logo, colors, motion). Use for any frontend work in these projects.
 ---
 
 # Angular + Nx Frontend Rules
@@ -89,9 +89,9 @@ Required patterns:
 
 | Concern | Choice |
 |---|---|
-| Framework | Angular 20, **standalone components only** (no new NgModules), signals for local state |
-| Monorepo | Nx 21 (`@nx/angular`), ESLint 9 flat config, Prettier (`singleQuote: true`) |
-| Language | TypeScript 5.9 with **`strict: true`** in new workspaces |
+| Framework | Angular 22, **standalone components only** (no new NgModules), signals for local state |
+| Monorepo | Nx 23 (`@nx/angular`), ESLint 9 flat config, Prettier (`singleQuote: true`) |
+| Language | TypeScript 6.0 with **`strict: true`** in new workspaces |
 | UI kit | Bootstrap 5.3 (themes compiled by `theme-layout-generator`: Sass + PostCSS `rtlcss`, light/dark/dim) + `@ng-bootstrap/ng-bootstrap` |
 | Tables | `@swimlane/ngx-datatable` through the shared list engine |
 | Selects | `@ng-select/ng-select` (wrapped by `mof-input-dropdown/autocomplete/multiselect`) |
@@ -110,7 +110,7 @@ Required patterns:
 
 ## 2. Workspace layout
 
-**Always an Nx workspace.** Every frontend, even one with a single app, is created with `npx create-nx-workspace@21 {product}-frontend --preset=angular-monorepo --bundler=esbuild --style=scss --e2eTestRunner=playwright`. Never a plain `ng new` Angular CLI project, and never apps without libraries. Every app, library, component and service is created with an Nx generator (`nx g @nx/angular:…`). Every build, serve, test and lint command runs through Nx (`nx run`, `nx affected`, `nx run-many`), so caching and module-boundary rules always apply.
+**Always an Nx workspace.** Every frontend, even one with a single app, is created with `npx create-nx-workspace@23 {product}-frontend --preset=angular-monorepo --bundler=esbuild --style=scss --e2eTestRunner=playwright`. Never a plain `ng new` Angular CLI project, and never apps without libraries. Every app, library, component and service is created with an Nx generator (`nx g @nx/angular:…`). Every build, serve, test and lint command runs through Nx (`nx run`, `nx affected`, `nx run-many`), so caching and module-boundary rules always apply.
 
 ```
 {product}-frontend/

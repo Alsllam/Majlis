@@ -1,0 +1,5 @@
+{
+  "Tasks:Task:NotWorkspaceMember": "You are not a member of this workspace.",
+  "Tasks:Task:AssigneeNotMember": "The assignee is not a member of the workspace.",
+  "Tasks:Task:Created": "Task \"{0}\" created."
+}

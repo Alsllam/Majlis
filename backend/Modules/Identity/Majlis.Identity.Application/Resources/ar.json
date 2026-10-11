@@ -1,0 +1,11 @@
+{
+  "Identity:Login:Title": "تسجيل الدخول",
+  "Identity:Login:Email": "البريد الإلكتروني",
+  "Identity:Login:Password": "كلمة المرور",
+  "Identity:Login:Submit": "دخول",
+  "Identity:Login:Invalid": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+  "Identity:Login:LockedOut": "تم إيقاف الحساب مؤقتاً بعد محاولات متكررة. حاول لاحقاً.",
+  "Identity:Login:Inactive": "الحساب غير مفعّل. تواصل مع مسؤول الجهة.",
+  "Identity:Login:Tagline": "مساحة عمل مشتركة مع الذكاء الاصطناعي",
+  "Identity:Login:SwitchLanguage": "English"
+}

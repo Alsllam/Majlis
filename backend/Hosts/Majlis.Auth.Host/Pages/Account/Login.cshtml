@@ -1,0 +1,52 @@
+@page
+@model Majlis.Auth.Host.Pages.Account.LoginModel
+<!doctype html>
+<html lang="@Model.Lang" dir="@(Model.IsRtl ? "rtl" : "ltr")">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>@Model.L["Identity:Login:Title"] · @(Model.IsRtl ? "مجلس" : "Majlis")</title>
+  <style>
+    :root { --brand-solid:#067368; --brand-solid-hover:#015c52; --surface:#ffffff; --surface-sunken:#f9f3ec; --text-primary:#191714; --text-secondary:#49443e; --border-strong:#807b74; --danger-text:#8d2022; --danger-bg:#fef4f3; --focus-ring:#078f81; }
+    @@media (prefers-color-scheme: dark) { :root { --brand-solid:#38ad9e; --brand-solid-hover:#70cabd; --surface:#22201d; --surface-sunken:#100e0b; --text-primary:#f9f3ec; --text-secondary:#c9c3bc; --border-strong:#807b74; --danger-text:#fec4be; --danger-bg:#3d1e1c; --focus-ring:#70cabd; } }
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; background:var(--surface-sunken); color:var(--text-primary);
+      font-family: "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif; line-height:1.7; }
+    main { width:min(400px, calc(100% - 32px)); background:var(--surface); border-radius:16px; padding:32px; box-shadow:0 4px 8px rgb(15 60 55 / .06), 0 16px 32px rgb(15 60 55 / .12); }
+    header { display:flex; align-items:center; gap:12px; margin-block-end:24px; }
+    header h1 { margin:0; font-size:1.5rem; } header p { margin:0; color:var(--text-secondary); font-size:.875rem; }
+    label { display:block; font-size:.875rem; font-weight:500; margin-block:16px 6px; }
+    input { width:100%; font:inherit; padding:10px 12px; border-radius:8px; border:1px solid var(--border-strong); background:var(--surface); color:var(--text-primary); }
+    input:focus-visible, button:focus-visible, a:focus-visible { outline:2px solid var(--focus-ring); outline-offset:2px; }
+    button { width:100%; margin-block-start:24px; font:inherit; font-weight:600; padding:10px; border:0; border-radius:8px; background:var(--brand-solid); color:#fff; cursor:pointer; transition:background 120ms cubic-bezier(.2,.8,.2,1); }
+    @@media (prefers-color-scheme: dark) { button { color:#100e0b; } }
+    button:hover { background:var(--brand-solid-hover); }
+    .error { margin-block-start:16px; padding:10px 12px; border-radius:8px; background:var(--danger-bg); color:var(--danger-text); font-size:.875rem; }
+    .lang { display:block; text-align:center; margin-block-start:16px; color:var(--text-secondary); font-size:.875rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      @Html.Raw(Brand.Mark)
+      <div>
+        <h1>@(Model.IsRtl ? "مجلس" : "Majlis")</h1>
+        <p>@Model.L["Identity:Login:Tagline"]</p>
+      </div>
+    </header>
+    <form method="post">
+      <input type="hidden" asp-for="ReturnUrl" />
+      <label for="email">@Model.L["Identity:Login:Email"]</label>
+      <input id="email" asp-for="Input.Email" type="email" autocomplete="username" dir="ltr" required autofocus />
+      <label for="password">@Model.L["Identity:Login:Password"]</label>
+      <input id="password" asp-for="Input.Password" type="password" autocomplete="current-password" dir="ltr" required />
+      @if (Model.Error is not null)
+      {
+        <div class="error" role="alert">@Model.Error</div>
+      }
+      <button type="submit">@Model.L["Identity:Login:Submit"]</button>
+    </form>
+    <a class="lang" href="@Model.OtherLanguageUrl">@Model.L["Identity:Login:SwitchLanguage"]</a>
+  </main>
+</body>
+</html>

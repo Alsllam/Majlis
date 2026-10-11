@@ -1,0 +1,75 @@
+<majlis-page-header title="Tasks.Title" subtitle="Tasks.Subtitle">
+  @if (myWorkspaces()?.length) {
+    <select class="form-select form-select-sm ws-select" [ngModel]="selectedWorkspace()" (ngModelChange)="selectWorkspace($event)" [attr.aria-label]="'Rooms.Workspace' | translate">
+      @for (w of myWorkspaces(); track w.id) {
+        <option [value]="w.id">{{ w.icon }} {{ w.name }}</option>
+      }
+    </select>
+  }
+  <select class="form-select form-select-sm status-select" [ngModel]="statusFilter()" (ngModelChange)="filterStatus($event)" [attr.aria-label]="'Tasks.Status' | translate">
+    <option value="">{{ 'Tasks.AllStatuses' | translate }}</option>
+    @for (s of statuses; track s) {
+      <option [value]="s">{{ 'Tasks.Statuses.' + s | translate }}</option>
+    }
+  </select>
+</majlis-page-header>
+
+@if (canContribute()) {
+  <form class="card-surface new-task" *majlisPermission="permissions.createTask" (ngSubmit)="create()">
+    <input class="form-control" name="title" [ngModel]="newTitle()" (ngModelChange)="newTitle.set($event)" [placeholder]="'Tasks.NewPlaceholder' | translate" [attr.aria-label]="'Tasks.NewPlaceholder' | translate" maxlength="200" />
+    <select class="form-select priority-select" name="priority" [ngModel]="newPriority()" (ngModelChange)="newPriority.set($event)" [attr.aria-label]="'Tasks.Priority' | translate">
+      @for (p of priorities; track p) {
+        <option [value]="p">{{ 'Tasks.Priorities.' + p | translate }}</option>
+      }
+    </select>
+    <button type="submit" class="btn btn-primary" [disabled]="!newTitle().trim()">{{ 'Tasks.Add' | translate }}</button>
+  </form>
+}
+
+@if (items() === null) {
+  <p class="text-secondary">{{ 'General.Loading' | translate }}</p>
+} @else if (items()?.length === 0) {
+  <majlis-empty-state title="Tasks.EmptyTitle" text="Tasks.EmptyText" />
+} @else {
+  <div class="card-surface">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>{{ 'Tasks.Task' | translate }}</th>
+          <th>{{ 'Tasks.Assignee' | translate }}</th>
+          <th>{{ 'Tasks.Priority' | translate }}</th>
+          <th>{{ 'Tasks.Due' | translate }}</th>
+          <th>{{ 'Tasks.Status' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (t of items(); track t.id) {
+          <tr [attr.data-task-id]="t.id">
+            <td>
+              <span class="title">{{ t.title }}</span>
+              @if (t.origin === 'Agent') {
+                <span class="status-tag status-tag-agent">{{ 'Tasks.ByAgent' | translate }}</span>
+                @if (t.roomId) { <a class="room-link" [routerLink]="['/rooms', t.roomId]">{{ 'Tasks.OpenRoom' | translate }}</a> }
+              }
+              @if (t.description) { <div class="desc">{{ t.description }}</div> }
+            </td>
+            <td>{{ t.assigneeDisplayName ?? '—' }}</td>
+            <td><span class="status-tag status-tag-neutral">{{ 'Tasks.Priorities.' + t.priority | translate }}</span></td>
+            <td class="num">{{ t.dueDate ? (t.dueDate | date: 'mediumDate' : undefined : lang()) : '—' }}</td>
+            <td>
+              @if (canUpdate()) {
+                <select class="form-select form-select-sm status-cell" [ngModel]="t.status" (ngModelChange)="setStatus(t, $event)" [attr.aria-label]="'Tasks.Status' | translate">
+                  @for (s of statuses; track s) {
+                    <option [value]="s">{{ 'Tasks.Statuses.' + s | translate }}</option>
+                  }
+                </select>
+              } @else {
+                <span class="status-tag" [class]="'status-tag ' + statusClass(t.status)">{{ 'Tasks.Statuses.' + t.status | translate }}</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

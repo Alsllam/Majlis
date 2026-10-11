@@ -1,0 +1,11 @@
+{
+  "Knowledge:Document:NotWorkspaceMember": "You are not a member of this workspace.",
+  "Knowledge:Document:FileTooLarge": "The file exceeds the allowed size ({0} MB).",
+  "Knowledge:Document:TypeNotSupported": "Unsupported file type. Accepted: PDF, Word, Excel, PowerPoint, text, Markdown and PNG/JPG images.",
+  "Knowledge:Document:FileNotUploaded": "The file has not reached storage yet. Upload it again, then confirm.",
+  "Knowledge:Document:VersionNotPending": "This version was already confirmed.",
+  "Knowledge:Document:Deleted": "This document was deleted.",
+  "Knowledge:Ingestion:Unsupported": "Text could not be extracted from this file type.",
+  "Knowledge:Ingestion:Empty": "No text was found in the file.",
+  "Knowledge:Ingestion:Failed": "Indexing failed. Try again or contact an admin."
+}

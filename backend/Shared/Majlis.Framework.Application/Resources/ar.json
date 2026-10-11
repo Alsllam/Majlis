@@ -1,0 +1,17 @@
+{
+  "General:Business:NotFound": "العنصر المطلوب غير موجود.",
+  "General:Business:Forbidden": "ليست لديك صلاحية لتنفيذ هذا الإجراء.",
+  "General:Business:DeleteNotAllowed": "لا يمكن الحذف لوجود عناصر مرتبطة.",
+  "General:Errors:Unexpected": "حدث خطأ غير متوقع. حاول مرة أخرى لاحقاً.",
+  "General:Errors:ServiceUnavailable": "الخدمة غير متاحة حالياً. حاول مرة أخرى بعد قليل.",
+  "General:Errors:AiBusy": "خدمة الذكاء الاصطناعي مشغولة حالياً. حاول مرة أخرى بعد قليل.",
+  "General:Errors:TooManyRequests": "عدد الطلبات كبير. انتظر قليلاً ثم حاول مرة أخرى.",
+  "General:Errors:InvalidRequest": "صيغة الطلب غير صحيحة.",
+  "General:Fields:Required": "الحقل {PropertyName} مطلوب.",
+  "General:Fields:MaxLength": "يجب ألا يتجاوز الحقل {PropertyName} {MaxLength} حرفاً.",
+  "General:Fields:InvalidCharacters": "الحقل {PropertyName} يحتوي على رموز غير مسموحة.",
+  "General:Fields:AlreadyExist": "القيمة في الحقل {PropertyName} مستخدمة مسبقاً.",
+  "General:Fields:InvalidSorting": "لا يمكن الترتيب حسب الحقل {0}.",
+  "General:Fields:Invalid": "قيمة الحقل {PropertyName} غير صحيحة.",
+  "General:Errors:Conflict": "تم تعديل البيانات من مستخدم آخر في الوقت نفسه. تم تحديث الحالة، حاول مرة أخرى."
+}

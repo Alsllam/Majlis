@@ -1,0 +1,21 @@
+{
+  "name": "workspaces-proxy",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/workspaces-proxy/src",
+  "prefix": "majlis",
+  "projectType": "library",
+  "tags": ["type:proxy"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/shared/workspaces-proxy/jest.config.cts",
+        "tsConfig": "libs/shared/workspaces-proxy/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

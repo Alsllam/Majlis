@@ -44,7 +44,7 @@ flowchart TB
   ROOMS & APPR & KNW & TSK & MTG == "domain events" ==> NTF & AUD & RT
 ```
 
-Solid arrows: HTTP (Refit or BFF). Double arrows: MassTransit events over RabbitMQ. Dotted: read-only Refit lookups (cached).
+Solid arrows: HTTP (Refit or BFF). Double arrows: integration events over RabbitMQ (Wolverine, ADR-0009). Dotted: read-only Refit lookups (cached).
 
 ## 2. Modules
 
@@ -60,31 +60,32 @@ Every module has the four projects from the skill (`Majlis.{Module}.Domain`, `.A
 - **Owns:** Workspace, WorkspaceMember (user or group, role), Invitation, workspace agent instructions and glossary (terms with ar/en forms and definitions).
 - **Publishes:** `WorkspaceCreated`, `WorkspaceArchived`, `MemberAdded`, `MemberRoleChanged`, `MemberRemoved` (+ `AccessRevoked`), `WorkspaceInstructionsChanged`.
 - **Consumes:** `UserDeactivated`, `GroupMembershipChanged` (recompute effective permissions cache).
-- **Notes:** the authority for "may user U do X in workspace W". It writes the effective permission set per user × workspace into Redis, which every module's `PermissionHandler` reads. The `ISecuredEntity` scope across all modules is the workspace.
+- **Notes:** the authority for "may user U do X in workspace W". It writes the effective permission set per user into Redis (`majlis:permissions:{userId}`, the union over the user's active workspaces; 12 h TTL, refreshed on every membership change), which every module's `PermissionChecker` reads; the owning app service then checks the role in the specific workspace. The `ISecuredEntity` scope across all modules is the workspace. *(Built 2026-10-10: workspaces, members, roles, agent instructions, archive. Groups, invitations and the glossary follow.)*
 
 ### Rooms — `rooms` · 7020 (hot path)
 - **Owns:** Room, RoomParticipant, AgentSession (control state, epoch), Turn, ToolCall (reference to approval), Citation, Comment, Suggestion, **SessionEvent log** (the per-session sequencer).
 - **Publishes:** `SessionEventAppended` (every timeline event, for the Realtime host), `TurnRequested`, `TurnStopRequested`, `SessionEnded`, `ControlChanged`, `ParticipantAdded/Removed` (+ `AccessRevoked`), `MentionCreated`.
-- **Consumes:** `TurnProgressed/TurnCompleted/TurnStopped/TurnFailed/ToolProposed/SummaryReady` (from ai-service), `ApprovalRequested/Decided/Executed/Expired` (from Approvals), `DriverPresenceLost/Restored` (from Realtime), `MemberRemoved`.
-- **Calls:** ai-service `POST /internal/sessions/{id}/turns` with the driver's token; Workspaces (membership, cached).
-- **Notes:** single writer of session state. Scale out horizontally — per-session ordering comes from the DB (row version + seq counter on `AgentSession`), not from in-memory state. Uses the MassTransit EF Core outbox so events are published only after commit and in order.
+- **Consumes:** `TurnProgressed/TurnCompleted/TurnStopped/TurnFailed/ToolProposed/SummaryReady` (from ai-service), `ApprovalRequested/Decided/Executed/Expired` (from Approvals), `DriverPresenceLost/Restored` (from Realtime), `MemberAdded/MemberRoleChanged/MemberRemoved` (from Workspaces).
+- **Calls:** ai-service `POST /internal/sessions/{id}/turns` with the driver's token. Workspace membership comes from a local read model (`WorkspaceMembership`, fed by the member events), never from a call on the hot path.
+- **Notes:** single writer of session state. Scale out horizontally — per-session ordering comes from the DB (row version + seq counter on `AgentSession`), not from in-memory state. Uses Wolverine's transactional outbox in the `rooms` schema so events are published only after commit and in order.
 
 ### Approvals — `approvals` · 7030
 - **Owns:** ApprovalPolicy, ApprovalRequest (tool, args, preview/diff, risk, requester, origin session/turn, expiry), ApprovalDecision (approve/reject/edit-then-approve).
 - **Publishes:** `ApprovalRequested`, `ApprovalDecided`, `ActionApproved {tool, args, approvalRequestId, requestedBy, approvedBy}`, `ActionRejected`, `ApprovalExpired`.
 - **Consumes:** `ActionExecuted`, `ActionExecutionFailed` (from the owning modules), `MemberRemoved` (re-evaluate pending approvals).
-- **Notes:** the only door for agent-originated writes. The tool → owning module map is configuration (`create_task → Tasks`, `draft_document → Knowledge`, …). Policy evaluation (who may approve, how many approvals, self-approval) is a domain service `ApprovalPolicyManager`. Expiry runs as a Hangfire job.
+- **Notes:** the only door for agent-originated writes. The tool → owning module map is configuration (`create_task → Tasks`, `draft_document → Knowledge`, …). Policy evaluation (who may approve, how many approvals, self-approval) is a domain service `ApprovalPolicyManager`. Expiry runs as a Hangfire job. *(Built 2026-10-10: requests, the default policy (low risk → any contributor; medium/high → an owner or admin other than the requester), edit-then-approve, reject with reason, expiry (published as `ApprovalDecided {decision: Expired}` rather than a separate `ApprovalExpired`), `ApprovalExecuted` from `ActionExecuted/Failed`; ai-service creates requests over HTTP with the driver's token. Per-workspace policies, several approvers, `MemberRemoved` re-evaluation and the Hangfire job follow; until then an in-host sweeper expires requests.)*
 
 ### Knowledge — `knowledge` · 7040
 - **Owns:** Folder (ACL groups), Document, DocumentVersion (blob path, SHA-256, ingestion status), agent Drafts (Document with `Origin = Agent`, status Draft → Approved). (The glossary is owned by Workspaces.)
 - **Publishes:** `DocumentUploaded {tenantId, workspaceId, documentId, versionId, blobUrl, aclGroups, language?}`, `DocumentDeleted`, `DocumentAclChanged`, `ActionExecuted` (for `draft_document`, `add_to_knowledge`).
 - **Consumes:** `DocumentIndexed`, `DocumentIndexingFailed` (from ai-service), `ActionApproved` for its tools.
-- **Notes:** uploads go to file storage through short-lived pre-signed URLs issued by Knowledge via `IBlobStorage` (Azure Blob SAS on cloud, S3 pre-signed URLs on-prem), directly from the browser, then `confirm`. Malware scan before `DocumentUploaded`. Exports (DOCX/PDF) of drafts are generated here.
+- **Notes:** uploads go to file storage through short-lived pre-signed URLs issued by Knowledge via `IBlobStorage` (Azure Blob SAS on cloud, S3 pre-signed URLs on-prem), directly from the browser, then `confirm`. Malware scan before `DocumentUploaded`. Exports (DOCX/PDF) of drafts are generated here. *(Built 2026-10-10: documents and versions, two-step upload, ingestion status, download, delete, membership read model from the Workspaces member events. Folders with ACL groups, drafts, malware scan and live status push follow.)*
 
 ### Tasks — `tasks` · 7050
 - **Owns:** Task (assignee, due date, priority, status, origin, source session/turn, `ApprovalRequestId`).
 - **Publishes:** `TaskCreated`, `TaskAssigned`, `TaskStatusChanged`, `TaskDue`, `ActionExecuted`.
 - **Consumes:** `ActionApproved` for `create_task` / `update_task`, `MemberRemoved` (unassign).
+- *(Built 2026-10-10: tasks with list/create/update/status, `create_task` executed once per `ApprovalRequestId` with `ActionExecuted` / `ActionExecutionFailed`; the `Task*` events, `update_task` and unassign on `MemberRemoved` follow.)*
 
 ### Meetings — `meetings` · 7060
 - **Owns:** Meeting, Transcript (segments), Minutes, ActionItem.
@@ -131,7 +132,7 @@ Cloud is the priority and the only profile built now; on-prem follows the same c
 **`cloud` — one regional stamp per supported Azure region:**
 - Azure Container Apps, one app per host, internal ingress for everything except the BFF; zone redundant; minimum 2 replicas for BFF, Realtime, Rooms and Approvals, 1 for the rest in non-prod.
 - Azure SQL: one database `Majlis` with one schema per module (one login per module with rights on its schema only). The per-module DbContext lets a busy module (Rooms) move to its own database later without code changes.
-- Azure Cache for Redis with key prefixes `majlis:{purpose}:` (permissions, presence, stream, snapshots, tickets, backplane); RabbitMQ with one vhost `majlis` and MassTransit topology (one exchange per event type, one queue per consumer per module).
+- Azure Cache for Redis with key prefixes `majlis:{purpose}:` (permissions, presence, stream, snapshots, tickets, backplane); RabbitMQ with one vhost `majlis` and the Wolverine topology: one durable fanout exchange per event type (`majlis.{alias}`) and one queue per listening module (`{module}.{alias}`).
 
 **`on-prem` — one installation per customer (built later, when the first on-prem customer is confirmed):**
 - Helm chart for Kubernetes, or a Docker Compose bundle for a single server (small customers, pilots). Same images as the cloud.

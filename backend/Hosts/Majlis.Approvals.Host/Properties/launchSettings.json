@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Majlis.Approvals.Host": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:7030",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    }
+  }
+}

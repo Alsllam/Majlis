@@ -1,0 +1,8 @@
+.ws-select { max-width: 240px; }
+.status-select, .priority-select { max-width: 160px; }
+.new-task { display: flex; gap: var(--space-2); padding: var(--space-3); margin-bottom: var(--space-4); align-items: center; }
+.table { --bs-table-bg: transparent; --bs-table-color: var(--text-primary); --bs-table-border-color: var(--border-subtle); }
+.title { font-weight: var(--fw-medium); margin-inline-end: var(--space-2); }
+.desc { font-size: var(--fs-xs); color: var(--text-muted); white-space: pre-wrap; }
+.room-link { font-size: var(--fs-xs); margin-inline-start: var(--space-2); }
+.status-cell { max-width: 160px; }

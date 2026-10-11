@@ -1,0 +1,13 @@
+.document { display: grid; gap: var(--space-4); }
+.head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-4); flex-wrap: wrap; }
+.back { font-size: var(--fs-sm); color: var(--text-muted); text-decoration: none; &:hover { color: var(--brand-text); } }
+h1 { font-size: var(--fs-xl); margin: 0; }
+h2 { font-size: var(--fs-md); margin: 0 0 var(--space-2); }
+.meta { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin-top: var(--space-1); }
+.muted { color: var(--text-muted); font-size: var(--fs-xs); }
+.cited { padding: var(--space-3) var(--space-4); border-inline-start: 4px solid var(--agent); }
+blockquote { margin: 0; white-space: pre-wrap; }
+.versions { padding: var(--space-3) var(--space-4); }
+.file { direction: ltr; display: inline-block; }
+.reason { font-size: var(--fs-xs); color: var(--danger-text); margin-top: var(--space-1); }
+.table { --bs-table-bg: transparent; --bs-table-color: var(--text-primary); --bs-table-border-color: var(--border-subtle); }
