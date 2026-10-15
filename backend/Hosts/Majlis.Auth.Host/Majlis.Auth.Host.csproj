@@ -8,5 +8,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="OpenIddict.AspNetCore" />
+    <!-- Wolverine compiles its message-publishing code at startup (TypeLoadMode.Dynamic), like the other hosts. -->
+    <PackageReference Include="WolverineFx.RuntimeCompilation" />
   </ItemGroup>
 </Project>

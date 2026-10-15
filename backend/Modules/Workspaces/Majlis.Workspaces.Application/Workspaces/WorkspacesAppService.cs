@@ -27,7 +27,9 @@ public class WorkspacesAppService(
     IValidator<CreateWorkspaceDto> createValidator,
     IValidator<UpdateWorkspaceDto> updateValidator,
     IValidator<UpdateAgentInstructionsDto> instructionsValidator,
-    IValidator<SetWorkspaceMemberDto> setMemberValidator) : ApplicationService, IWorkspacesAppService
+    IValidator<SetWorkspaceMemberDto> setMemberValidator,
+    IValidator<SetWorkspaceGroupDto> setGroupValidator,
+    IReadOnlyRepository<GroupMembership, Guid> groupMemberships) : ApplicationService, IWorkspacesAppService
 {
     /// <inheritdoc />
     [HttpPost("list")]
@@ -159,6 +161,59 @@ public class WorkspacesAppService(
         await permissionCache.RefreshAsync(input.UserId, cancellationToken);
     }
 
+    /// <inheritdoc />
+    [HttpPost("groups")]
+    [HasPermission(WorkspacesPermissions.ManageMembers)]
+    public async Task SetGroupAsync(SetWorkspaceGroupDto input, CancellationToken cancellationToken = default)
+    {
+        await ValidateAsync(setGroupValidator, input, cancellationToken);
+        var workspace = await LoadAsync(input.WorkspaceId, tracked: true, cancellationToken);
+        var members = await groupMemberships.Query().Where(g => g.GroupId == input.GroupId && g.TenantId == workspace.TenantId)
+            .Select(g => new ValueTuple<Guid, string>(g.UserId, g.DisplayName)).ToListAsync(cancellationToken);
+        var changedRole = workspace.Groups.FirstOrDefault(g => g.GroupId == input.GroupId)?.Role is { } before && before != input.Role;
+        var added = workspace.GrantGroup(currentUser.GetRequiredId(), input.GroupId, input.GroupName.Trim(), input.Role, members);
+        await workspaces.UpdateAsync(workspace, autoSave: false, cancellationToken);
+        foreach (var member in added)
+        {
+            await publisher.PublishAsync(new MemberAdded(workspace.TenantId, workspace.Id, member.UserId, member.DisplayName, member.Role.ToString()), cancellationToken);
+        }
+
+        if (changedRole)
+        {
+            foreach (var member in workspace.Members.Where(m => m.ViaGroupId == input.GroupId && !added.Contains(m)))
+            {
+                await publisher.PublishAsync(new MemberRoleChanged(workspace.TenantId, workspace.Id, member.UserId, member.DisplayName, member.Role.ToString()), cancellationToken);
+            }
+        }
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        foreach (var userId in workspace.Members.Where(m => m.ViaGroupId == input.GroupId).Select(m => m.UserId))
+        {
+            await permissionCache.RefreshAsync(userId, cancellationToken);
+        }
+    }
+
+    /// <inheritdoc />
+    [HttpDelete("groups")]
+    [HasPermission(WorkspacesPermissions.ManageMembers)]
+    public async Task RemoveGroupAsync(RemoveWorkspaceGroupDto input, CancellationToken cancellationToken = default)
+    {
+        var workspace = await LoadAsync(input.WorkspaceId, tracked: true, cancellationToken);
+        var removed = workspace.RevokeGroup(currentUser.GetRequiredId(), input.GroupId);
+        await workspaces.UpdateAsync(workspace, autoSave: false, cancellationToken);
+        foreach (var userId in removed)
+        {
+            await publisher.PublishAsync(new MemberRemoved(workspace.TenantId, workspace.Id, userId), cancellationToken);
+            await publisher.PublishAsync(new AccessRevoked(workspace.TenantId, userId, "workspace", workspace.Id), cancellationToken);
+        }
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        foreach (var userId in removed)
+        {
+            await permissionCache.RefreshAsync(userId, cancellationToken);
+        }
+    }
+
     private async Task SetArchivedAsync(Guid id, bool archived, CancellationToken cancellationToken)
     {
         var workspace = await LoadAsync(id, tracked: true, cancellationToken);
@@ -186,7 +241,7 @@ public class WorkspacesAppService(
     private async Task<Workspace> LoadAsync(Guid id, bool tracked, CancellationToken cancellationToken)
     {
         var query = tracked ? workspaces.QueryTracked() : workspaces.Query();
-        return await query.Include(w => w.Members).FirstOrDefaultAsync(w => w.Id == id, cancellationToken)
+        return await query.Include(w => w.Members).Include(w => w.Groups).FirstOrDefaultAsync(w => w.Id == id, cancellationToken)
             ?? throw new EntityNotFoundException();
     }
 

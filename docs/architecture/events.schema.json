@@ -470,6 +470,50 @@
         "displayName": { "type": ["string", "null"] }
       }
     },
+    "groupMemberAdded": {
+      "description": "Identity (Auth host, no outbox) → Workspaces (exchange majlis.group-member-added): a user joined a tenant group. Workspaces adds them to every workspace that granted the group a role.",
+      "type": "object",
+      "required": ["tenantId", "groupId", "groupName", "userId", "displayName"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "groupId": { "$ref": "#/$defs/uuid" },
+        "groupName": { "type": "string" },
+        "userId": { "$ref": "#/$defs/uuid" },
+        "displayName": { "type": "string" }
+      }
+    },
+    "groupMemberRemoved": {
+      "description": "Identity → Workspaces (exchange majlis.group-member-removed): memberships the group gave go away; direct memberships stay.",
+      "type": "object",
+      "required": ["tenantId", "groupId", "userId"],
+      "properties": { "tenantId": { "$ref": "#/$defs/uuid" }, "groupId": { "$ref": "#/$defs/uuid" }, "userId": { "$ref": "#/$defs/uuid" } }
+    },
+    "groupRenamed": {
+      "description": "Identity → Workspaces (exchange majlis.group-renamed): the name snapshot on grants is refreshed.",
+      "type": "object",
+      "required": ["tenantId", "groupId", "groupName"],
+      "properties": { "tenantId": { "$ref": "#/$defs/uuid" }, "groupId": { "$ref": "#/$defs/uuid" }, "groupName": { "type": "string" } }
+    },
+    "groupDeleted": {
+      "description": "Identity → Workspaces (exchange majlis.group-deleted): every grant of the group is withdrawn.",
+      "type": "object",
+      "required": ["tenantId", "groupId"],
+      "properties": { "tenantId": { "$ref": "#/$defs/uuid" }, "groupId": { "$ref": "#/$defs/uuid" } }
+    },
+    "userInvitationAccepted": {
+      "description": "Identity → Workspaces (exchange majlis.user-invitation-accepted): an invited person has an account (new, or existing and added at once). Workspaces adds them to the workspace as the inviter, who must still manage it.",
+      "type": "object",
+      "required": ["tenantId", "invitationId", "userId", "displayName", "invitedByUserId"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/uuid" },
+        "invitationId": { "$ref": "#/$defs/uuid" },
+        "userId": { "$ref": "#/$defs/uuid" },
+        "displayName": { "type": "string" },
+        "workspaceId": { "anyOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }] },
+        "workspaceRole": { "type": ["string", "null"], "enum": ["Owner", "Admin", "Contributor", "Viewer", null] },
+        "invitedByUserId": { "$ref": "#/$defs/uuid" }
+      }
+    },
     "jobTick": {
       "description": "Jobs host → a module (exchanges majlis.approval-expiry-sweep-requested, majlis.daily-digest-requested, majlis.audit-chain-verification-requested, majlis.recording-retention-sweep-requested): a scheduled tick (Hangfire, UTC). Idempotent in the handling module: a late or duplicate tick is harmless.",
       "type": "object",

@@ -53,7 +53,7 @@
               <td>
                 <span class="who">
                   <majlis-avatar [name]="m.displayName" style="--avatar-size: 28px" />
-                  <span>{{ m.displayName }} @if (m.userId === meId()) { <span class="me">({{ 'Session.You' | translate }})</span> }</span>
+                  <span>{{ m.displayName }} @if (m.userId === meId()) { <span class="me">({{ 'Session.You' | translate }})</span> } @if (m.viaGroupName) { <span class="status-tag status-tag-neutral via">{{ 'Workspaces.ViaGroup' | translate: { name: m.viaGroupName } }}</span> }</span>
                 </span>
               </td>
               <td>
@@ -79,6 +79,76 @@
         </tbody>
       </table>
     </section>
+
+    @if (canManage() && !ws?.isArchived) {
+      <section class="card-surface groups" data-testid="workspace-groups">
+        <div class="section-head">
+          <h2>{{ 'Workspaces.GroupsTitle' | translate }}</h2>
+        </div>
+        <p class="hint">{{ 'Workspaces.GroupsHint' | translate }}</p>
+        @if (ws?.groups?.length) {
+          <table class="table align-middle mb-2">
+            <tbody>
+              @for (g of ws?.groups; track g.groupId) {
+                <tr>
+                  <td>{{ g.groupName }} <span class="me">({{ 'Workspaces.Members' | translate: { count: g.memberCount } }})</span></td>
+                  <td>
+                    <select class="form-select form-select-sm role" [ngModel]="g.role" (ngModelChange)="changeGroupRole(g.groupId, g.groupName, $event)" [disabled]="busy()" [attr.aria-label]="'Workspaces.RoleLabel' | translate">
+                      @for (r of grantableRoles; track r) {
+                        <option [value]="r">{{ 'Workspaces.Role.' + r | translate }}</option>
+                      }
+                    </select>
+                  </td>
+                  <td class="text-end"><button type="button" class="btn btn-sm btn-outline-danger" (click)="removeGroup(g.groupId)" [disabled]="busy()">{{ 'General.Remove' | translate }}</button></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+        <form class="inline-form" (ngSubmit)="addGroup()">
+          <select id="ws-group" class="form-select form-select-sm" name="group" [ngModel]="groupToAdd()" (ngModelChange)="groupToAdd.set($event)" [attr.aria-label]="'Workspaces.GroupsTitle' | translate">
+            <option value="">{{ 'Workspaces.PickGroup' | translate }}</option>
+            @for (g of availableGroups(); track g.id) {
+              <option [value]="g.id">{{ g.name }}</option>
+            }
+          </select>
+          <select id="ws-group-role" class="form-select form-select-sm role" name="groupRole" [ngModel]="groupRole()" (ngModelChange)="groupRole.set($event)" [attr.aria-label]="'Workspaces.RoleLabel' | translate">
+            @for (r of grantableRoles; track r) {
+              <option [value]="r">{{ 'Workspaces.Role.' + r | translate }}</option>
+            }
+          </select>
+          <button type="submit" class="btn btn-sm btn-outline-primary" [disabled]="!groupToAdd()" [majlisBusy]="busy()">{{ 'Workspaces.AddGroup' | translate }}</button>
+        </form>
+      </section>
+
+      <section class="card-surface invitations" data-testid="workspace-invitations">
+        <div class="section-head">
+          <h2>{{ 'Workspaces.InviteTitle' | translate }}</h2>
+        </div>
+        <p class="hint">{{ 'Workspaces.InviteHint' | translate }}</p>
+        <form class="inline-form" (ngSubmit)="invite()">
+          <input id="ws-invite-email" class="form-control form-control-sm" type="email" name="email" dir="ltr" [ngModel]="inviteEmail()" (ngModelChange)="inviteEmail.set($event)" [placeholder]="'Workspaces.InviteEmail' | translate" [attr.aria-label]="'Workspaces.InviteEmail' | translate" required />
+          <select id="ws-invite-role" class="form-select form-select-sm role" name="inviteRole" [ngModel]="inviteRole()" (ngModelChange)="inviteRole.set($event)" [attr.aria-label]="'Workspaces.RoleLabel' | translate">
+            @for (r of roles; track r) {
+              <option [value]="r" [disabled]="r === 'Owner' && !isOwner()">{{ 'Workspaces.Role.' + r | translate }}</option>
+            }
+          </select>
+          <button type="submit" class="btn btn-sm btn-primary" [disabled]="!inviteEmail().trim()" [majlisBusy]="busy()">{{ 'Workspaces.Invite' | translate }}</button>
+        </form>
+        @if (pendingInvitations().length) {
+          <ul class="pending">
+            @for (i of pendingInvitations(); track i.id) {
+              <li>
+                <span dir="ltr">{{ i.email }}</span>
+                <span class="status-tag status-tag-warning">{{ 'Workspaces.Pending' | translate }}</span>
+                <span class="me">{{ 'Workspaces.Role.' + i.workspaceRole | translate }}</span>
+                <button type="button" class="btn btn-ghost btn-sm ms-auto" (click)="revokeInvitation(i.id)" [disabled]="busy()">{{ 'Workspaces.Revoke' | translate }}</button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    }
 
     <aside class="card-surface instructions">
       <h2>{{ 'Workspaces.InstructionsTitle' | translate }}</h2>

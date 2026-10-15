@@ -10,6 +10,8 @@ using Majlis.Workspaces.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Majlis.Workspaces.Tests.Application.TestInfrastructure;
 
@@ -48,6 +50,7 @@ public sealed class WorkspacesTestHost : IDisposable
         services.AddSingleton(Publisher);
         services.AddValidatorsFromAssembly(typeof(WorkspacesApplicationModule).Assembly);
         services.AddScoped<WorkspacePermissionCache>();
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         services.AddScoped<WorkspacesAppService>();
         _provider = services.BuildServiceProvider();
     }

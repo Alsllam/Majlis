@@ -7,5 +7,18 @@
   "Identity:Login:LockedOut": "The account is locked after repeated attempts. Try again later.",
   "Identity:Login:Inactive": "This account is not active. Contact your organization's admin.",
   "Identity:Login:Tagline": "A shared AI workspace for teams",
-  "Identity:Login:SwitchLanguage": "العربية"
+  "Identity:Login:SwitchLanguage": "العربية",
+  "Identity:Register:Title": "Create your account",
+  "Identity:Register:Intro": "{0} invited you to Majlis. Fill in your details to create your account.",
+  "Identity:Register:Name": "Full name",
+  "Identity:Register:Password": "Password",
+  "Identity:Register:PasswordHint": "At least 10 characters",
+  "Identity:Register:Submit": "Create account",
+  "Identity:Register:InvalidToken": "This invitation is not valid or has expired. Ask your organization's admin for a new one.",
+  "Identity:Register:Done": "Your account was created. You can sign in now.",
+  "Identity:Invitation:NotOpen": "The invitation is not valid or has expired",
+  "Identity:Invitation:AlreadyPending": "An invitation for this email is already pending",
+  "Identity:Group:NameTaken": "A group with this name exists",
+  "Identity:User:NotInTenant": "The user is not in this organization or is deactivated",
+  "Identity:Register:Failed": "The account could not be created: {0}"
 }

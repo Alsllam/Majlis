@@ -49,3 +49,16 @@ public sealed class SetWorkspaceMemberValidator : AbstractValidator<SetWorkspace
         RuleFor(x => x.Role).IsInEnum().WithMessage("General:Fields:Invalid");
     }
 }
+
+public sealed class SetWorkspaceGroupValidator : AbstractValidator<SetWorkspaceGroupDto>
+{
+    public SetWorkspaceGroupValidator()
+    {
+        RuleFor(x => x.WorkspaceId).NotEmpty().WithMessage("General:Fields:Required");
+        RuleFor(x => x.GroupId).NotEmpty().WithMessage("General:Fields:Required");
+        RuleFor(x => x.GroupName).NotEmpty().WithMessage("General:Fields:Required")
+            .MaximumLength(WorkspacesFieldDefinitions.MaxNameLength).WithMessage("General:Fields:MaxLength");
+        RuleFor(x => x.Role).IsInEnum().WithMessage("General:Fields:Invalid")
+            .NotEqual(Domain.Enums.WorkspaceRole.Owner).WithMessage(WorkspacesErrors.GroupCannotOwn);
+    }
+}

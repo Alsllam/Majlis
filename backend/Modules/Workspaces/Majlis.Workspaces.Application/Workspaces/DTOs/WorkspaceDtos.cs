@@ -3,7 +3,9 @@ using Majlis.Workspaces.Domain.Enums;
 
 namespace Majlis.Workspaces.Application.Workspaces.DTOs;
 
-public sealed record WorkspaceMemberDto(Guid UserId, string DisplayName, WorkspaceRole Role, DateTime JoinedAt);
+public sealed record WorkspaceMemberDto(Guid UserId, string DisplayName, WorkspaceRole Role, DateTime JoinedAt, Guid? ViaGroupId, string? ViaGroupName);
+
+public sealed record WorkspaceGroupDto(Guid GroupId, string GroupName, WorkspaceRole Role, int MemberCount);
 
 public sealed record WorkspaceDto(
     Guid Id,
@@ -14,7 +16,8 @@ public sealed record WorkspaceDto(
     string? AgentInstructions,
     bool IsArchived,
     WorkspaceRole MyRole,
-    IReadOnlyList<WorkspaceMemberDto> Members);
+    IReadOnlyList<WorkspaceMemberDto> Members,
+    IReadOnlyList<WorkspaceGroupDto> Groups);
 
 public sealed record WorkspaceListDto(
     Guid Id,
@@ -65,6 +68,21 @@ public sealed record SetWorkspaceMemberDto
     public Guid UserId { get; init; }
     public string DisplayName { get; init; } = string.Empty;
     public WorkspaceRole Role { get; init; } = WorkspaceRole.Contributor;
+}
+
+/// <summary>Grants a tenant group a role (never Owner); <c>GroupName</c> is the snapshot from the Identity group lookup.</summary>
+public sealed record SetWorkspaceGroupDto
+{
+    public Guid WorkspaceId { get; init; }
+    public Guid GroupId { get; init; }
+    public string GroupName { get; init; } = string.Empty;
+    public WorkspaceRole Role { get; init; } = WorkspaceRole.Contributor;
+}
+
+public sealed record RemoveWorkspaceGroupDto
+{
+    public Guid WorkspaceId { get; init; }
+    public Guid GroupId { get; init; }
 }
 
 public sealed record RemoveWorkspaceMemberDto

@@ -19,6 +19,10 @@ public static class WorkspacesMappings
         workspace.Members
             .OrderBy(m => m.Role)
             .ThenBy(m => m.DisplayName)
-            .Select(m => new WorkspaceMemberDto(m.UserId, m.DisplayName, m.Role, m.CreationTime))
+            .Select(m => new WorkspaceMemberDto(m.UserId, m.DisplayName, m.Role, m.CreationTime, m.ViaGroupId, m.ViaGroupId == null ? null : workspace.Groups.FirstOrDefault(g => g.GroupId == m.ViaGroupId)?.GroupName))
+            .ToList(),
+        workspace.Groups
+            .OrderBy(g => g.GroupName)
+            .Select(g => new WorkspaceGroupDto(g.GroupId, g.GroupName, g.Role, workspace.Members.Count(m => m.ViaGroupId == g.GroupId)))
             .ToList());
 }

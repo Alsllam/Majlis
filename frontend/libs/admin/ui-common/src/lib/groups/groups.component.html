@@ -1,0 +1,72 @@
+<majlis-page-header title="Admin.Groups.Title" subtitle="Admin.Groups.Subtitle" />
+
+<div class="layout">
+  <section class="card-surface list">
+    <form class="new" (ngSubmit)="create()">
+      <input id="group-name" class="form-control" name="name" [ngModel]="newName()" (ngModelChange)="newName.set($event)" [placeholder]="'Admin.Groups.NewPlaceholder' | translate" [attr.aria-label]="'Admin.Groups.NewPlaceholder' | translate" maxlength="120" />
+      <button type="submit" class="btn btn-primary" [disabled]="!newName().trim()" [majlisBusy]="busy()">{{ 'General.Create' | translate }}</button>
+    </form>
+    @if (items() === null) {
+      <p class="text-secondary">{{ 'General.Loading' | translate }}</p>
+    } @else if (items()?.length === 0) {
+      <majlis-empty-state title="Admin.Groups.EmptyTitle" text="Admin.Groups.EmptyText" />
+    } @else {
+      <ul class="groups">
+        @for (g of items(); track g.id) {
+          <li>
+            <button type="button" class="group" [class.active]="selected()?.id === g.id" (click)="open(g.id)">
+              <span class="name">{{ g.name }}</span>
+              <span class="status-tag status-tag-neutral">{{ 'Admin.Groups.Members' | translate: { count: g.memberCount } }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  @if (selected(); as group) {
+    <section class="card-surface detail" data-testid="group-detail">
+      <form class="edit" (ngSubmit)="save()">
+        <label class="form-label" for="group-edit-name">{{ 'Admin.Groups.Name' | translate }}</label>
+        <input id="group-edit-name" class="form-control" name="editName" [ngModel]="editName()" (ngModelChange)="editName.set($event)" maxlength="120" required />
+        <label class="form-label" for="group-edit-desc">{{ 'Admin.Groups.Description' | translate }}</label>
+        <input id="group-edit-desc" class="form-control" name="editDescription" [ngModel]="editDescription()" (ngModelChange)="editDescription.set($event)" maxlength="1000" />
+        <div class="row-actions">
+          <button type="button" class="btn btn-outline-danger btn-sm" (click)="remove()" [majlisBusy]="busy()">{{ 'Admin.Groups.Delete' | translate }}</button>
+          <button type="submit" class="btn btn-primary btn-sm" [disabled]="!editName().trim()" [majlisBusy]="busy()">{{ 'General.Save' | translate }}</button>
+        </div>
+      </form>
+
+      <h2>{{ 'Admin.Groups.MembersTitle' | translate }}</h2>
+      @if (group.members.length === 0) {
+        <p class="text-secondary">{{ 'Admin.Groups.NoMembers' | translate }}</p>
+      } @else {
+        <ul class="members">
+          @for (m of group.members; track m.userId) {
+            <li>
+              <majlis-avatar [name]="m.displayName" style="--avatar-size: 28px" />
+              <span>{{ m.displayName }}</span>
+              <button type="button" class="btn btn-ghost btn-sm ms-auto" (click)="removeMember(m.userId)" [disabled]="busy()">{{ 'General.Remove' | translate }}</button>
+            </li>
+          }
+        </ul>
+      }
+
+      <label class="form-label" for="group-member-search">{{ 'Admin.Groups.AddMember' | translate }}</label>
+      <input id="group-member-search" class="form-control" type="search" [ngModel]="query()" (ngModelChange)="search($event)" [placeholder]="'Workspaces.SearchUsers' | translate" autocomplete="off" />
+      @if (results(); as users) {
+        <ul class="results">
+          @for (u of users; track u.id) {
+            <li>
+              <button type="button" class="user" [disabled]="isMember(u.id) || busy()" (click)="addMember(u)">
+                <majlis-avatar [name]="u.displayName" style="--avatar-size: 24px" />
+                <span>{{ u.displayName }}</span>
+                <span class="email" dir="ltr">{{ u.email }}</span>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+</div>

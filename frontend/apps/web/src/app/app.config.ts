@@ -1,6 +1,7 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
 import { provideApprovalsConfig } from '@majlis/approvals-config';
+import { provideAdminConfig } from '@majlis/admin-config';
 import { provideAuditConfig } from '@majlis/audit-config';
 import { TOPBAR_WIDGETS, provideMajlisCore } from '@majlis/core';
 import { provideNotificationsConfig } from '@majlis/notifications-config';
@@ -28,6 +29,7 @@ export const appConfig: ApplicationConfig = {
     provideMeetingsConfig(),
     provideNotificationsConfig(),
     provideAuditConfig(),
+    provideAdminConfig(),
     // Top-bar widgets, loaded lazily so the shell stays independent of the features.
     { provide: TOPBAR_WIDGETS, useValue: [() => import('@majlis/notifications-ui-common').then((m) => m.NotificationBellComponent)] },
   ],

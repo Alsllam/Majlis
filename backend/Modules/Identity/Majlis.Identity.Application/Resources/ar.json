@@ -7,5 +7,18 @@
   "Identity:Login:LockedOut": "تم إيقاف الحساب مؤقتاً بعد محاولات متكررة. حاول لاحقاً.",
   "Identity:Login:Inactive": "الحساب غير مفعّل. تواصل مع مسؤول الجهة.",
   "Identity:Login:Tagline": "مساحة عمل مشتركة مع الذكاء الاصطناعي",
-  "Identity:Login:SwitchLanguage": "English"
+  "Identity:Login:SwitchLanguage": "English",
+  "Identity:Register:Title": "إنشاء حساب",
+  "Identity:Register:Intro": "دعاك {0} للانضمام إلى مجلس. أكمل بياناتك لإنشاء حسابك.",
+  "Identity:Register:Name": "الاسم الكامل",
+  "Identity:Register:Password": "كلمة المرور",
+  "Identity:Register:PasswordHint": "10 أحرف على الأقل",
+  "Identity:Register:Submit": "إنشاء الحساب",
+  "Identity:Register:InvalidToken": "هذه الدعوة غير صالحة أو انتهت صلاحيتها. اطلب دعوة جديدة من مسؤول الجهة.",
+  "Identity:Register:Done": "أُنشئ حسابك. يمكنك الدخول الآن.",
+  "Identity:Invitation:NotOpen": "الدعوة غير صالحة أو انتهت صلاحيتها",
+  "Identity:Invitation:AlreadyPending": "توجد دعوة معلّقة لهذا البريد",
+  "Identity:Group:NameTaken": "يوجد مجموعة بهذا الاسم",
+  "Identity:User:NotInTenant": "المستخدم ليس من هذه الجهة أو حسابه موقوف",
+  "Identity:Register:Failed": "تعذّر إنشاء الحساب: {0}"
 }

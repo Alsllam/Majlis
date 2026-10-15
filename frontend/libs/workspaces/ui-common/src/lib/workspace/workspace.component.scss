@@ -7,7 +7,12 @@ h1 { font-size: var(--fs-xl); margin: 0; }
 h2 { font-size: var(--fs-md); margin: 0; }
 .desc { margin: 0; color: var(--text-muted); font-size: var(--fs-sm); }
 .actions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
-.body { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-4); }
+.body { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-4); grid-auto-flow: dense; }
+.groups, .invitations { padding: var(--space-3) var(--space-4); grid-column: 1; }
+.instructions { grid-column: 2; grid-row: 1 / span 3; }
+.inline-form { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; #ws-group { max-width: 260px; } #ws-invite-email { max-width: 300px; } }
+.pending { list-style: none; margin: var(--space-2) 0 0; padding: 0; display: grid; gap: var(--space-1); li { display: flex; align-items: center; gap: var(--space-2); } }
+.via { margin-inline-start: var(--space-1); }
 .members { padding: var(--space-3) var(--space-4); }
 .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2); }
 .who { display: inline-flex; align-items: center; gap: var(--space-2); }
@@ -17,4 +22,4 @@ h2 { font-size: var(--fs-md); margin: 0; }
 .instructions { padding: var(--space-4); display: grid; gap: var(--space-2); align-content: start; }
 .hint { margin: 0; color: var(--text-muted); font-size: var(--fs-xs); }
 .save-row { display: flex; justify-content: flex-end; }
-@media (max-width: 900px) { .body { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .body { grid-template-columns: 1fr; } .instructions { grid-column: 1; grid-row: auto; } .groups, .invitations { grid-column: 1; } }

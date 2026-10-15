@@ -17,6 +17,7 @@ export const appRoutes: Route[] = [
       { path: 'tasks', loadChildren: () => import('@majlis/tasks-ui-common').then((m) => m.TasksUICommonRoutes) },
       { path: 'meetings', loadChildren: () => import('@majlis/meetings-ui-common').then((m) => m.MeetingsUICommonRoutes) },
       { path: 'notifications', loadChildren: () => import('@majlis/notifications-ui-common').then((m) => m.NotificationsUICommonRoutes) },
+      { path: 'admin', loadChildren: () => import('@majlis/admin-ui-common').then((m) => m.AdminUICommonRoutes) },
       { path: 'audit', loadChildren: () => import('@majlis/audit-ui-common').then((m) => m.AuditUICommonRoutes) },
       { path: '403', loadComponent: () => import('./pages/forbidden.component').then((m) => m.ForbiddenComponent) },
       { path: '404', loadComponent: () => import('./pages/not-found.component').then((m) => m.NotFoundComponent) },

@@ -38,7 +38,8 @@
     "Tasks": "Tasks",
     "Home": "Home",
     "Audit": "Audit log",
-    "Meetings": "Meetings"
+    "Meetings": "Meetings",
+    "Groups": "Groups"
   },
   "Errors": {
     "Network": "The server could not be reached. Check your connection and try again.",
@@ -196,7 +197,22 @@
     "MemberRemoved": "Member removed",
     "RoleChanged": "Role changed",
     "Back": "All workspaces",
-    "OpenRooms": "Rooms"
+    "OpenRooms": "Rooms",
+    "GroupsTitle": "Groups",
+    "GroupsHint": "Grant a tenant group a role here; its members join automatically and follow the group as they join or leave it.",
+    "PickGroup": "Pick a group…",
+    "AddGroup": "Grant role",
+    "GroupAdded": "Group added",
+    "GroupRemoved": "Group removed",
+    "ViaGroup": "via {{name}}",
+    "InviteTitle": "Invitations",
+    "InviteHint": "Invite someone by email. An existing account is added at once; otherwise they get a link to create their account within 7 days.",
+    "InviteEmail": "Email",
+    "Invite": "Invite",
+    "Invited": "Invitation sent",
+    "Pending": "Pending",
+    "Revoke": "Revoke",
+    "InvitationRevoked": "Invitation revoked"
   },
   "Documents": {
     "Title": "Documents",
@@ -553,6 +569,27 @@
       "member.role-changed": "Member role changed",
       "member.removed": "Member removed",
       "task.assigned": "Task assigned"
+    }
+  },
+  "Admin": {
+    "Groups": {
+      "Title": "Groups",
+      "Subtitle": "Tenant groups: granted roles in workspaces",
+      "NewPlaceholder": "New group name",
+      "EmptyTitle": "No groups yet",
+      "EmptyText": "Create a group, add its members, then grant it a role from a workspace page.",
+      "Members": "{{count}} members",
+      "Name": "Name",
+      "Description": "Description",
+      "Delete": "Delete group",
+      "MembersTitle": "Members",
+      "NoMembers": "No members yet",
+      "AddMember": "Add member",
+      "Created": "Group created",
+      "Saved": "Saved",
+      "Deleted": "Group deleted",
+      "MemberAdded": "Member added",
+      "MemberRemoved": "Member removed"
     }
   }
 }

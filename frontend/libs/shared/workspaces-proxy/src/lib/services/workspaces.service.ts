@@ -3,7 +3,9 @@ import { PagedResultDto, RestConfig, RestService } from '@majlis/core';
 import {
   CreateWorkspaceDto,
   FilterWorkspaceDto,
+  RemoveWorkspaceGroupDto,
   RemoveWorkspaceMemberDto,
+  SetWorkspaceGroupDto,
   SetWorkspaceMemberDto,
   UpdateAgentInstructionsDto,
   UpdateWorkspaceDto,
@@ -34,4 +36,6 @@ export class WorkspacesService {
   setMember = (input: SetWorkspaceMemberDto, config?: Partial<RestConfig>) => this.call<SetWorkspaceMemberDto, void>('POST', '/members', input, config);
   removeMember = (input: RemoveWorkspaceMemberDto, config?: Partial<RestConfig>) =>
     this.call<RemoveWorkspaceMemberDto, void>('DELETE', '/members', input, config);
+  setGroup = (input: SetWorkspaceGroupDto, config?: Partial<RestConfig>) => this.call<SetWorkspaceGroupDto, void>('POST', '/groups', input, config);
+  removeGroup = (input: RemoveWorkspaceGroupDto, config?: Partial<RestConfig>) => this.call<RemoveWorkspaceGroupDto, void>('DELETE', '/groups', input, config);
 }

@@ -23,6 +23,40 @@ namespace Majlis.Workspaces.EntityFrameworkCore.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Majlis.Workspaces.Domain.Entities.GroupMembership", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("GroupName")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("GroupId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("GroupMemberships", "workspaces");
+                });
+
             modelBuilder.Entity("Majlis.Workspaces.Domain.Entities.Workspace", b =>
                 {
                     b.Property<Guid>("Id")
@@ -85,6 +119,41 @@ namespace Majlis.Workspaces.EntityFrameworkCore.Migrations
                     b.ToTable("Workspaces", "workspaces");
                 });
 
+            modelBuilder.Entity("Majlis.Workspaces.Domain.Entities.WorkspaceGroupGrant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("GroupName")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("WorkspaceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("WorkspaceId", "GroupId")
+                        .IsUnique();
+
+                    b.ToTable("GroupGrants", "workspaces");
+                });
+
             modelBuilder.Entity("Majlis.Workspaces.Domain.Entities.WorkspaceMember", b =>
                 {
                     b.Property<Guid>("Id")
@@ -107,6 +176,9 @@ namespace Majlis.Workspaces.EntityFrameworkCore.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("ViaGroupId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("WorkspaceId")
                         .HasColumnType("uniqueidentifier");
 
@@ -114,10 +186,21 @@ namespace Majlis.Workspaces.EntityFrameworkCore.Migrations
 
                     b.HasIndex("UserId");
 
+                    b.HasIndex("ViaGroupId");
+
                     b.HasIndex("WorkspaceId", "UserId")
                         .IsUnique();
 
                     b.ToTable("Members", "workspaces");
+                });
+
+            modelBuilder.Entity("Majlis.Workspaces.Domain.Entities.WorkspaceGroupGrant", b =>
+                {
+                    b.HasOne("Majlis.Workspaces.Domain.Entities.Workspace", null)
+                        .WithMany("Groups")
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Majlis.Workspaces.Domain.Entities.WorkspaceMember", b =>
@@ -131,6 +214,8 @@ namespace Majlis.Workspaces.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Majlis.Workspaces.Domain.Entities.Workspace", b =>
                 {
+                    b.Navigation("Groups");
+
                     b.Navigation("Members");
                 });
 #pragma warning restore 612, 618

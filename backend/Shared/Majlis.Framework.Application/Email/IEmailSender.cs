@@ -24,12 +24,23 @@ public sealed class EmailOptions
     public string Sender { get; set; } = "DoNotReply@majlis.local";
 }
 
-/// <summary>Development fallback: writes the message to the log instead of sending it.</summary>
+/// <summary>Development fallback: writes the message to the log instead of sending it and keeps the last few in memory.</summary>
 public sealed partial class LoggingEmailSender(ILogger<LoggingEmailSender> logger) : IEmailSender
 {
+    private const int Kept = 50;
+    private readonly System.Collections.Concurrent.ConcurrentQueue<EmailMessage> _recent = new();
+
+    /// <summary>The last messages, newest first (a development host may expose them so a tester can follow a link).</summary>
+    public IReadOnlyList<EmailMessage> Recent => _recent.Reverse().ToList();
+
     public Task SendAsync(EmailMessage message, CancellationToken cancellationToken = default)
     {
         Log.Email(logger, message.To, message.Subject, message.TextBody);
+        _recent.Enqueue(message);
+        while (_recent.Count > Kept && _recent.TryDequeue(out _))
+        {
+        }
+
         return Task.CompletedTask;
     }
 

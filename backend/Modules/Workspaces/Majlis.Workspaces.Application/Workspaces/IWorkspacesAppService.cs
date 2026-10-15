@@ -31,4 +31,10 @@ public interface IWorkspacesAppService
 
     /// <summary>Removes a member; the last owner cannot be removed.</summary>
     Task RemoveMemberAsync(RemoveWorkspaceMemberDto input, CancellationToken cancellationToken = default);
+
+    /// <summary>Grants a tenant group a role in the workspace (FR-WSP-002); its members join with that role.</summary>
+    Task SetGroupAsync(SetWorkspaceGroupDto input, CancellationToken cancellationToken = default);
+
+    /// <summary>Withdraws a group grant; the members it brought in leave (direct members stay).</summary>
+    Task RemoveGroupAsync(RemoveWorkspaceGroupDto input, CancellationToken cancellationToken = default);
 }

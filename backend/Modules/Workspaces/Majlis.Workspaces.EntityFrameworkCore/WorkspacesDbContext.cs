@@ -14,4 +14,6 @@ public class WorkspacesDbContext(DbContextOptions<WorkspacesDbContext> options, 
 
     public DbSet<Workspace> Workspaces => Set<Workspace>();
     public DbSet<WorkspaceMember> Members => Set<WorkspaceMember>();
+    public DbSet<WorkspaceGroupGrant> GroupGrants => Set<WorkspaceGroupGrant>();
+    public DbSet<GroupMembership> GroupMemberships => Set<GroupMembership>();
 }

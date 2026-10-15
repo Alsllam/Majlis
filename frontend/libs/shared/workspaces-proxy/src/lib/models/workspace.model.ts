@@ -13,6 +13,16 @@ export interface WorkspaceMemberDto {
   displayName: string;
   role: WorkspaceRole;
   joinedAt: string;
+  /** Set when a group grant brought the member in; a direct member has null. */
+  viaGroupId: string | null;
+  viaGroupName: string | null;
+}
+
+export interface WorkspaceGroupDto {
+  groupId: string;
+  groupName: string;
+  role: WorkspaceRole;
+  memberCount: number;
 }
 
 export interface WorkspaceDto {
@@ -25,6 +35,7 @@ export interface WorkspaceDto {
   isArchived: boolean;
   myRole: WorkspaceRole;
   members: WorkspaceMemberDto[];
+  groups: WorkspaceGroupDto[];
 }
 
 export interface WorkspaceListDto {
@@ -68,6 +79,18 @@ export interface SetWorkspaceMemberDto {
   userId: string;
   displayName: string;
   role: WorkspaceRole;
+}
+
+export interface SetWorkspaceGroupDto {
+  workspaceId: string;
+  groupId: string;
+  groupName: string;
+  role: WorkspaceRole;
+}
+
+export interface RemoveWorkspaceGroupDto {
+  workspaceId: string;
+  groupId: string;
 }
 
 export interface RemoveWorkspaceMemberDto {

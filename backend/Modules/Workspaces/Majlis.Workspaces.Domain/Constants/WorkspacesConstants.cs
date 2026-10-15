@@ -24,6 +24,7 @@ public static class WorkspaceRolePermissions
         WorkspacesPermissions.ViewWorkspace,
         WorkspacesPermissions.UpdateWorkspace,
         WorkspacesPermissions.ManageMembers,
+        "Permissions.Identity.InviteUsers",
         "Permissions.Rooms.ViewRoom",
         "Permissions.Rooms.CreateRoom",
         "Permissions.Rooms.ManageParticipants",
@@ -84,6 +85,7 @@ public static class WorkspacesErrors
     public const string MemberNotFound = "Workspaces:Workspace:MemberNotFound";
     public const string OnlyOwnerChangesOwner = "Workspaces:Workspace:OnlyOwnerChangesOwner";
     public const string ColorInvalid = "Workspaces:Workspace:ColorInvalid";
+    public const string GroupCannotOwn = "Workspaces:Workspace:GroupCannotOwn";
 }
 
 public static class WorkspacesFieldDefinitions

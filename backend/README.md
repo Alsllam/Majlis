@@ -20,6 +20,7 @@ Logs: `backend/.local/logs/*.log`. Everything is reached through the BFF at `htt
 | `/connect/*`, `/.well-known/*`, `/Account/*` | Auth (OpenIddict, login page) |
 | `/api/realtime/ticket` | Auth (hub ticket) |
 | `/api/identity/users/lookup` | Auth host (tenant user picker) |
+| `/api/identity/groups/*`, `/api/identity/invitations/*` | Auth host (tenant groups; invitations by email, accepted on `/Account/Register?token=…`) |
 | `/api/workspaces/workspaces/*` | Workspaces |
 | `/api/rooms/rooms/*`, `/api/rooms/sessions/*` | Rooms |
 | `/api/knowledge/documents/*` | Knowledge (uploads go straight to blob storage through pre-signed urls; agent drafts are written by the host) |

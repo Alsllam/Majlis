@@ -1,0 +1,14 @@
+.layout { display: grid; grid-template-columns: 320px 1fr; gap: var(--space-4); }
+.list, .detail { padding: var(--space-3) var(--space-4); }
+.new { display: flex; gap: var(--space-2); margin-bottom: var(--space-3); }
+.groups, .members, .results { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-1); }
+.group, .user { display: flex; align-items: center; gap: var(--space-2); width: 100%; text-align: start; border: 1px solid var(--border-subtle); background: var(--surface); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); cursor: pointer;
+  &:hover { background: var(--surface-hover); } &.active { border-color: var(--brand-solid); background: var(--brand-subtle); } &:disabled { opacity: .5; cursor: default; } }
+.group .name { flex: 1; font-weight: var(--fw-medium); }
+.members li { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1) 0; }
+.edit { display: grid; gap: var(--space-1); margin-bottom: var(--space-3); }
+.row-actions { display: flex; justify-content: space-between; margin-top: var(--space-2); }
+h2 { font-size: var(--fs-md); margin: var(--space-2) 0; }
+.email { color: var(--text-muted); font-size: var(--fs-xs); }
+.results { margin-top: var(--space-2); max-height: 240px; overflow: auto; }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }

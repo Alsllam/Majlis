@@ -9,6 +9,7 @@ namespace Majlis.Workspaces.Domain.Entities;
 public class Workspace : FullAuditedEntity<Guid>, IMultiTenant
 {
     private readonly List<WorkspaceMember> _members = [];
+    private readonly List<WorkspaceGroupGrant> _groups = [];
 
     protected Workspace()
     {
@@ -41,6 +42,9 @@ public class Workspace : FullAuditedEntity<Guid>, IMultiTenant
     public bool IsArchived { get; private set; }
 
     public IReadOnlyCollection<WorkspaceMember> Members => _members;
+
+    /// <summary>Tenant groups granted a role here (FR-WSP-002); their members are expanded into <see cref="Members"/>.</summary>
+    public IReadOnlyCollection<WorkspaceGroupGrant> Groups => _groups;
 
     public void Update(string name, string? description, string? icon, string? color)
     {
@@ -96,6 +100,12 @@ public class Workspace : FullAuditedEntity<Guid>, IMultiTenant
             return true;
         }
 
+        if (existing.ViaGroupId is not null)
+        {
+            // A direct membership replaces the one the group gave.
+            existing.MakeDirect();
+        }
+
         if (existing.Role == WorkspaceRole.Owner && role != WorkspaceRole.Owner)
         {
             if (actor.Role != WorkspaceRole.Owner)
@@ -139,6 +149,92 @@ public class Workspace : FullAuditedEntity<Guid>, IMultiTenant
         _members.Add(new WorkspaceMember(Guid.NewGuid(), Id, userId, displayName, WorkspaceRole.Owner));
     }
 
+    /// <summary>
+    /// Grants a group a role (owner is never granted to a group) and adds its members who are not members yet.
+    /// Returns the users added. Members the group already brought in follow the new role.
+    /// </summary>
+    public IReadOnlyList<WorkspaceMember> GrantGroup(Guid actorId, Guid groupId, string groupName, WorkspaceRole role, IEnumerable<(Guid UserId, string DisplayName)> groupMembers)
+    {
+        EnsureNotArchived();
+        EnsureManager(actorId);
+        if (role == WorkspaceRole.Owner)
+        {
+            throw new CustomValidationException(WorkspacesErrors.GroupCannotOwn);
+        }
+
+        var grant = _groups.FirstOrDefault(g => g.GroupId == groupId);
+        if (grant is null)
+        {
+            _groups.Add(new WorkspaceGroupGrant(Guid.NewGuid(), Id, groupId, groupName, role));
+        }
+        else
+        {
+            grant.Change(groupName, role);
+            foreach (var member in _members.Where(m => m.ViaGroupId == groupId))
+            {
+                member.Change(role, member.DisplayName);
+            }
+        }
+
+        return SyncGroupMembers(groupId, groupMembers);
+    }
+
+    /// <summary>Adds the group's members who are absent, with the grant's role. Returns the users added.</summary>
+    public IReadOnlyList<WorkspaceMember> SyncGroupMembers(Guid groupId, IEnumerable<(Guid UserId, string DisplayName)> groupMembers)
+    {
+        var grant = _groups.FirstOrDefault(g => g.GroupId == groupId);
+        if (grant is null || IsArchived)
+        {
+            return [];
+        }
+
+        var added = new List<WorkspaceMember>();
+        foreach (var (userId, displayName) in groupMembers)
+        {
+            if (FindMember(userId) is not null)
+            {
+                continue;
+            }
+
+            var member = new WorkspaceMember(Guid.NewGuid(), Id, userId, displayName, grant.Role) { ViaGroupId = groupId };
+            _members.Add(member);
+            added.Add(member);
+        }
+
+        return added;
+    }
+
+    /// <summary>Removes the grant and the members it brought in (direct members stay). Returns the users removed.</summary>
+    public IReadOnlyList<Guid> RevokeGroup(Guid? actorId, Guid groupId)
+    {
+        if (actorId is { } actor)
+        {
+            EnsureNotArchived();
+            EnsureManager(actor);
+        }
+
+        var grant = _groups.FirstOrDefault(g => g.GroupId == groupId);
+        if (grant is null)
+        {
+            return [];
+        }
+
+        _groups.Remove(grant);
+        return RemoveViaGroup(groupId, null);
+    }
+
+    /// <summary>A user left the group: drop the membership the group gave (a direct membership stays).</summary>
+    public IReadOnlyList<Guid> RemoveGroupMember(Guid groupId, Guid userId) => RemoveViaGroup(groupId, userId);
+
+    public void RenameGroup(Guid groupId, string groupName) => _groups.FirstOrDefault(g => g.GroupId == groupId)?.Change(groupName, null);
+
+    private List<Guid> RemoveViaGroup(Guid groupId, Guid? userId)
+    {
+        var gone = _members.Where(m => m.ViaGroupId == groupId && (userId is null || m.UserId == userId)).ToList();
+        _members.RemoveAll(gone.Contains);
+        return gone.Select(m => m.UserId).ToList();
+    }
+
     private void EnsureNotLastOwner(Guid userId)
     {
         if (!_members.Any(m => m.Role == WorkspaceRole.Owner && m.UserId != userId))
@@ -179,9 +275,42 @@ public class WorkspaceMember : CreationAuditedEntity<Guid>
 
     public WorkspaceRole Role { get; private set; }
 
+    /// <summary>Set when the membership comes from a group grant; null for a direct member.</summary>
+    public Guid? ViaGroupId { get; internal set; }
+
     internal void Change(WorkspaceRole role, string displayName)
     {
         Role = role;
         DisplayName = displayName;
+    }
+
+    internal void MakeDirect() => ViaGroupId = null;
+}
+
+/// <summary>A tenant group with a role in the workspace; the group name is a snapshot refreshed on rename.</summary>
+public class WorkspaceGroupGrant : CreationAuditedEntity<Guid>
+{
+    protected WorkspaceGroupGrant()
+    {
+    }
+
+    internal WorkspaceGroupGrant(Guid id, Guid workspaceId, Guid groupId, string groupName, WorkspaceRole role)
+        : base(id)
+    {
+        WorkspaceId = workspaceId;
+        GroupId = groupId;
+        GroupName = groupName;
+        Role = role;
+    }
+
+    public Guid WorkspaceId { get; private set; }
+    public Guid GroupId { get; private set; }
+    public string GroupName { get; private set; } = string.Empty;
+    public WorkspaceRole Role { get; private set; }
+
+    internal void Change(string groupName, WorkspaceRole? role)
+    {
+        GroupName = groupName;
+        Role = role ?? Role;
     }
 }

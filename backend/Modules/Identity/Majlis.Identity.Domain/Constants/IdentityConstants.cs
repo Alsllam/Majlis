@@ -30,4 +30,27 @@ public static class MajlisClients
 public static class IdentityPermissions
 {
     public const string ViewUsers = "Permissions.Identity.ViewUsers";
+
+    /// <summary>Tenant admins: create and change groups and their members.</summary>
+    public const string ManageGroups = "Permissions.Identity.ManageGroups";
+
+    /// <summary>Invite people by email (tenant admins and, through the workspace roles, owners and admins).</summary>
+    public const string InviteUsers = "Permissions.Identity.InviteUsers";
+}
+
+public static class IdentityErrors
+{
+    public const string InvitationNotOpen = "Identity:Invitation:NotOpen";
+    public const string InvitationPending = "Identity:Invitation:AlreadyPending";
+    public const string GroupNameTaken = "Identity:Group:NameTaken";
+    public const string UserNotInTenant = "Identity:User:NotInTenant";
+    public const string RegistrationFailed = "Identity:Register:Failed";
+}
+
+public static class IdentityFieldDefinitions
+{
+    public const int MaxGroupNameLength = Framework.Domain.Localization.FieldDefinitions.MaxNameLength;
+    public const int MaxDescriptionLength = Framework.Domain.Localization.FieldDefinitions.MaxDescriptionLength;
+    public const int MaxEmailLength = 256;
+    public const int InvitationDays = 7;
 }

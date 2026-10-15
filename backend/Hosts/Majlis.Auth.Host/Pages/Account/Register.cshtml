@@ -1,0 +1,65 @@
+@page
+@model Majlis.Auth.Host.Pages.Account.RegisterModel
+<!doctype html>
+<html lang="@Model.Lang" dir="@(Model.IsRtl ? "rtl" : "ltr")">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>@Model.L["Identity:Register:Title"] · @(Model.IsRtl ? "مجلس" : "Majlis")</title>
+  <style>
+    :root { --brand-solid:#067368; --brand-solid-hover:#015c52; --surface:#ffffff; --surface-sunken:#f9f3ec; --text-primary:#191714; --text-secondary:#49443e; --border-strong:#807b74; --danger-text:#8d2022; --danger-bg:#fef4f3; --success-bg:#eef7f3; --success-text:#0d5b3a; --focus-ring:#078f81; }
+    @@media (prefers-color-scheme: dark) { :root { --brand-solid:#38ad9e; --brand-solid-hover:#70cabd; --surface:#22201d; --surface-sunken:#100e0b; --text-primary:#f9f3ec; --text-secondary:#c9c3bc; --border-strong:#807b74; --danger-text:#fec4be; --danger-bg:#3d1e1c; --success-bg:#17312a; --success-text:#9fe0c3; --focus-ring:#70cabd; } }
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; background:var(--surface-sunken); color:var(--text-primary); font-family: "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif; line-height:1.7; }
+    main { width:min(420px, calc(100% - 32px)); background:var(--surface); border-radius:16px; padding:32px; box-shadow:0 4px 8px rgb(15 60 55 / .06), 0 16px 32px rgb(15 60 55 / .12); }
+    header { display:flex; align-items:center; gap:12px; margin-block-end:16px; }
+    header h1 { margin:0; font-size:1.5rem; } p.intro { margin:0 0 8px; color:var(--text-secondary); font-size:.9rem; }
+    label { display:block; font-size:.875rem; font-weight:500; margin-block:16px 6px; }
+    input { width:100%; font:inherit; padding:10px 12px; border-radius:8px; border:1px solid var(--border-strong); background:var(--surface); color:var(--text-primary); }
+    input[readonly] { color:var(--text-secondary); }
+    input:focus-visible, button:focus-visible, a:focus-visible { outline:2px solid var(--focus-ring); outline-offset:2px; }
+    button, a.btn { display:block; width:100%; margin-block-start:24px; font:inherit; font-weight:600; padding:10px; border:0; border-radius:8px; background:var(--brand-solid); color:#fff; cursor:pointer; text-align:center; text-decoration:none; }
+    @@media (prefers-color-scheme: dark) { button, a.btn { color:#100e0b; } }
+    button:hover, a.btn:hover { background:var(--brand-solid-hover); }
+    .error { margin-block-start:16px; padding:10px 12px; border-radius:8px; background:var(--danger-bg); color:var(--danger-text); font-size:.875rem; }
+    .ok { margin-block-start:16px; padding:10px 12px; border-radius:8px; background:var(--success-bg); color:var(--success-text); font-size:.875rem; }
+    .hint { font-size:.75rem; color:var(--text-secondary); }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      @Html.Raw(Brand.Mark)
+      <div><h1>@Model.L["Identity:Register:Title"]</h1></div>
+    </header>
+    @if (Model.Done)
+    {
+      <div class="ok" role="status">@Model.L["Identity:Register:Done"]</div>
+      <a class="btn" href="/">@Model.L["Identity:Login:Submit"]</a>
+    }
+    else if (Model.Invitation is null)
+    {
+      <div class="error" role="alert">@Model.L["Identity:Register:InvalidToken"]</div>
+    }
+    else
+    {
+      <p class="intro">@Model.L["Identity:Register:Intro", Model.Invitation.InvitedByDisplayName]</p>
+      <form method="post">
+        <input type="hidden" asp-for="Token" />
+        <label for="email">@Model.L["Identity:Login:Email"]</label>
+        <input id="email" type="email" value="@Model.Invitation.Email" readonly dir="ltr" />
+        <label for="name">@Model.L["Identity:Register:Name"]</label>
+        <input id="name" asp-for="Input.DisplayName" autocomplete="name" required autofocus />
+        <label for="password">@Model.L["Identity:Register:Password"]</label>
+        <input id="password" asp-for="Input.Password" type="password" autocomplete="new-password" dir="ltr" required minlength="10" />
+        <span class="hint">@Model.L["Identity:Register:PasswordHint"]</span>
+        @if (Model.Error is not null)
+        {
+          <div class="error" role="alert">@Model.Error</div>
+        }
+        <button type="submit">@Model.L["Identity:Register:Submit"]</button>
+      </form>
+    }
+  </main>
+</body>
+</html>

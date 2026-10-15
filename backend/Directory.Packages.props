@@ -5,7 +5,14 @@
     - AutoMapper is not used: 14.0.0 (last MIT) has a known high-severity vulnerability and 15+ is commercial.
       Mapping is explicit ToDto() extension methods per module (ADR-0008).
   -->
+  <PropertyGroup>
+    <!-- Transitive versions are pinned to the central ones, so a vulnerable transitive package can be lifted here. -->
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
   <ItemGroup>
+    <!-- Transitive (SqlClient / Wolverine): 9.0.11 carries GHSA-846f-f764-76mx; lifted to the patched 10.x line. -->
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.13" />
     <PackageVersion Include="Azure.Communication.Email" Version="1.0.1" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.26.0" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />

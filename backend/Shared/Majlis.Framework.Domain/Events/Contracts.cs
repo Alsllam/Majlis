@@ -190,3 +190,18 @@ public sealed record AuditChainVerificationRequested(DateTime At) : IEvent;
 
 /// <summary>Jobs → Meetings: delete recordings transcribed longer ago than the retention period.</summary>
 public sealed record RecordingRetentionSweepRequested(DateTime At) : IEvent;
+
+// Identity → Workspaces (groups and invitations, FR-IDN-005 / FR-WSP-002). Published by the Auth host without an outbox
+// (its DbContext is ASP.NET Identity's, not a MajlisDbContext); consumers are idempotent.
+
+/// <summary>A user joined a tenant group (or the group was created with them).</summary>
+public sealed record GroupMemberAdded(Guid TenantId, Guid GroupId, string GroupName, Guid UserId, string DisplayName) : IEvent;
+
+public sealed record GroupMemberRemoved(Guid TenantId, Guid GroupId, Guid UserId) : IEvent;
+
+public sealed record GroupRenamed(Guid TenantId, Guid GroupId, string GroupName) : IEvent;
+
+public sealed record GroupDeleted(Guid TenantId, Guid GroupId) : IEvent;
+
+/// <summary>An invited person now has an account (or already had one): add them where they were invited to.</summary>
+public sealed record UserInvitationAccepted(Guid TenantId, Guid InvitationId, Guid UserId, string DisplayName, Guid? WorkspaceId, string? WorkspaceRole, Guid InvitedByUserId) : IEvent;

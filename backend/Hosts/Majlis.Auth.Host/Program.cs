@@ -1,6 +1,8 @@
 using System.Security.Cryptography.X509Certificates;
 using Majlis.Auth.Host;
 using Majlis.Framework.Application.DynamicControllers;
+using Majlis.Framework.Application.Email;
+using Majlis.Framework.Application.Messaging;
 using Majlis.Framework.Application.Hosting;
 using Majlis.Framework.Application.Middleware;
 using Majlis.Identity.Application;
@@ -19,6 +21,9 @@ var config = builder.Configuration;
 var server = config.GetSection("Auth").Get<AuthServerOptions>() ?? new AuthServerOptions();
 
 services.AddIdentityApplicationModule(config);
+services.AddMajlisEmail(config);
+// Groups and invitations are published straight to the bus (no outbox: the Identity context is ASP.NET Identity's).
+builder.AddMajlisMessaging(IdentityApplicationModule.ModuleName, IdentityApplicationModule.Topology, typeof(IdentityApplicationModule).Assembly);
 var mvc = services.AddControllersWithViews();
 services.AddRazorPages();
 services.AddCORSExtensions(config);
@@ -136,6 +141,12 @@ if (app.Environment.IsDevelopmentLike())
 }
 
 app.MapHealthChecks("/health").AllowAnonymous();
+if (app.Environment.IsDevelopmentLike())
+{
+    // Development only: the last emails the logging sender "sent", so a tester can follow an invitation link.
+    app.MapGet("/dev/emails", (IEmailSender sender) => sender is LoggingEmailSender logging ? Results.Ok(logging.Recent) : Results.NotFound()).AllowAnonymous();
+}
+
 app.MapRazorPages();
 app.MapControllers().RequireRateLimiting(ServiceCollectionExtensions.SlidingPolicy);
 app.Run();
